@@ -20,6 +20,35 @@ import subprocess
 import wave
 
 
+def read_recording(path):
+    """Preserve and decode the known padded WAV header in RetroArch 1.22.2.
+
+    record/drivers/record_wav.c writes wav_hdr_t verbatim, with char[5] tags
+    and C struct padding. Only accept that exact PCM layout and finalized size.
+    Save a standards-compliant copy alongside the untouched original capture.
+    """
+    try:
+        with wave.open(str(path),'rb') as w:
+            return w.getparams(), w.readframes(w.getnframes()), 'standard-wav'
+    except wave.Error:
+        data=path.read_bytes()
+        assert data[:8]==b'RIFF\0\0\0\0' and data[12:24]==b'WAVE\0fmt \0\0\0'
+        assert data[44:52]==b'data\0\0\0\0'
+        assert struct.unpack_from('<I',data,24)[0]==16
+        tag,channels,rate,byte_rate,block,bits=struct.unpack_from('<HHIIHH',data,28)
+        size=struct.unpack_from('<I',data,52)[0]
+        assert tag==1 and channels==2 and rate==44100 and bits==16 and block==4
+        assert byte_rate==rate*block and size==len(data)-56 and size%block==0
+        assert struct.unpack_from('<I',data,8)[0]==len(data)-12
+        pcm=data[56:]
+        normalized=path.with_name(path.stem+'-normalized.wav')
+        with wave.open(str(normalized),'wb') as w:
+            w.setparams((channels,bits//8,rate,0,'NONE','not compressed'))
+            w.writeframes(pcm)
+        with wave.open(str(normalized),'rb') as w:
+            return w.getparams(),pcm,'retroarch-1.22-padded-wav'
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ['retroarch','core','system','rom','output']:
@@ -101,12 +130,11 @@ def main():
     else:
         assert '[SM2 GPU] Ready:' not in run_log
     png=(out/'vf2-gameplay.png').read_bytes();assert png.startswith(b'\x89PNG\r\n\x1a\n')
-    with wave.open(str(out/'vf2.wav'),'rb') as w:
-        params=w.getparams();pcm=w.readframes(w.getnframes())
+    params,pcm,recording_format=read_recording(out/'vf2.wav')
     assert params.nchannels==2 and params.sampwidth==2 and params.framerate==44100
     peak=max(map(abs,array.array('h',pcm)))
     assert peak>0 and params.nframes>44100*20
-    report={'renderer':a.renderer,'internal_scale':a.scale,'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,
+    report={'recording_format':recording_format,'renderer':a.renderer,'internal_scale':a.scale,'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,
             'audio_peak':peak,'audio_sha256':hashlib.sha256(pcm).hexdigest(),
             'screenshot_sha256':hashlib.sha256(png).hexdigest(),
             'note':'Inspect screenshot for gameplay; audible quality and physical devices require manual validation.'}

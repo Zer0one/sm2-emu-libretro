@@ -154,3 +154,16 @@ layers. Il ripristino dopo ricreazione ordinata del contesto è provato;
 un guasto fisico o `VK_ERROR_DEVICE_LOST` richiede il riavvio del contenuto.
 La build non include ancora un percorso GPU OpenGL/Metal nativo alternativo.
 I profili completi, le opzioni Input e i save state restano nei punti successivi.
+
+## Estensione Linux / Batocera
+
+La revisione `f14d97a` corregge una callback `destroy_device` che RetroArch Linux
+poteva invocare dopo `dlclose` del core. Le risorse del core sono già rilasciate
+in `context_destroy`; il dispositivo è posseduto dal frontend e non richiede
+una callback successiva nella nostra libreria.
+
+Il core Linux della CI è stato provato su Batocera 43.1 con Radeon Vega 11,
+RetroArch 1.22.2 e VF2: Vulkan 1×/2× e software, 2300 frame ciascuno, screenshot
+di gioco, PCM e NVRAM identici tra i renderer, uscita regolare. Vedere [CI.md](CI.md)
+per ambiente, artifact, riproduzione e limiti. È una prima verifica su GPU Linux;
+la compatibilità estesa rimane aperta.

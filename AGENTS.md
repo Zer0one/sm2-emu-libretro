@@ -30,7 +30,10 @@ The first software Libretro core is implemented and verified through ABI
 comparisons and VF2 gameplay in RetroArch macOS. See HEADLESS.md and LIBRETRO.md
 for evidence and limits. The user then prioritized GPU ahead of profile
 implementation: the Vulkan adapter and Video options are implemented and tested
-on macOS, including real RetroArch gameplay; see GPU.md. Complete profiles,
+on macOS, including real RetroArch gameplay; see GPU.md. CI now builds Linux
+x86_64, Windows x86_64 and macOS arm64/Intel. The Linux CI core was verified
+on Batocera 43.1 with VF2, software and Vulkan 1x/2x; see CI.md for evidence
+and the fixed callback lifetime issue. Complete profiles,
 Input options and SRAM remain milestone 3.
 Follow the current user request for scope; PORTING_PLAN.md lists later work.
 
