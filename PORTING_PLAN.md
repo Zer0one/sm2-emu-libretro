@@ -150,6 +150,11 @@ controllo fisico appropriato per le categorie dichiarate supportate.
 
 ## 4. Compatibilità e build di distribuzione
 
+Prima matrice CI implementata: Linux x86_64, macOS arm64/Intel e Windows
+x86_64, con software + Vulkan, controlli ABI senza ROM e pacchetti corredati
+dal database giochi. Evidenze e limiti in [CI.md](CI.md). Linux arm64 resta
+da aggiungere e la milestone completa richiede ancora la matrice estesa sotto.
+
 - Estendere le regressioni a Model 2/2A/2B/2C, ROM parent/clone, ZIP/7z e
   caricamenti falliti; includere più giochi e sequenze rappresentative.
 - Automatizzare build macOS arm64 e Linux x86_64/arm64, controlli ABI e test

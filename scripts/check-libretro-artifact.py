@@ -11,9 +11,10 @@ core = Path(sys.argv[1]).resolve()
 root = Path(__file__).resolve().parents[1]
 expected = set(re.findall(r"retro_\w+", (root / "src/libretro/exports.map").read_text()))
 
-def command(*args):
+def command(*args, verbose=True):
     result = subprocess.check_output(args, text=True)
-    print(result)
+    if verbose:
+        print(result)
     return result
 
 kind = platform.system()
@@ -25,9 +26,11 @@ if kind == "Darwin":
     assert all(line.strip().startswith(("/usr/lib/", "/System/Library/"))
                for line in deps.splitlines()[2:]), deps
 elif kind == "Windows":
-    pe = command("objdump", "-p", str(core))
-    exports = set(re.findall(r"\] (retro_\w+)$", pe, re.M))
+    pe = command("objdump", "-p", str(core), verbose=False)
+    exports = set(re.findall(r"\b(retro_\w+)$", pe, re.M))
+    print("DLL exports:", ", ".join(sorted(exports)))
     deps = re.findall(r"DLL Name: (\S+)", pe)
+    print("DLL imports:", ", ".join(deps))
     assert not any(re.search(r"libgcc|libstdc|libwinpthread|vulkan|pugi|miniz|zlib", d, re.I) for d in deps), deps
 else:
     symbols = command("nm", "-D", "--defined-only", str(core))

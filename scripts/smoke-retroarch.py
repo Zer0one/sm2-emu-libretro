@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""VF2 gameplay smoke test for RetroArch 1.21.0's replay-v1 reader.
+"""VF2 gameplay smoke test using RetroArch's replay-v1 reader.
 
 The replay supplies every digital input, including released buttons, through
 RetroArch. It contains no ROM data or save state. This is automated input proof,
-not validation of a physical gamepad. See LIBRETRO.md for the tested frontend.
+not validation of a physical gamepad. See LIBRETRO.md and CI.md for tested frontends.
 Replay format reference: official libretro/RetroArch at 05f94af4,
 tasks/task_movie.c and input/input_driver.{h,c}.
 """
@@ -12,6 +12,7 @@ import array
 import hashlib
 import json
 import os
+import platform
 import time
 from pathlib import Path
 import struct
@@ -26,6 +27,8 @@ def main():
     p.add_argument('--timeout',type=int,default=180)
     p.add_argument('--renderer',choices=['software','vulkan'],default='software')
     p.add_argument('--scale',type=int,choices=range(1,5),default=1)
+    p.add_argument('--audio-driver', default='coreaudio' if platform.system()=='Darwin' else 'alsa')
+    p.add_argument('--input-driver', default='cocoa' if platform.system()=='Darwin' else 'x')
     p.add_argument('--moltenvk',type=Path,help='Optional macOS MoltenVK library, used only by the test process')
     a=p.parse_args()
     out=a.output.resolve();out.mkdir(parents=True,exist_ok=False)
@@ -48,7 +51,7 @@ def main():
     cfg={'system_directory':str(a.system.resolve()),'savefile_directory':str(out/'saves'),
          'savestate_directory':str(out/'states'),'screenshot_directory':str(out/'screenshots'),
          'playlist_directory':str(out/'playlists'),'rgui_config_directory':str(out/'config'),
-         'video_driver':'vulkan' if a.renderer=='vulkan' else 'gl','audio_driver':'coreaudio','input_driver':'cocoa',
+         'video_driver':'vulkan' if a.renderer=='vulkan' else 'gl','audio_driver':a.audio_driver,'input_driver':a.input_driver,
          'video_fullscreen':'false','video_windowed_fullscreen':'false','video_scale':'2',
          'video_vsync':'false','audio_sync':'true','audio_enable':'true',
          'config_save_on_exit':'false','content_history_enable':'false',

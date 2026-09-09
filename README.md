@@ -569,3 +569,5 @@ under the same licence. See `NOTICE` for per-component attribution.
 La prima GPU del core è implementata e verificata su macOS, con passaggi
 upstream condivisi, risoluzione 1×–4× e Core Options Video. Istruzioni di build,
 avvio RetroArch con MoltenVK aggiornato e prove: [GPU.md](GPU.md).
+
+Build multipiattaforma e pacchetti GitHub Actions: [CI.md](CI.md).
