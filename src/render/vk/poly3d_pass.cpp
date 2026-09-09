@@ -93,7 +93,7 @@ Poly3DPass::~Poly3DPass()
     shutdown();
 }
 
-bool Poly3DPass::init(Context& context, u32 render_scale)
+bool Poly3DPass::init(PassContext& context, u32 render_scale)
 {
     m_context           = &context;
     m_render_scale      = render_scale;

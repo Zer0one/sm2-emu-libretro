@@ -92,7 +92,7 @@ TilemapPass::~TilemapPass()
     shutdown();
 }
 
-bool TilemapPass::init(Context& context, u32 render_scale)
+bool TilemapPass::init(PassContext& context, u32 render_scale)
 {
     m_context      = &context;
     m_render_scale = render_scale;

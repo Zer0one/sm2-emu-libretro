@@ -15,7 +15,7 @@
 #pragma once
 
 #include "render/geometry.h"
-#include "render/vk/context.h"
+#include "render/vk/pass_context.h"
 #include "render/vk/vk_common.h"
 
 #include <array>
@@ -79,7 +79,7 @@ public:
     /// covers the scaled composite scope it is attached to. The vertex path
     /// stays in native coordinates (projection is scaled by the viewport); only
     /// the target is larger.
-    [[nodiscard]] bool init(Context& context, u32 render_scale);
+    [[nodiscard]] bool init(PassContext& context, u32 render_scale);
     void shutdown();
 
     /// Triangulate this frame's polygons, unpack their texture headers, and refresh
@@ -218,7 +218,7 @@ private:
 
     [[nodiscard]] Frame& frame();
 
-    Context* m_context = nullptr;
+    PassContext* m_context = nullptr;
 
     VkFormat m_colour_format  = VK_FORMAT_R8G8B8A8_UNORM;
     VkFormat m_stencil_format = VK_FORMAT_UNDEFINED;
@@ -241,7 +241,7 @@ private:
     VkPipelineLayout      m_decode_layout     = VK_NULL_HANDLE;
     VkPipeline            m_decode_pipeline   = VK_NULL_HANDLE;
 
-    std::array<Frame, Context::kFramesInFlight> m_frames{};
+    std::array<Frame, PassContext::kFramesInFlight> m_frames{};
 
     /// Built by build() via render::triangulate(), consumed by render().
     render::TriangulatedFrame m_frame_geometry;

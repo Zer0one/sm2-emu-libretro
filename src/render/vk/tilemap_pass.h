@@ -14,7 +14,7 @@
 //
 #pragma once
 
-#include "render/vk/context.h"
+#include "render/vk/pass_context.h"
 #include "render/vk/vk_common.h"
 
 #include <array>
@@ -64,7 +64,7 @@ public:
     /// The two band surfaces stay native (kSourceWidth x kSourceHeight); only
     /// the composite scope this pass opens is sized to N*native so the 3D drawn
     /// between the bands fills the scaled target. `render_scale` is N.
-    [[nodiscard]] bool init(Context& context, u32 render_scale);
+    [[nodiscard]] bool init(PassContext& context, u32 render_scale);
     void shutdown();
 
     /// Refresh this frame's copies of tile RAM, character RAM and the pen table
@@ -182,7 +182,7 @@ private:
     void copy_to_image(const Surface& surface);
     void dispatch_compose();
 
-    Context* m_context = nullptr;
+    PassContext* m_context = nullptr;
 
     VkSampler             m_sampler        = VK_NULL_HANDLE;
     VkDescriptorPool      m_pool           = VK_NULL_HANDLE;
@@ -196,7 +196,7 @@ private:
     /// Blending enabled, premultiplied: draws the above layers over the 3D.
     VkPipeline m_pipeline_blend = VK_NULL_HANDLE;
 
-    std::array<Surface, Context::kFramesInFlight * kSurfacesPerFrame> m_surfaces{};
+    std::array<Surface, PassContext::kFramesInFlight * kSurfacesPerFrame> m_surfaces{};
 
     /// Index of the first surface belonging to the frame being recorded.
     u32 m_frame_surface_base = 0;
@@ -208,7 +208,7 @@ private:
     VkPipelineLayout      m_compute_layout      = VK_NULL_HANDLE;
     VkPipeline            m_compute_pipeline    = VK_NULL_HANDLE;
 
-    std::array<ComputeFrame, Context::kFramesInFlight> m_compute_frames{};
+    std::array<ComputeFrame, PassContext::kFramesInFlight> m_compute_frames{};
 
     /// Internal 3D render scale; the composite scope is N*native.
     u32 m_render_scale = 1;

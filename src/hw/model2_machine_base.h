@@ -22,7 +22,7 @@
 // which is init/reset/run_frame, the input latch, the produced render list,
 // NVRAM persistence, and the handful of video and diagnostic accessors the
 // debug dumps and the 3D pass read. It does not cover the geometry coprocessor,
-// the sound board or the sound link (Model2::copro()/sound()/uart()): those
+// the concrete sound board or sound link (Model2::copro()/sound()/uart()): those
 // return board-specific hardware types (CoproTgp, Model2Sound, I8251) that do
 // not generalise across boards -- Model 2B's coprocessor is a SHARC wrapped in
 // a CoproSharc, Model 2C's is an MB86235 wrapped in a CoproTgpx4, and the
@@ -69,6 +69,7 @@
 namespace sm2::hw {
 
 class Model2Video;
+class SoundBoard;
 
 /// Copy a set's shipped power-on image over battery-backed storage.
 ///
@@ -204,6 +205,10 @@ public:
     [[nodiscard]] u64 i960_stage_nanoseconds() const { return m_core_profile.i960_ns; }
     [[nodiscard]] u64 copro_stage_nanoseconds() const { return m_core_profile.copro_ns; }
     [[nodiscard]] u64 sound_stage_nanoseconds() const { return m_core_profile.sound_ns; }
+
+    /// Audio produced by the machine, independent of the host audio device.
+    /// Drain and clear pending samples once per frame; use the board's own rate.
+    [[nodiscard]] virtual SoundBoard& sound_board() = 0;
 
     // -- persistence -----------------------------------------------------------
 

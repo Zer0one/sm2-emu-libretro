@@ -15,6 +15,7 @@
 #pragma once
 
 #include "render/vk/vk_common.h"
+#include "render/vk/pass_context.h"
 
 #include <array>
 #include <string>
@@ -44,15 +45,15 @@ struct ContextConfig {
 /// VkFramebuffer from the codebase entirely. Model 2 needs nothing beyond
 /// this: no geometry shaders (all geometry work is on the CPU, as it was on the
 /// real hardware), no bindless, no sampler LOD bias.
-class Context {
+class Context : public PassContext {
 public:
     /// Three rather than two so that recording frame N+1 does not wait on the
     /// GPU finishing frame N. Costs one frame of latency and turns a frame into
     /// max(CPU, GPU) instead of CPU + GPU.
-    static constexpr u32 kFramesInFlight = 3;
+    static constexpr u32 kFramesInFlight = PassContext::kFramesInFlight;
 
     Context() = default;
-    ~Context();
+    ~Context() override;
 
     Context(const Context&)            = delete;
     Context& operator=(const Context&) = delete;
@@ -96,7 +97,7 @@ public:
     /// for calling both once per frame for a stage it wants timed, in program
     /// order, since a stage that is skipped some frames (the decode dispatch)
     /// must still write both or leave both unwritten, never one.
-    void write_timestamp(VkPipelineStageFlags2 stage_mask, GpuStage stage, bool is_end);
+    void write_timestamp(VkPipelineStageFlags2 stage_mask, GpuStage stage, bool is_end) override;
 
     /// GPU times from the oldest still-in-flight slot, which by construction
     /// finished at least kFramesInFlight-1 frames ago and so is always safe to
@@ -107,18 +108,18 @@ public:
 
     // -- accessors ---------------------------------------------------------
 
-    [[nodiscard]] VkDevice         device()          const { return m_device; }
+    [[nodiscard]] VkDevice         device()          const override { return m_device; }
     [[nodiscard]] VkPhysicalDevice physical_device() const { return m_physical_device; }
     [[nodiscard]] VkInstance       instance()        const { return m_instance; }
-    [[nodiscard]] VmaAllocator     allocator()       const { return m_allocator; }
+    [[nodiscard]] VmaAllocator     allocator()       const override { return m_allocator; }
     [[nodiscard]] VkQueue          graphics_queue()  const { return m_graphics_queue; }
     [[nodiscard]] u32              graphics_family() const { return m_graphics_family; }
 
     /// Command buffer for the frame currently being recorded.
-    [[nodiscard]] VkCommandBuffer cmd() const { return m_command_buffers[m_frame_index]; }
+    [[nodiscard]] VkCommandBuffer cmd() const override { return m_command_buffers[m_frame_index]; }
 
     /// Index into the per-frame resource rings, in [0, kFramesInFlight).
-    [[nodiscard]] u32 frame_index() const { return m_frame_index; }
+    [[nodiscard]] u32 frame_index() const override { return m_frame_index; }
 
     [[nodiscard]] VkImage     swapchain_image() const { return m_swapchain_images[m_image_index]; }
     [[nodiscard]] VkImageView swapchain_view()  const { return m_swapchain_views[m_image_index]; }
@@ -132,8 +133,8 @@ public:
     /// drawn. S8_UINT expresses exactly that, but it is optional in Vulkan and
     /// several desktop drivers lack it, so this may name a combined format
     /// whose depth aspect goes unused.
-    [[nodiscard]] VkFormat stencil_format()      const { return m_stencil_format; }
-    [[nodiscard]] bool     stencil_format_has_depth() const;
+    [[nodiscard]] VkFormat stencil_format()      const override { return m_stencil_format; }
+    [[nodiscard]] bool     stencil_format_has_depth() const override;
 
     [[nodiscard]] const VkPhysicalDeviceProperties& device_properties() const
     {

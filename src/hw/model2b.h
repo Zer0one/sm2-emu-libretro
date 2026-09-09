@@ -208,6 +208,7 @@ public:
 
     [[nodiscard]] Model2Sound& sound() { return m_sound; }
     [[nodiscard]] const Model2Sound& sound() const { return m_sound; }
+    [[nodiscard]] SoundBoard& sound_board() override { return m_sound; }
 
     [[nodiscard]] const I8251& uart() const { return m_uart; }
 

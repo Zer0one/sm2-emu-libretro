@@ -161,6 +161,7 @@ public:
     /// The Model 1 audio board. Mutable because main.cpp drains its samples.
     [[nodiscard]] M1Audio& sound() { return m_m1audio; }
     [[nodiscard]] const M1Audio& sound() const { return m_m1audio; }
+    [[nodiscard]] SoundBoard& sound_board() override { return m_m1audio; }
 
     [[nodiscard]] const RenderList& render_list() const override { return m_render_list; }
 
