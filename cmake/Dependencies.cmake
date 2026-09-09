@@ -31,6 +31,7 @@ if(NOT EXISTS "${SM2_3RDPARTY}/musashi/m68kmake.c")
         "  git submodule update --init --recursive")
 endif()
 
+if(SM2_BUILD_STANDALONE)
 # ---------------------------------------------------------------------------
 # Vulkan — headers + loader library
 # ---------------------------------------------------------------------------
@@ -135,6 +136,18 @@ if(SM2_BUILD_VULKAN)
     endif()
 endif()
 
+endif() # SM2_BUILD_STANDALONE
+
+if(SM2_LIBRETRO_VULKAN)
+    find_path(SM2_VULKAN_INCLUDE_DIR vulkan/vulkan.h REQUIRED)
+    find_program(SM2_GLSLC NAMES glslc REQUIRED)
+    if(NOT TARGET GPUOpen::VulkanMemoryAllocator)
+        add_library(GPUOpen::VulkanMemoryAllocator INTERFACE IMPORTED)
+        set_target_properties(GPUOpen::VulkanMemoryAllocator PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${SM2_3RDPARTY}/VulkanMemoryAllocator/include")
+    endif()
+endif()
+
 # ---------------------------------------------------------------------------
 # miniz — zip reading and CRC32 for the ROM loader
 # ---------------------------------------------------------------------------
@@ -189,6 +202,7 @@ else()
     )
 endif()
 
+if(SM2_BUILD_STANDALONE)
 # ---------------------------------------------------------------------------
 # stb_image — JPEG/PNG decode for the game picker's box art
 # ---------------------------------------------------------------------------
@@ -227,6 +241,8 @@ else()
     set(SM2_HAVE_CURL FALSE)
     set(SM2_CURL_ORIGIN "not found — artwork scraping disabled (picker offline-only)")
 endif()
+
+endif() # SM2_BUILD_STANDALONE
 
 # ---------------------------------------------------------------------------
 # LZMA SDK — 7z reading for the ROM loader
@@ -283,6 +299,7 @@ else()
     endif()
 endif()
 
+if(SM2_BUILD_STANDALONE)
 # ---------------------------------------------------------------------------
 # Dear ImGui — immediate-mode GUI for the settings overlay
 # ---------------------------------------------------------------------------
@@ -420,6 +437,8 @@ else()
         endif()
     endif()
 endif()
+
+endif() # SM2_BUILD_STANDALONE
 
 # ---------------------------------------------------------------------------
 # Musashi — the 68000 in the sound board

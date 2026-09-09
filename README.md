@@ -5,12 +5,17 @@ Independent development repository for a planned Libretro adaptation of
 Development takes place on `main`; the original source history is retained
 for attribution, comparison and future upstream updates.
 
-**Status: preparation stage. No Libretro core is implemented or available yet.**
-The current code is the upstream standalone emulator, with a porting plan and
-a reproducible macOS baseline build script. The standalone macOS arm64 build
-has been tested with Vulkan/MoltenVK, including attract-mode captures from
-Daytona USA, Sega Rally Championship and Virtua Fighter 2. These captures are
-not a complete gameplay, input or audio validation.
+**Status: first software Libretro core implemented and tested on macOS arm64.**
+The isolated adapter uses the upstream machine and software renderer, with
+native timing/audio, basic digital inputs and native NVRAM persistence.
+1800-frame video/audio/NVRAM comparisons pass on all four board variants.
+Virtua Fighter 2 has also run in RetroArch with scripted gameplay inputs,
+a gameplay screenshot and recorded stereo audio.
+
+See [Libretro build and validation](LIBRETRO.md) for the artifact, commands
+and limits. Full control profiles, core options and frontend SRAM integration
+remain planned; physical controllers and audible quality need manual checks.
+The standalone and [headless validation runner](HEADLESS.md) remain available.
 
 ## Get the project
 
@@ -25,7 +30,10 @@ git fetch upstream
 fetching from it does not modify the working tree. A separate adjacent clone
 named `sm2-emu-mainstream` is used for original standalone builds and comparisons.
 
-- [Porting plan](PORTING_PLAN.md)
+- [Libretro build and validation](LIBRETRO.md)
+- [Roadmap](PORTING_PLAN.md)
+- [Libretro menu and control design](LIBRETRO_DESIGN.md)
+- [Frontend-free build and validation](HEADLESS.md)
 - [macOS baseline build and validation](MACOS_BUILD.md)
 - [Baseline build script](scripts/build-upstream-macos.sh)
 
@@ -555,3 +563,9 @@ I'm standing on the shoulders of giants, and SM2-Emu exists because of the MAME
 project's reverse engineering of this hardware. The emulation is derived from
 MAME's Sega Model 2 driver and its device cores, which their authors released
 under the same licence. See `NOTICE` for per-component attribution.
+
+## Core Libretro: renderer Vulkan
+
+La prima GPU del core è implementata e verificata su macOS, con passaggi
+upstream condivisi, risoluzione 1×–4× e Core Options Video. Istruzioni di build,
+avvio RetroArch con MoltenVK aggiornato e prove: [GPU.md](GPU.md).

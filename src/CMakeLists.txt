@@ -48,7 +48,7 @@ target_link_libraries(sm2_render
 # sm2_render_vk — Vulkan backend (opt-in: SM2_BUILD_VULKAN)
 # ---------------------------------------------------------------------------
 
-if(SM2_BUILD_VULKAN)
+if(SM2_BUILD_STANDALONE AND SM2_BUILD_VULKAN)
     add_library(sm2_render_vk STATIC
         render/vk/context.cpp
         render/vk/frame_capture.cpp
@@ -92,7 +92,7 @@ endif()
 # -- see render/geometry.h's own doc comment for why that logic must not be
 # duplicated per backend.
 
-if(SM2_BUILD_OPENGL_DESKTOP OR SM2_BUILD_OPENGL_ES)
+if(SM2_BUILD_STANDALONE AND (SM2_BUILD_OPENGL_DESKTOP OR SM2_BUILD_OPENGL_ES))
     if(SM2_BUILD_OPENGL_DESKTOP AND SM2_BUILD_OPENGL_ES)
         message(FATAL_ERROR
             "SM2_BUILD_OPENGL_DESKTOP and SM2_BUILD_OPENGL_ES are mutually "
@@ -256,6 +256,19 @@ target_link_libraries(sm2_hw
     PRIVATE
         sm2_warnings
 )
+
+if(SM2_BUILD_HEADLESS)
+    add_subdirectory(headless)
+endif()
+
+if(SM2_BUILD_LIBRETRO)
+    add_subdirectory(libretro)
+endif()
+
+# Everything below this point belongs to the SDL application.
+if(NOT SM2_BUILD_STANDALONE)
+    return()
+endif()
 
 # ---------------------------------------------------------------------------
 # sm2_osd — window, input, audio, config
