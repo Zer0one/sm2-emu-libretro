@@ -1,3 +1,46 @@
+# SM2-Emu Libretro
+
+Independent development repository for a planned Libretro adaptation of
+[SM2-Emu](https://github.com/dmanlfc/sm2-emu), the Sega Model 2 emulator.
+Development takes place on `main`; the original source history is retained
+for attribution, comparison and future upstream updates.
+
+**Status: preparation stage. No Libretro core is implemented or available yet.**
+The current code is the upstream standalone emulator, with a porting plan and
+a reproducible macOS baseline build script. The standalone macOS arm64 build
+has been tested with Vulkan/MoltenVK, including attract-mode captures from
+Daytona USA, Sega Rally Championship and Virtua Fighter 2. These captures are
+not a complete gameplay, input or audio validation.
+
+## Get the project
+
+```sh
+git clone --recurse-submodules https://github.com/Zer0one/sm2-emu-libretro.git
+cd sm2-emu-libretro
+git remote add upstream https://github.com/dmanlfc/sm2-emu.git
+git fetch upstream
+```
+
+`origin` is this independent project. `upstream` is the original emulator;
+fetching from it does not modify the working tree. A separate adjacent clone
+named `sm2-emu-mainstream` is used for original standalone builds and comparisons.
+
+- [Porting plan](PORTING_PLAN.md)
+- [macOS baseline build and validation](MACOS_BUILD.md)
+- [Baseline build script](scripts/build-upstream-macos.sh)
+
+Original notices and source headers are preserved. See [LICENSE](LICENSE),
+[NOTICE](NOTICE) and the source headers for terms and attribution. No ROMs or
+prebuilt emulator binaries are included in this repository.
+
+---
+
+## Original upstream README
+
+The following is SM2-Emu's upstream README at the imported revision
+`8b3a468c5b51387093811cb16b076e6fd9289d66` (0.9.4). Its descriptions refer to
+the standalone emulator, not to an implemented Libretro core.
+
 ```
   ____  __  __  ____         _____ __  __ _   _
  / ___||  \/  ||___ \       | ____|  \/  | | | |
