@@ -141,7 +141,10 @@ bool request_vulkan(retro_environment_t env, retro_hw_context_reset_t reset,
     negotiation.create_device = [](retro_vulkan_context*, VkInstance, VkPhysicalDevice,
         VkSurfaceKHR, PFN_vkGetInstanceProcAddr, const char**, unsigned, const char**,
         unsigned, const VkPhysicalDeviceFeatures*) { return false; };
-    negotiation.destroy_device = [] { negotiated_device = VK_NULL_HANDLE; };
+    // All owned resources are released by context_destroy. RetroArch can
+    // destroy its VkDevice after dlclose(core), so do not retain a callback
+    // into this library for a device whose lifetime belongs to the frontend.
+    negotiation.destroy_device = nullptr;
     negotiation.create_device2 = create_device;
     return env(RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE, &negotiation);
 }

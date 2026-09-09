@@ -27,6 +27,8 @@ def main():
     p.add_argument('--timeout',type=int,default=180)
     p.add_argument('--renderer',choices=['software','vulkan'],default='software')
     p.add_argument('--scale',type=int,choices=range(1,5),default=1)
+    p.add_argument('--replay-reader', choices=['1.21','1.22'], default='1.21',
+                   help='1.22 reads 40 header bytes even for a stateless v1 replay')
     p.add_argument('--audio-driver', default='coreaudio' if platform.system()=='Darwin' else 'alsa')
     p.add_argument('--input-driver', default='cocoa' if platform.system()=='Darwin' else 'x')
     p.add_argument('--moltenvk',type=Path,help='Optional macOS MoltenVK library, used only by the test process')
@@ -35,6 +37,10 @@ def main():
     for directory in ['saves','states','screenshots','playlists','config']:
         (out/directory).mkdir()
     movie=bytearray(struct.pack('<6I',0x42535632,1,0,0,1,0))
+    # RetroArch 1.22.2 bsv_movie_reset_playback reads 40 bytes and only
+    # seeks back to byte 24 when a v1 save state exists. This core has none.
+    # Pad this test fixture for that reader; keep the actual v1 input records.
+    if a.replay_reader=='1.22': movie += bytes(16)
     for frame in range(2400):
         pressed=set()
         if 800<=frame<810 or 820<=frame<830:pressed.add(2)  # Select / coin
@@ -86,6 +92,8 @@ def main():
     elapsed=time.monotonic()-started
     assert result.returncode==0, f'RetroArch exited {result.returncode}; inspect run.log'
     run_log=(out/'run.log').read_text()
+    assert '[Replay] Invalid' not in run_log and 'ran out of' not in run_log
+    assert 'Failed to initialize audio driver' not in run_log
     if a.renderer=='vulkan':
         assert '[SM2 GPU] Negotiated Vulkan 1.3:' in run_log
         assert '[SM2 GPU] Ready:' in run_log and 'upstream 2D compute + 3D' in run_log
