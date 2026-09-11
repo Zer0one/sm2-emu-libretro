@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-add_library(sm2_libretro SHARED core.cpp input.cpp)
+add_library(sm2_libretro SHARED core.cpp input.cpp save_ram.cpp)
 target_include_directories(sm2_libretro PRIVATE include)
 target_link_libraries(sm2_libretro PRIVATE sm2_hw sm2_render sm2_warnings)
 set_target_properties(sm2_libretro PROPERTIES PREFIX "" OUTPUT_NAME "sm2_libretro"
@@ -25,6 +25,10 @@ if(SM2_LIBRETRO_CHECKS)
     target_include_directories(sm2-libretro-input-checks PRIVATE
         . include "${PROJECT_SOURCE_DIR}/src")
     target_link_libraries(sm2-libretro-input-checks PRIVATE sm2_warnings)
+    add_executable(sm2-libretro-save-ram-checks checks/save_ram.cpp save_ram.cpp)
+    target_include_directories(sm2-libretro-save-ram-checks PRIVATE
+        . include "${PROJECT_SOURCE_DIR}/src")
+    target_link_libraries(sm2-libretro-save-ram-checks PRIVATE sm2_warnings)
 endif()
 
 if(SM2_LIBRETRO_VULKAN)

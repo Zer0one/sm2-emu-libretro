@@ -165,6 +165,10 @@ public:
     void set_nvram_directory(const std::string& directory) override;
     void load_nvram() override;
     void save_nvram() const override;
+    [[nodiscard]] std::span<u8> backup_ram() override { return m_nvram; }
+    [[nodiscard]] std::span<const u8> backup_ram() const override { return m_nvram; }
+    [[nodiscard]] std::span<u8> settings_eeprom() override { return m_eeprom.bytes(); }
+    [[nodiscard]] std::span<const u8> settings_eeprom() const override { return m_eeprom.bytes(); }
 
     /// Copy the set's shipped EEPROM image over the chip, if it ships one.
     void seed_eeprom_from_rom();

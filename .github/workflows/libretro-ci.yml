@@ -78,6 +78,7 @@ jobs:
       - name: Check inputs and Libretro ABI without ROMs
         run: |
           ./build-ci/bin/sm2-libretro-input-checks
+          ./build-ci/bin/sm2-libretro-save-ram-checks
           python3 scripts/check-libretro-artifact.py "build-ci/libretro/${{ matrix.binary }}"
       - name: Package core and matching game database
         run: |

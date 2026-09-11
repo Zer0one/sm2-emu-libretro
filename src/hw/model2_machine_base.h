@@ -217,6 +217,12 @@ public:
     virtual void load_nvram()                                      = 0;
     virtual void save_nvram() const                                = 0;
 
+    /// Raw battery-backed storage, exposed for frontend-managed persistence.
+    [[nodiscard]] virtual std::span<u8> backup_ram() = 0;
+    [[nodiscard]] virtual std::span<const u8> backup_ram() const = 0;
+    [[nodiscard]] virtual std::span<u8> settings_eeprom() = 0;
+    [[nodiscard]] virtual std::span<const u8> settings_eeprom() const = 0;
+
     // -- main CPU status, for the boot-test report ------------------------
 
     [[nodiscard]] virtual CpuStatus main_cpu_status() const = 0;

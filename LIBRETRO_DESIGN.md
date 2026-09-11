@@ -2,8 +2,8 @@
 
 Linee guida per le milestone 2 e successive di [PORTING_PLAN.md](PORTING_PLAN.md).
 Il primo core software della milestone 2 è implementato: vedere [LIBRETRO.md](LIBRETRO.md).
-Sono implementate anche le Core Options Video del renderer Vulkan e della
-risoluzione interna: vedere [GPU.md](GPU.md). Profili completi, opzioni Input
+Sono implementate anche le Core Options Video del renderer Vulkan, la SRAM
+gestita dal frontend e le prime opzioni System per VF2. Profili completi, opzioni Input
 e altre funzioni descritte qui restano proposte per i passaggi successivi.
 
 ## Struttura per gli aggiornamenti upstream
@@ -31,7 +31,8 @@ per separare standalone/headless; accesso neutrale `sound_board()` su
 in `src/headless/` e il confronto in `scripts/compare-headless.py`. Mantenere
 questo inventario aggiornato quando cambia la superficie modificata del motore.
 La milestone 2 aggiunge `src/libretro/` e due agganci CMake (opzione e
-subdirectory), senza ulteriori modifiche alle interfacce o ai sorgenti hardware.
+subdirectory). La persistenza frontend aggiunge alla macchina soltanto viste
+neutrali su backup RAM ed EEPROM; formato, import e opzioni restano nell'adattatore.
 La GPU aggiunge `render/vk/pass_context.h`, implementato dal contesto standalone
 e dall'adattatore. I passaggi tilemap/poly3D dipendono da questa interfaccia
 anziché dal contesto con finestra; shader e algoritmi restano condivisi.
@@ -143,17 +144,17 @@ con firme risolte, varianti, copertura dei set e lacune da verificare.
 
 ## Persistenza e responsabilità del frontend
 
-Prendere Supermodel come riferimento per salvataggi gestiti dal frontend:
-valutare l'esposizione della memoria persistente come SRAM Libretro nella
-milestone 3, definendo prima formato e caricamento delle memorie SM2. Separare
-i giochi e dare precedenza al salvataggio corrente; un eventuale import dello
-standalone deve preservare il file originale. Questo non equivale ai save state.
+La memoria persistente è esposta come SRAM Libretro in un contenitore versionato
+che identifica il set e protegge il payload con checksum. Il `.srm` corrente ha
+precedenza; in sua assenza il core importa le memorie native senza riscriverle.
+Questo non equivale ai save state.
 
-L'inizializzazione automatica deve riguardare solo salvataggi nuovi e preset
-verificati per il ROM set. Gli override dei campi NVRAM devono essere separati,
-disabilitati per default e dichiarare che prevalgono sulle modifiche del menu
-Service. Non riutilizzare valori di altri giochi o riscrivere calibrazioni
-esistenti. Se non validato, lasciare accessibile il menu Service originale.
+I primi override verificati sono `VF2 Difficulty`, `VF2 Country`, `VF2 Display
+Type` e `VF2 Drink`, visibili soltanto per `vf2` e autonomi. Come in Supermodel, un interruttore generale `NVRAM Settings`
+è Disabled per default; quando è Enabled, ogni parametro mostra soltanto i valori
+reali e viene applicato al caricamento. La descrizione di Country documenta
+l'effetto collaterale del menu Service originale senza imporlo nel core. Gli
+override aggiornano il CRC e non toccano altri campi o calibrazioni.
 
 Affidare al frontend remapping, opzioni per gioco, shader, volume generale,
 pausa, screenshot e sincronizzazione della presentazione. Il core comunica

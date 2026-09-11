@@ -127,6 +127,12 @@ indicati nel catalogo e nel frontend.
 
 ### 3.6 Persistenza NVRAM/EEPROM
 
+Stato: prima iterazione implementata. `RETRO_MEMORY_SAVE_RAM` contiene backup
+RAM ed EEPROM in formato versionato; import frontend, fallback nativo e prime
+opzioni verificate (`vf2` Difficulty/Country/Display Type/Drink) sono coperti da test ROM-free e da avvii
+reali consecutivi in RetroArch. Restano la matrice degli altri parent e i casi
+di errore del frontend sulle piattaforme target.
+
 - Verificare riavvio, separazione per gioco, file mancanti, invalidi e directory
   non scrivibili; preservare i salvataggi esistenti.
 - Valutare SRAM gestita dal frontend definendo prima formato, precedenza e

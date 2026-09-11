@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // Libretro owns presentation and pacing; the upstream machine owns emulation.
 #include "libretro.h"
+#include "core_options.h"
 #include "input.h"
+#include "save_ram.h"
 #ifdef SM2_LIBRETRO_VULKAN
 #include "gpu.h"
-#include "video_options.h"
 #endif
 #include "hw/machine_factory.h"
 #include "hw/model2.h"
@@ -36,6 +37,7 @@ retro_input_poll_t input_poll_cb = nullptr;
 retro_input_state_t input_state_cb = nullptr;
 retro_log_printf_t log_cb = nullptr;
 std::array<unsigned, 2> devices{RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD};
+libretro::SaveRam save_ram{};
 constexpr unsigned width = hw::SoftRenderer::kWidth;
 constexpr unsigned height = hw::SoftRenderer::kHeight;
 
@@ -51,11 +53,124 @@ struct Content {
     bool failed = false;
     bool hardware = false;
     unsigned scale = 1;
+    bool save_ram_initialized = false;
+    bool option_pending = false;
+    unsigned option_wait_frames = 0;
+    libretro::Vf2Country vf2_country = libretro::Vf2Country::Japan;
+    libretro::Vf2Drink vf2_drink = libretro::Vf2Drink::Ok;
+    libretro::Vf2Difficulty vf2_difficulty = libretro::Vf2Difficulty::Normal;
+    libretro::Vf2DisplayType vf2_display_type = libretro::Vf2DisplayType::Projector;
 #ifdef SM2_LIBRETRO_VULKAN
     std::unique_ptr<libretro::VulkanRenderer> gpu;
 #endif
 };
 std::unique_ptr<Content> content;
+
+void message(enum retro_log_level level, const char* text);
+
+libretro::Vf2Country selected_vf2_country()
+{
+    retro_variable option{"sm2_vf2_country", nullptr};
+    if (!environment || !environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) || !option.value)
+        return libretro::Vf2Country::Japan;
+    const std::string value = option.value;
+    if (value == "japan") return libretro::Vf2Country::Japan;
+    if (value == "usa") return libretro::Vf2Country::Usa;
+    if (value == "export") return libretro::Vf2Country::Export;
+    return libretro::Vf2Country::Japan;
+}
+
+libretro::Vf2Drink selected_vf2_drink()
+{
+    retro_variable option{"sm2_vf2_drink", nullptr};
+    if (!environment || !environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) || !option.value)
+        return libretro::Vf2Drink::Ok;
+    const std::string value = option.value;
+    if (value == "ok") return libretro::Vf2Drink::Ok;
+    if (value == "ng") return libretro::Vf2Drink::Ng;
+    return libretro::Vf2Drink::Ok;
+}
+
+bool nvram_settings_enabled()
+{
+    retro_variable option{"sm2_nvram_settings", nullptr};
+    return environment && environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) &&
+           option.value && std::string(option.value) == "enabled";
+}
+
+libretro::Vf2Difficulty selected_vf2_difficulty()
+{
+    retro_variable option{"sm2_vf2_difficulty", nullptr};
+    if (!environment || !environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) || !option.value)
+        return libretro::Vf2Difficulty::Normal;
+    const std::string value = option.value;
+    if (value == "easy") return libretro::Vf2Difficulty::Easy;
+    if (value == "hard") return libretro::Vf2Difficulty::Hard;
+    if (value == "hardest") return libretro::Vf2Difficulty::Hardest;
+    return libretro::Vf2Difficulty::Normal;
+}
+
+libretro::Vf2DisplayType selected_vf2_display_type()
+{
+    retro_variable option{"sm2_vf2_display_type", nullptr};
+    if (!environment || !environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) || !option.value)
+        return libretro::Vf2DisplayType::Projector;
+    return std::string(option.value) == "crt" ? libretro::Vf2DisplayType::Crt
+                                               : libretro::Vf2DisplayType::Projector;
+}
+
+void export_frontend_save(Content& c)
+{
+    libretro::export_save_ram(c.game.name, c.machine->backup_ram(),
+                              c.machine->settings_eeprom(), save_ram);
+}
+
+void initialize_frontend_save(Content& c)
+{
+    const auto result = libretro::import_save_ram(c.game.name, save_ram,
+                                                   c.machine->backup_ram(),
+                                                   c.machine->settings_eeprom());
+    if (result == libretro::SaveImportResult::Loaded) {
+        c.machine->reset();
+        c.machine->sound_board().clear_pending_samples();
+        c.audio.clear();
+        message(RETRO_LOG_INFO, "Loaded frontend-managed save RAM");
+    } else if (result == libretro::SaveImportResult::Invalid) {
+        message(RETRO_LOG_WARN, "Ignored invalid or mismatched frontend save RAM; using native NVRAM import");
+    } else {
+        message(RETRO_LOG_INFO, "Initialized frontend save RAM from native NVRAM or machine defaults");
+    }
+    c.save_ram_initialized = true;
+    export_frontend_save(c);
+}
+
+void apply_pending_option(Content& c)
+{
+    if (!c.option_pending) return;
+    const auto country_result = libretro::apply_vf2_country(
+        c.game.name, c.machine->backup_ram(), c.vf2_country);
+    const auto drink_result = libretro::apply_vf2_drink(
+        c.game.name, c.machine->backup_ram(), c.vf2_drink);
+    const auto difficulty_result = libretro::apply_vf2_difficulty(
+        c.game.name, c.machine->backup_ram(), c.vf2_difficulty);
+    const auto display_result = libretro::apply_vf2_display_type(
+        c.game.name, c.machine->backup_ram(), c.vf2_display_type);
+    if (country_result == libretro::OptionApplyResult::LayoutNotReady ||
+        drink_result == libretro::OptionApplyResult::LayoutNotReady ||
+        difficulty_result == libretro::OptionApplyResult::LayoutNotReady ||
+        display_result == libretro::OptionApplyResult::LayoutNotReady) return;
+    c.option_pending = false;
+    if (country_result == libretro::OptionApplyResult::Changed ||
+        drink_result == libretro::OptionApplyResult::Changed ||
+        difficulty_result == libretro::OptionApplyResult::Changed ||
+        display_result == libretro::OptionApplyResult::Changed) {
+        c.machine->reset();
+        c.machine->sound_board().clear_pending_samples();
+        c.audio.clear();
+        export_frontend_save(c);
+        message(RETRO_LOG_INFO, "Applied VF2 NVRAM core options to backup RAM");
+    }
+}
 
 void message(enum retro_log_level level, const char* text)
 {
@@ -132,10 +247,13 @@ void select_renderer(Content& c)
 void unload()
 {
     if (content) {
-        try { content->machine->save_nvram(); }
+        try {
+            if (content->save_ram_initialized) export_frontend_save(*content);
+        }
         catch (const std::exception& error) { message(RETRO_LOG_ERROR, error.what()); }
         content.reset();
     }
+    libretro::set_option_game({});
     if (environment) {
         static const retro_input_descriptor empty[] = {{}};
         environment(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, const_cast<retro_input_descriptor*>(empty));
@@ -175,9 +293,7 @@ void retro_set_environment(retro_environment_t cb)
     if (cb) {
         bool no_game = false;
         cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_game);
-#ifdef SM2_LIBRETRO_VULKAN
-        libretro::register_video_options(cb);
-#endif
+        libretro::register_core_options(cb);
     }
 }
 void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
@@ -212,6 +328,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 bool retro_load_game(const retro_game_info* game)
 {
     unload();
+    save_ram.fill(0);
     try {
         if (!game || !game->path || !*game->path) throw std::runtime_error("A ROM archive path is required");
         enum retro_pixel_format format = RETRO_PIXEL_FORMAT_XRGB8888;
@@ -240,9 +357,15 @@ bool retro_load_game(const retro_game_info* game)
         next->rate = next->machine->sound_board().sample_rate();
         if (!next->rate) throw std::runtime_error("Sound board reported zero sample rate");
         next->fps = game_fps(next->game.board);
+        next->vf2_country = selected_vf2_country();
+        next->vf2_drink = selected_vf2_drink();
+        next->vf2_difficulty = selected_vf2_difficulty();
+        next->vf2_display_type = selected_vf2_display_type();
+        next->option_pending = next->game.name == "vf2" && nvram_settings_enabled();
         next->input_descriptors = libretro::descriptors(next->game);
         next->audio.reserve(static_cast<size_t>(next->rate) * 2);
         content = std::move(next);
+        libretro::set_option_game(content->game.name);
 #ifdef SM2_LIBRETRO_VULKAN
         select_renderer(*content);
 #endif
@@ -258,6 +381,7 @@ bool retro_load_game(const retro_game_info* game)
     } catch (const std::exception& error) { message(RETRO_LOG_ERROR, error.what()); }
     catch (...) { message(RETRO_LOG_ERROR, "Unexpected error while loading content"); }
     content.reset();
+    libretro::set_option_game({});
     return false;
 }
 void retro_unload_game() { unload(); }
@@ -280,9 +404,18 @@ void retro_run()
 {
     if (!content || content->failed) return;
     try {
+        if (!content->save_ram_initialized) initialize_frontend_save(*content);
+        apply_pending_option(*content);
         if (input_poll_cb) input_poll_cb();
         libretro::poll_input(content->machine->inputs(), content->game, devices, input_state_cb);
         content->machine->run_frame();
+        if (content->option_pending) {
+            apply_pending_option(*content);
+            if (content->option_pending && ++content->option_wait_frames == 600) {
+                content->option_pending = false;
+                message(RETRO_LOG_WARN, "VF2 backup RAM layout did not become ready; Country option was not applied");
+            }
+        }
         const auto status = content->machine->main_cpu_status();
         if (status.faulted) throw std::runtime_error(status.fault_message);
 #ifdef SM2_LIBRETRO_VULKAN
@@ -310,6 +443,21 @@ void retro_cheat_reset() {}
 void retro_cheat_set(unsigned, bool, const char*) {}
 bool retro_load_game_special(unsigned, const retro_game_info*, size_t) { return false; }
 unsigned retro_get_region() { return RETRO_REGION_NTSC; }
-void* retro_get_memory_data(unsigned) { return nullptr; }
-size_t retro_get_memory_size(unsigned) { return 0; }
+void* retro_get_memory_data(unsigned id)
+{
+    if (id != RETRO_MEMORY_SAVE_RAM) return nullptr;
+    try {
+        // Before the first frame this buffer must remain untouched: the frontend
+        // obtains this pointer and restores its .srm contents into it.
+        if (content && content->save_ram_initialized) export_frontend_save(*content);
+        return save_ram.data();
+    } catch (const std::exception& error) {
+        message(RETRO_LOG_ERROR, error.what());
+        return nullptr;
+    }
+}
+size_t retro_get_memory_size(unsigned id)
+{
+    return id == RETRO_MEMORY_SAVE_RAM ? save_ram.size() : 0;
+}
 }

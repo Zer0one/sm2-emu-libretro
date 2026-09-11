@@ -19,6 +19,7 @@ cmake -S . -B build-libretro -G Ninja -DCMAKE_BUILD_TYPE=Release \
   -DSM2_BUILD_LIBRETRO=ON -DSM2_LIBRETRO_CHECKS=ON
 cmake --build build-libretro -j8
 build-libretro/bin/sm2-libretro-input-checks
+build-libretro/bin/sm2-libretro-save-ram-checks
 ```
 
 Artefatti:
@@ -47,9 +48,17 @@ o firmware separati, valgono le regole del database upstream.
   campioni parzialmente accettati, fallback al callback per singolo campione,
   pulizia della coda al reset/unload. Una coda bloccata oltre un secondo causa
   un errore esplicito e richiesta di chiusura, evitando crescita illimitata.
-- Persistenza nativa `.nv`/`.eeprom` sotto `<save>/sm2-emu/<set>/`, tramite le
-  funzioni upstream. RetroArch può aggiungere il nome del core alla directory
-  save che comunica. L'esposizione SRAM e i campi NVRAM restano al punto 3.
+- `RETRO_MEMORY_SAVE_RAM` gestita dal frontend in un contenitore versionato di
+  16.576 byte: header, 16 KiB di backup RAM e 128 byte di EEPROM. Il nome del
+  set e il checksum del payload impediscono l'import silenzioso di file errati.
+  Un `.srm` valido prevale; in sua assenza i file nativi `.nv`/`.eeprom` sono
+  importati senza essere riscritti dal core Libretro.
+- Core Option v2 generale `NVRAM Settings`, Disabled per default come nel core
+  Supermodel. Quando è Enabled mostra `VF2 Difficulty`, `VF2 Country`,
+  `VF2 Display Type` e `VF2 Drink`, visibili soltanto per `vf2` e autonome.
+  I parametri mostrano soltanto i valori reali. La descrizione di Country segnala che il menu
+  Service originale porta Drink a NG scegliendo USA/Export, mentre il core
+  lascia esplicita la combinazione desiderata. Ogni modifica aggiorna il CRC.
 - Errori di caricamento segnalati al frontend; dettagli del loader nel log
   stderr. Nessun percorso implicito nella directory corrente.
 
@@ -132,10 +141,20 @@ WAV, comando e log sono conservati nel risultato del test runtime. I cicli
 ripetuti e il confronto PCM sono provati dal client ABI; il runtime RetroArch
 verifica separatamente l'integrazione nel frontend reale.
 
+Il 10 settembre 2026 RetroArch Nightly 1.22.2 ha inoltre creato un `.srm` di
+16.576 byte con `Country=USA`, checksum del contenitore valido e CRC VF2
+`0xd671`. Una seconda sessione ha registrato l'import della SRAM e ha mantenuto
+il valore USA; entrambe le esecuzioni sono terminate con exit code 0 e hanno
+prodotto video e audio non silenzioso.
+Una prova successiva ha confermato in RetroArch `NVRAM Settings=Enabled` con la
+combinazione autonoma `Country=USA`, `Drink=OK`, `.srm` valido ed exit code 0.
+La prova combinata delle quattro opzioni ha inoltre confermato Difficulty
+Hardest e Display Type C.R.T. nello stesso salvataggio.
+
 ## Limiti
 
 Nel percorso software: nessun profilo completo volante/lightgun/twin-stick,
-SRAM esposta al frontend, cheat o save state. Renderer Vulkan e Core Options
+cheat o save state. Renderer Vulkan e Core Options
 Video sono disponibili nella build descritta in [GPU.md](GPU.md). La geometria
 nativa software è fissa. Rewind, run-ahead e netplay non sono dichiarati supportati.
 Le etichette delle azioni specifiche dei giochi e le varianti dei dispositivi

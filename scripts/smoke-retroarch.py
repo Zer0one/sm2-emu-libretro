@@ -56,6 +56,12 @@ def main():
     p.add_argument('--timeout',type=int,default=180)
     p.add_argument('--renderer',choices=['software','vulkan'],default='software')
     p.add_argument('--scale',type=int,choices=range(1,5),default=1)
+    p.add_argument('--nvram-settings',choices=['disabled','enabled'],default='disabled')
+    p.add_argument('--vf2-country',choices=['japan','usa','export'],default='japan')
+    p.add_argument('--vf2-drink',choices=['ok','ng'],default='ok')
+    p.add_argument('--vf2-difficulty',choices=['normal','hard','hardest','easy'],default='normal')
+    p.add_argument('--vf2-display-type',choices=['projector','crt'],default='projector')
+    p.add_argument('--initial-srm',type=Path,help='Optional frontend save RAM copied in before launch')
     p.add_argument('--replay-reader', choices=['1.21','1.22'], default='1.21',
                    help='1.22 reads 40 header bytes even for a stateless v1 replay')
     p.add_argument('--audio-driver', default='coreaudio' if platform.system()=='Darwin' else 'alsa')
@@ -65,6 +71,8 @@ def main():
     out=a.output.resolve();out.mkdir(parents=True,exist_ok=False)
     for directory in ['saves','states','screenshots','playlists','config']:
         (out/directory).mkdir()
+    if a.initial_srm:
+        (out/'saves'/'vf2.srm').write_bytes(a.initial_srm.resolve(strict=True).read_bytes())
     movie=bytearray(struct.pack('<6I',0x42535632,1,0,0,1,0))
     # RetroArch 1.22.2 bsv_movie_reset_playback reads 40 bytes and only
     # seeks back to byte 24 when a v1 save state exists. This core has none.
@@ -90,6 +98,7 @@ def main():
          'video_fullscreen':'false','video_windowed_fullscreen':'false','video_scale':'2',
          'video_vsync':'false','audio_sync':'true','audio_enable':'true',
          'config_save_on_exit':'false','content_history_enable':'false',
+         'sort_savefiles_enable':'false','sort_savefiles_by_content_enable':'false',
          'savestate_auto_save':'false','savestate_auto_load':'false',
          'video_shader_enable':'false','video_threaded':'false','pause_nonactive':'false',
          'record_driver':'wav','video_gpu_screenshot':'true' if a.renderer=='vulkan' else 'false','audio_max_timing_skew':'0.0',
@@ -99,7 +108,14 @@ def main():
         cfg[key]=str(out/(key+'.lpl'))
     cfg['video_gpu_record']='true' if a.renderer=='vulkan' else 'false'
     cfg['core_options_path']=str(out/'core-options.cfg')
-    (out/'core-options.cfg').write_text(f'sm2_renderer = "{a.renderer}"\nsm2_internal_resolution = "{a.scale}"\n')
+    (out/'core-options.cfg').write_text(
+        f'sm2_renderer = "{a.renderer}"\nsm2_internal_resolution = "{a.scale}"\n'
+        f'sm2_nvram_settings = "{a.nvram_settings}"\n'
+        f'sm2_vf2_country = "{a.vf2_country}"\n'
+        f'sm2_vf2_drink = "{a.vf2_drink}"\n')
+    with (out/'core-options.cfg').open('a') as options:
+        options.write(f'sm2_vf2_difficulty = "{a.vf2_difficulty}"\n')
+        options.write(f'sm2_vf2_display_type = "{a.vf2_display_type}"\n')
     runtime_env=os.environ.copy()
     if a.moltenvk:
         library=a.moltenvk.resolve(strict=True)
@@ -134,7 +150,21 @@ def main():
     assert params.nchannels==2 and params.sampwidth==2 and params.framerate==44100
     peak=max(map(abs,array.array('h',pcm)))
     assert peak>0 and params.nframes>44100*20
-    report={'recording_format':recording_format,'renderer':a.renderer,'internal_scale':a.scale,'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,
+    srm=(out/'saves'/'vf2.srm').read_bytes()
+    assert len(srm)==64+16384+128 and srm[:8]==b'SM2SRAM\0'
+    country=srm[64+0x3350]
+    expected={'japan':0,'usa':1,'export':2}[a.vf2_country]
+    if a.nvram_settings=='enabled': assert country==expected
+    drink_ng=bool(srm[64+0x3351]&0x08)
+    expected_drink={'ok':False,'ng':True}[a.vf2_drink]
+    if a.nvram_settings=='enabled': assert drink_ng==expected_drink
+    difficulty=srm[64+0x3342]
+    expected_difficulty={'easy':0,'normal':1,'hard':2,'hardest':3}[a.vf2_difficulty]
+    display_crt=bool(srm[64+0x3351]&0x04)
+    if a.nvram_settings=='enabled':
+        assert difficulty==expected_difficulty
+        assert display_crt==(a.vf2_display_type=='crt')
+    report={'recording_format':recording_format,'renderer':a.renderer,'internal_scale':a.scale,'vf2_country':country,'vf2_drink':'NG' if drink_ng else 'OK','vf2_difficulty':difficulty,'vf2_display_type':'C.R.T.' if display_crt else 'Projector','save_ram_size':len(srm),'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,
             'audio_peak':peak,'audio_sha256':hashlib.sha256(pcm).hexdigest(),
             'screenshot_sha256':hashlib.sha256(png).hexdigest(),
             'note':'Inspect screenshot for gameplay; audible quality and physical devices require manual validation.'}
