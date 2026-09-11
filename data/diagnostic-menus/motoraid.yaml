@@ -1,0 +1,53 @@
+schema_version: 1
+
+game:
+  set: motoraid
+  parent: motoraid
+  title: Motor Raid - Twin
+  board: model2a
+  declared_manufacturer: Sega
+
+classification:
+  gameplay_type: motorcycle_racing
+  control_family: motorcycle_bank_throttle_brake
+  observed_menu_family: sega_model2_linked_racing_36_byte_eeprom
+  developer: not_declared_in_current_metadata
+  evidence: [game_metadata, root_menu_layout, option_cycle, mirrored_eeprom_layout]
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  startup_wait_seconds: 12
+  complete_campaign:
+    samples: 25
+    common_baseline: motoraid-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/motoraid/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_settings_bank]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 36}
+    mirror: {offset: 0x2c, size: 36}
+  integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: unidentified}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    editable_option_count: 8
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, value_count: 5, values: [NORMAL, HARD, VERY HARD, VERY EASY, EASY], nvram: {storage: eeprom, offset: 0x19, mirror_offset: 0x3d, values: [2, 3, 4, 0, 1]}}
+      - {key: race_mode, label: RACE MODE, position: 2, value_count: 2, values: [STANDARD, LONG], nvram: {storage: eeprom, offset: 0x18, mirror_offset: 0x3c, values: [0, 1]}}
+      - {key: enemy_level, label: ENEMY LEVEL, position: 3, value_count: 2, values: [NORMAL, STRONG], nvram: {storage: eeprom, offset: 0x1a, mirror_offset: 0x3e, values: [0, 1]}}
+      - {key: engine_volume, label: ENGINE VOLUME, position: 4, value_count: 2, values: [STANDARD, HALF], nvram: {storage: eeprom, offset: 0x1c, mirror_offset: 0x40, values: [0, 1]}}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 5, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x1b, mirror_offset: 0x3f, values: [1, 0]}}
+      - {key: country, label: COUNTRY, position: 6, value_count: 3, values: [JAPAN, USA, EXP], nvram: {storage: eeprom, offset: 0x16, mirror_offset: 0x3a, values: [0, 1, 2]}}
+      - {key: network_type, label: NETWORK TYPE, position: 7, value_count: 4, values: [STAND ALONE, MASTER, SLAVE, LIVE], nvram: {storage: eeprom, offset: 0x1e, mirror_offset: 0x42, values: [0, 1, 2, 3]}}
+      - {key: cabinet_id, label: CABINET ID, position: 8, value_count: 4, values: [1, 2, 3, 4], nvram: {storage: eeprom, offset: 0x1f, mirror_offset: 0x43, values: [0, 1, 2, 3]}}
+    commands: [{label: EXIT, position: 0}]

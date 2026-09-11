@@ -1,0 +1,40 @@
+schema_version: 1
+
+game:
+  set: rchase2
+  parent: rchase2
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  startup_wait_seconds: 12
+  complete_campaign:
+    samples: 22
+    common_baseline: rchase2-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/rchase2/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_backup_ram]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_range: {offset: 0x08, size: 5}
+  integrity: {checksum_offset: 0x00, size: 2, algorithm: unidentified}
+  backup_ram_runtime_mirror:
+    first: {offset: 0x0000, size: 2964}
+    mirror: {offset: 0x0b94, size: 2964}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 5}
+    editable_option_count: 4
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x08, values: [1, 0]}}
+      - {key: country, label: COUNTRY, position: 2, value_count: 3, values: [JAPAN, USA, EXPORT], nvram: {storage: eeprom, offset: 0x09, values: [0, 1, 2]}}
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 3, value_count: 8, values: ["1/8", "2/8", "3/8", "4/8", "5/8", "6/8", "7/8", "8/8"], nvram: {storage: eeprom, offset: 0x0c, values: [0, 1, 2, 3, 4, 5, 6, 7]}}
+      - {key: shifting_difficulty, label: SHIFTING DIFFICULTY, position: 4, value_count: 8, values: [10 sec EVERY, 20 sec EVERY, 30 sec EVERY, 40 sec EVERY, 50 sec EVERY, 60 sec EVERY, 70 sec EVERY, NONE], nvram: {storage: eeprom, offset: 0x0a, values: [0, 1, 2, 3, 4, 5, 6, 7]}}
+    commands: [{label: EXIT, position: 0}]

@@ -1,0 +1,60 @@
+schema_version: 1
+
+game:
+  set: vstriker
+  parent: vstriker
+  title: Virtua Striker
+  board: model2b
+  declared_manufacturer: Sega
+
+classification:
+  gameplay_type: soccer
+  control_family: dual_player_joystick_three_buttons
+  observed_menu_family: sega_model2_green_game_system_128_byte_backup_bank
+  developer: not_declared_in_current_metadata
+  evidence: [game_metadata, root_menu_layout, option_cycle, persistence_campaign]
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  startup_wait_seconds: 12
+  complete_campaign:
+    samples: 37
+    common_baseline: vstriker-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/vstriker/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_settings_bank, crc16_ccitt]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: backup_ram
+  settings_banks:
+    first: {offset: 0x00, size: 128}
+    mirror: {offset: 0x80, size: 128}
+  integrity:
+    first: {checksum_offset: 0x08, size: 2, byte_order: little_endian}
+    mirror: {checksum_offset: 0x88, size: 2, byte_order: little_endian}
+    algorithm: crc16_ccitt
+    covered_bytes_after_checksum: 118
+
+menus:
+  game_system:
+    root_position: {initial_item: EXIT, service_presses: 2}
+    editable_option_count: 11
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, value_count: 2, values: ["ON", "OFF"], nvram: {storage: backup_ram, offset: 0x19, mirror_offset: 0x99, values: [0, 1]}}
+      - {key: country, label: COUNTRY, position: 2, value_count: 3, values: [JPN, EXP, USA], nvram: {storage: backup_ram, offset: 0x1b, mirror_offset: 0x9b, values: [1, 2, 0]}}
+      - {key: monitor, label: MONITOR, position: 3, value_count: 2, values: [CRT, PROJECTER], nvram: {storage: backup_ram, offset: 0x1a, mirror_offset: 0x9a, values: [1, 0]}}
+      - {key: difficulty, label: DIFFICULTY, position: 4, value_count: 4, values: [NORMAL, HARD, HARDEST, EASY], nvram: {storage: backup_ram, offset: 0x20, mirror_offset: 0xa0, values: [1, 2, 3, 0]}}
+      - {key: time_set, label: TIME SET, position: 5, value_count: 8, values: ["2:00", "2:15", "2:30", "2:45", "3:00", "1:15", "1:30", "1:45"], nvram: {storage: backup_ram, offset: 0x21, mirror_offset: 0xa1, values: [3, 4, 5, 6, 7, 0, 1, 2]}}
+      - {key: v_goal_system, label: V GOAL SYSTEM, position: 6, value_count: 2, values: ["OFF", "ON"], nvram: {storage: backup_ram, offset: 0x1c, mirror_offset: 0x9c, values: [1, 0]}}
+      - {key: v_goal_time_set, label: V GOAL TIME SET, position: 7, value_count: 5, values: ["0:15", "0:30", "0:45", "1:00", "TIME FREE"], nvram: {storage: backup_ram, offset: 0x22, mirror_offset: 0xa2, values: [0, 1, 2, 3, 4]}}
+      - {key: pk_system, label: PK SYSTEM, position: 8, value_count: 2, values: ["OFF", "ON"], nvram: {storage: backup_ram, offset: 0x1d, mirror_offset: 0x9d, values: [1, 0]}}
+      - {key: pk_member_set, label: PK MEMBER SET, position: 9, value_count: 4, values: [3, 4, 5, "REAL PK"], nvram: {storage: backup_ram, offset: 0x1e, mirror_offset: 0x9e, values: [0, 1, 2, 3]}}
+      - {key: billboard, label: BILLBOARD, position: 10, value_count: 2, values: ["ON", "OFF"], nvram: {storage: backup_ram, offset: 0x1f, mirror_offset: 0x9f, values: [0, 1]}}
+      - {key: one_match_mode, label: ONE MATCH MODE, position: 11, value_count: 2, values: ["OFF", "ON"], nvram: {storage: backup_ram, offset: 0x0a, mirror_offset: 0x8a, values: [1, 0]}}
+    commands: [{label: EXIT, position: 0}]

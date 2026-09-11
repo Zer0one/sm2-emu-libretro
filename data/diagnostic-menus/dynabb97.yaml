@@ -1,0 +1,50 @@
+schema_version: 1
+
+game:
+  set: dynabb97
+  parent: dynabb97
+  title: Dynamite Baseball 97
+  board: model2b
+  declared_manufacturer: Sega
+
+classification:
+  gameplay_type: baseball
+  control_family: dual_player_joystick_three_buttons_analog_bat
+  observed_menu_family: sega_baseball_game_assignments_28_byte_eeprom
+  developer: not_declared_in_current_metadata
+  evidence: [game_metadata, root_menu_layout, option_cycle, persistence_campaign]
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  startup_wait_seconds: 12
+  complete_campaign:
+    samples: 26
+    common_baseline: dynabb97-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/dynabb97/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_settings_bank]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 28}
+    mirror: {offset: 0x24, size: 28}
+  integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: unidentified}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    editable_option_count: 5
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, value_count: 4, values: [NORMAL, HARD, HARDEST, EASY], nvram: {storage: eeprom, offset: 0x18, mirror_offset: 0x34, values: [1, 2, 3, 0]}}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 2, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x19, mirror_offset: 0x35, values: [1, 0]}}
+      - {key: cabinet_type, label: CABINET TYPE, position: 3, value_count: 3, values: [US, CITY, MEGALO], nvram: {storage: eeprom, offset: 0x1b, mirror_offset: 0x37, values: [2, 0, 1]}}
+      - {key: favorite, label: FAVORITE, position: 4, value_count: 13, values: ["OFF", SWALLOWS, CARP, GIANTS, BAYSTARS, DRAGONS, TIGERS, BLUEWAVE, MARINES, LIONS, FIGHTERS, HAWKS, BUFFALOES], nvram: {storage: eeprom, offset: 0x1a, mirror_offset: 0x36, values: [12, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]}}
+      - {key: innings, label: INNINGS, position: 5, value_count: 3, values: ["1CREDIT 2INNINGS", "1CREDIT 3INNINGS", "1CREDIT 1INNING"], nvram: {storage: eeprom, offset: 0x1d, mirror_offset: 0x39, values: [1, 2, 0]}}
+    commands: [{label: EXIT, position: 0}]

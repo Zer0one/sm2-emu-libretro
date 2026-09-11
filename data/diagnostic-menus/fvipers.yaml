@@ -1,0 +1,49 @@
+schema_version: 1
+
+game:
+  set: fvipers
+  parent: fvipers
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 26
+    common_baseline: fvipers-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/fvipers/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, configuration_crc]
+
+controls:
+  profile: sega_service_l3_r3
+  enter_test_menu: L3
+  next_item: R3
+  select_or_change: L3
+
+nvram_layout:
+  storage: backup_ram
+  format: vf2_named_settings_block
+  title: VIRTUA FIGHTER 2
+  settings: {offset: 0x3340, size: 29}
+  crc: {offset: 0x3302, byte_order: little_endian, covered_range: {offset: 0x3340, size: 29}, algorithm: CRC-16/CCITT, polynomial: 0x1021, initial_value: 0}
+
+menus:
+  game_assignment:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    editable_option_count: 9
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: match_count_1p, label: MATCH COUNT(1P), position: 1, value_count: 4, values: [2, 3, 4, 5], nvram: {offset: 0x3340, values: [2, 3, 4, 5]}}
+      - {key: match_count_vs, label: MATCH COUNT(VS), position: 2, value_count: 4, values: [2, 3, 4, 5], nvram: {offset: 0x3341, values: [2, 3, 4, 5]}}
+      - {key: difficulty, label: DIFFICULTY, position: 3, value_count: 4, values: [NORMAL, HARD, HARDEST, EASY], nvram: {offset: 0x3342, values: [1, 2, 3, 0], compound_fields: [0x334f, 0x3352, 0x3354]}}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 4, value_count: 2, values: ["ON", "OFF"], nvram: {offset: 0x3351, mask: 0x01, values: [0, 1]}}
+      - {key: continue, label: CONTINUE, position: 5, value_count: 2, values: ["ON", "OFF"], nvram: {offset: 0x3351, mask: 0x02, values: [0, 2]}}
+      - {key: country, label: COUNTRY, position: 6, value_count: 3, values: [JAPAN, USA, EXPORT], nvram: {offset: 0x3350, values: [0, 1, 2]}}
+      - {key: display_type, label: DISPLAY TYPE, position: 7, value_count: 2, values: [PROJECTOR, C.R.T.], nvram: {offset: 0x3351, mask: 0x04, values: [0, 4], compound_fields: [0x3356, 0x3357, 0x3358, 0x3359, 0x335a, 0x335b]}}
+      - {key: vs_finish, label: VS FINISH, position: 8, value_count: 2, values: ["OFF", "ON"], nvram: {offset: 0x3351, mask: 0x20, values: [0, 32]}}
+      - {key: ranking_mode, label: RANKING MODE, position: 9, value_count: 2, values: ["OFF", "ON"], nvram: {offset: 0x3351, mask: 0x10, values: [0, 16]}}
+    commands:
+      - {label: INITIALIZE, position: 10, sampled: false}
+      - {label: EXIT, position: 0}

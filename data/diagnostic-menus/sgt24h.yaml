@@ -1,0 +1,56 @@
+schema_version: 1
+
+game:
+  set: sgt24h
+  parent: sgt24h
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  startup_wait_seconds: 12
+  complete_campaign:
+    samples: 33
+    common_baseline: sgt24h-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/sgt24h/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_link_settings_bank]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: backup_ram_with_link_eeprom
+  backup_ram_settings: {range: {offset: 0x0a, size: 23}, integrity_offset: 0x68, integrity_size: 2, integrity_algorithm: unidentified}
+  link_eeprom_banks:
+    first: {offset: 0x08, size: 32}
+    mirror: {offset: 0x28, size: 32}
+  link_eeprom_integrity: {checksum_offset_within_bank: 0, size: 1, algorithm: unidentified}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 8}
+    editable_option_count: 10
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - key: link_type
+        label: LINK TYPE
+        position: 1
+        value_count: 5
+        values: [NOT LINK, CAR NO1 Master, CAR NO2 Slave, CAR NO3 Slave, CAR NO4 Slave]
+        nvram:
+          storage: eeprom
+          compound_offsets: [0x1a, 0x1b, 0x1c]
+          mirror_offsets: [0x3a, 0x3b, 0x3c]
+          values: [[1, 1, 0], [0, 1, 0], [0, 0, 1], [0, 0, 2], [0, 0, 3]]
+          note: selecting CAR NO1 Master also initializes LINK MAX to 2
+      - {key: link_max, label: LINK MAX, position: 2, availability: CAR NO1 Master, value_count: 3, values: [2, 3, 4], nvram: {storage: eeprom, offset: 0x19, mirror_offset: 0x39, values: [2, 3, 4]}}
+      - {key: country, label: COUNTRY, position: 3, value_count: 3, values: [JAPAN, USA, EUR], nvram: {storage: backup_ram, offset: 0x1a, values: [0, 1, 2]}}
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 4, value_count: 4, values: [NORMAL, EASY, HARD, HARDEST], nvram: {storage: backup_ram, offset: 0x14, values: [0, 1, 2, 3]}}
+      - {key: cpu_car_level, label: CPU CAR LEVEL, position: 5, value_count: 4, values: [1, 2, 3, 4], nvram: {storage: backup_ram, offset: 0x16, values: [0, 1, 2, 3]}}
+      - {key: steering_force, label: STEERING FORCE, position: 6, value_count: 4, values: [1, 2, 3, 4], nvram: {storage: backup_ram, offset: 0x18, values: [0, 1, 2, 3]}}
+      - {key: race_mode, label: RACE MODE, position: 7, value_count: 2, values: [NORMAL, LONG], nvram: {storage: backup_ram, offset: 0x1c, values: [0, 1]}}
+      - {key: game_bgm, label: GAME BGM, position: 8, value_count: 2, values: ["ON", "OFF"], nvram: {storage: backup_ram, offset: 0x1e, values: [0, 1]}}
+      - {key: demo_sound, label: DEMO SOUND, position: 9, value_count: 2, values: ["ON", "OFF"], nvram: {storage: backup_ram, offset: 0x20, values: [0, 1]}}
+      - {key: io_type, label: I/O TYPE, position: 10, value_count: 3, values: [A, B, C], nvram: {storage: backup_ram, offset: 0x0a, values: [1, 3, 0]}}
+    commands: [{label: EXIT, position: 0}]

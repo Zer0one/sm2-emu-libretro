@@ -1,0 +1,24 @@
+schema_version: 1
+
+game: {set: rascot2, parent: rascot2, title: Royal Ascot II, board: model2c, declared_manufacturer: Sega}
+classification:
+  gameplay_type: horse_racing_betting
+  control_family: joystick_three_buttons
+  observed_menu_family: unavailable_before_seganet_initialization
+  developer: not_declared_in_current_metadata
+  evidence: [game_metadata, repeated_boot_capture, test_switch_at_runtime, test_switch_held_during_boot]
+verification:
+  status: blocked_by_emulated_game_boot
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 1
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/rascot2/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshot]
+  observed_screen: SegaNet Wait Status / AR ERR SELFTEST
+  attempts: [test_switch_after_12_seconds, test_switch_held_during_boot]
+  limitation: the current core remains in SegaNet board connection wait and never exposes the operator menu, so positions and values cannot be measured honestly
+controls: {enter_test_menu_attempted: L3}
+menus: {diagnostic_menu: {accessible: false}}

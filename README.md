@@ -7,14 +7,15 @@ for attribution, comparison and future upstream updates.
 
 **Status: first software Libretro core implemented and tested on macOS arm64.**
 The isolated adapter uses the upstream machine and software renderer, with
-native timing/audio, basic digital inputs and native NVRAM persistence.
+native timing/audio, basic digital inputs and frontend-managed save RAM.
 1800-frame video/audio/NVRAM comparisons pass on all four board variants.
 Virtua Fighter 2 has also run in RetroArch with scripted gameplay inputs,
 a gameplay screenshot and recorded stereo audio.
 
 See [Libretro build and validation](LIBRETRO.md) for the artifact, commands
-and limits. Full control profiles, core options and frontend SRAM integration
-remain planned; physical controllers and audible quality need manual checks.
+and limits. The first per-game Core Options expose VF2 Difficulty, Country,
+Display Type and Drink; further game options and full control profiles remain planned. Physical controllers and
+audible quality need manual checks.
 The standalone and [headless validation runner](HEADLESS.md) remain available.
 
 ## Get the project
@@ -36,10 +37,69 @@ named `sm2-emu-mainstream` is used for original standalone builds and comparison
 - [Frontend-free build and validation](HEADLESS.md)
 - [macOS baseline build and validation](MACOS_BUILD.md)
 - [Baseline build script](scripts/build-upstream-macos.sh)
+- [NVRAM sampling script for gameplay-option analysis](scripts/libretro_nvram_samples.py)
 
 Original notices and source headers are preserved. See [LICENSE](LICENSE),
 [NOTICE](NOTICE) and the source headers for terms and attribution. No ROMs or
 prebuilt emulator binaries are included in this repository.
+
+## Utility di campionamento NVRAM
+
+Nel percorso `scripts/` trovi `libretro_nvram_samples.py` con un esempio di
+campagna `libretro_nvram_samples.vf2.toml`. Lo script crea una directory di
+lavoro isolata per RetroArch, applica una sequenza di input definita e salva il
+file frontend `.srm`, più gli estratti `.nv` e `.eeprom` per l'analisi.
+
+```sh
+python3 scripts/libretro_nvram_samples.py scripts/libretro_nvram_samples.vf2.toml --dry-run
+python3 scripts/libretro_nvram_samples.py scripts/libretro_nvram_samples.vf2.toml --overwrite
+```
+
+Il flusso prevede un baseline frontend facoltativo (`standard_srm`) oppure
+l'import iniziale dei file nativi (`standard_nvram` / `standard_eeprom`),
+supporto a modalità interattiva e salvataggio del report `summary.json`.
+La campagna VF2 inclusa genera 30 acquisizioni: un baseline comune e 29 campioni
+che coprono ogni valore delle 11 opzioni Game Assignment. Il primo lotto aggiunge le campagne
+`skytargt`, `vcop2`, `zeroguna` e `airwlkrs`; i relativi YAML verificati sono in
+`data/diagnostic-menus/`. Ogni sequenza completa seleziona `EXIT` nel sottomenu,
+esce dal Test Menu e attende il ritorno al gioco, oppure usa il comando esplicito
+`Save Setting & Exit` quando previsto dal titolo. `validate_vf2_nvram_samples.py`
+controlla la campagna VF2; `validate_nvram_batch1.py` verifica i 102 campioni del
+primo lotto. Il secondo lotto comprende `bel`, `daytona`, `desert` e `doa`: 157
+campioni descritti nei rispettivi YAML e verificati da `validate_nvram_batch2.py`.
+Il terzo lotto comprende `vcop`, `fvipers`, `srallyc` e `hotd`: altri 102
+campioni verificati da `validate_nvram_batch3.py`. Il quarto lotto comprende
+`gunblade`, `lastbrnx`, `indy500` e `von`: 215 campioni verificati da
+`validate_nvram_batch4.py`, dopo avere escluso i valori duplicati che il menu
+ciclico non espone realmente. Il quinto lotto comprende `overrev`, `sgt24h`,
+`stcc` e `rchase2`: 130 campioni verificati da `validate_nvram_batch5.py`,
+inclusi i sottomenu annidati di Over Rev e il parametro Link Max condizionale
+di Sega GT 24h. Il sesto lotto comprende `manxtt`, `motoraid`, `segawski`,
+`waverunr` e `skisuprg`: 220 campioni verificati da
+`validate_nvram_batch6.py`, inclusi i quattro timer 0–20 di Ski Super G e la
+sequenza diagnostica di avvio specifica del gioco. Il settimo lotto comprende
+`dynabb`, `dynabb97`, `hpyagu98`, `schamp` e `vstriker`: 173 campioni verificati
+da `validate_nvram_batch7.py`. I due Dynamite Baseball condividono menu e
+struttura EEPROM, mentre Hanguk Pro Yagu 98 condivide il menu ma, nel core
+corrente, non ripristina le modifiche dopo il riavvio; il relativo YAML registra
+il limite senza proporre campi NVRAM non dimostrati. Sonic Championship e Virtua
+Striker includono anche la verifica CRC16-CCITT delle rispettive strutture in
+backup RAM. I nuovi YAML classificano
+separatamente tipologia di gioco, famiglia dei controlli, produttore dichiarato
+e famiglia tecnica osservata del menu/NVRAM; lo sviluppatore resta distinto e
+non viene dedotto quando i metadata non lo dichiarano. L’ottavo e ultimo lotto comprende `dynamcop`, `pltkids`, `rascot2`, `topskatr`
+e `zerogun`: 130 acquisizioni verificate da `validate_nvram_batch8.py`.
+Dynamite Cop espone 33 valori di Life Amount; Pilot Kids usa i direzionali nel
+menu e mostra correttamente 8 opzioni, ma nel core corrente non ripristina le
+modifiche dopo il riavvio. Royal Ascot II resta nella schermata di attesa SegaNet
+anche mantenendo Test durante l’avvio: il YAML conserva la prova riproducibile e
+segnala esplicitamente che menu e valori non sono accessibili.
+
+La campagna è completa per tutte le 36 parent censite: 1.259 acquisizioni, 35
+menu mappati e una parent classificata come bloccata dall’avvio emulato, senza
+parent ancora non esaminate. I controlli coprono contenitori, estratti,
+schermate, campi, copie speculari, copie incrociate EEPROM/backup RAM, ordine dei
+byte EEPROM e gli algoritmi di integrità conosciuti.
 
 ---
 

@@ -1,0 +1,66 @@
+schema_version: 1
+
+game:
+  set: overrev
+  parent: overrev
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  startup_wait_seconds: 12
+  complete_campaign:
+    samples: 36
+    common_baseline: overrev-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/overrev/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_settings_bank]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 52}
+    mirror: {offset: 0x3c, size: 52}
+  integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: unidentified}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 6}
+    editable_option_count: 9
+    persistence_sequence: [select_nested_EXIT, select_game_assignments_EXIT, select_test_menu_EXIT, wait_for_game]
+    groups:
+      - key: foundational_setting
+        label: FOUNDATIONAL SETTING
+        position: 1
+        options:
+          - {key: country, label: COUNTRY, position: 1, value_count: 4, values: [JAPAN, U.S.A., EUROPE, KOREA], nvram: {storage: eeprom, offset: 0x26, mirror_offset: 0x5a, values: [0, 1, 2, 3]}}
+          - {key: hardware_type, label: HARDWARE TYPE, position: 2, value_count: 4, values: [NORMAL (2in1), SEGA INDY, SEGA INDY DX / GT24h DX, SEGA STCC], nvram: {storage: eeprom, offset: 0x27, mirror_offset: 0x5b, values: [0, 2, 3, 4]}}
+          - {key: link_max, label: LINK MAX, position: 3, value_count: 4, values: [NOT LINK, 2 LINKS, 3 LINKS, 4 LINKS], nvram: {storage: eeprom, offset: 0x36, mirror_offset: 0x6a, values: [0, 1, 2, 3]}}
+          - {key: link_type, label: LINK TYPE, position: 4, value_count: 4, values: [MASTER CarNo.1, SLAVE CarNo.2, SLAVE CarNo.3, SLAVE CarNo.4], nvram: {storage: eeprom, offset: 0x35, mirror_offset: 0x69, values: [0, 1, 2, 3]}}
+        commands: [{label: EXIT, position: 0}]
+      - key: optional_setting
+        label: OPTIONAL SETTING
+        position: 2
+        options:
+          - {key: time_difficulty, label: TIME DIFFICULTY, position: 1, value_count: 5, values: [1, 2, 3, 4, 5], nvram: {storage: eeprom, offset: 0x28, mirror_offset: 0x5c, values: [0, 1, 2, 3, 4]}}
+          - {key: steer_kick_back, label: STEER KICK BACK, position: 2, value_count: 5, values: [1, 2, 3, 4, 5], nvram: {storage: eeprom, offset: 0x2b, mirror_offset: 0x5f, values: [0, 1, 2, 3, 4]}}
+          - {key: game_difficulty, label: GAME DIFFICULTY, position: 3, value_count: 4, values: [NORMAL, HARD, VERY HARD, EASY], nvram: {storage: eeprom, offset: 0x2a, mirror_offset: 0x5e, values: [1, 2, 3, 0]}}
+          - {key: demo_sound, label: DEMO SOUND, position: 4, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x1a, mirror_offset: 0x4e, values: [0, 1]}}
+          - key: maximum_lap
+            label: MAXIMUM LAP
+            position: 5
+            value_count: 3
+            values: [NORMAL MODE, LONG MODE, VERY LONG MODE]
+            nvram:
+              storage: eeprom
+              compound_offsets: [0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34]
+              mirror_offsets: [0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68]
+              values:
+                - [1, 3, 3, 2, 6, 2, 2, 1, 3]
+                - [2, 4, 4, 3, 9, 3, 3, 2, 4]
+                - [3, 6, 6, 4, 12, 4, 4, 2, 6]
+        commands: [{label: EXIT, position: 0}]
+    commands: [{label: EXIT, position: 0}]

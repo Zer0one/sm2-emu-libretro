@@ -1,0 +1,41 @@
+schema_version: 1
+
+game: {set: dynamcop, parent: dynamcop, title: Dynamite Cop, board: model2a, declared_manufacturer: Sega}
+classification:
+  gameplay_type: beat_em_up
+  control_family: dual_player_joystick_three_buttons
+  observed_menu_family: sega_model2_action_40_byte_mirrored_eeprom_settings
+  developer: not_declared_in_current_metadata
+  evidence: [game_metadata, root_menu_layout, option_cycle, persistence_campaign]
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 46
+    common_baseline: dynamcop-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/dynamcop/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_settings_bank]
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks: {first: {offset: 0x08, size: 40}, mirror: {offset: 0x30, size: 40}}
+  integrity: {algorithm: unresolved, note: both game-written banks are byte-identical in every verified sample}
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 6}
+    editable_option_count: 4
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x1f, mirror_offset: 0x47, values: [1, 0]}}
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 2, value_count: 8, values: [3, 4, 5, 6, 7, 8, 1, 2], nvram: {storage: eeprom, offset: 0x1a, mirror_offset: 0x42, values: [3, 4, 5, 6, 7, 0, 1, 2]}}
+      - key: life_amount
+        label: LIFE AMOUNT
+        position: 3
+        value_count: 33
+        values: [104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 264, 272, 280, 288, 296, 304, 312, 320, 64, 72, 80, 88, 96]
+        nvram: {storage: eeprom, offset: 0x24, mirror_offset: 0x4c, encoding: displayed_value_divided_by_8_minus_8, stored_values: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 0, 1, 2, 3, 4]}
+      - {key: violence_mode, label: VIOLENCE MODE, position: 4, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x1b, mirror_offset: 0x43, values: [1, 0]}}
+    commands: [{label: EXIT, position: 0}]

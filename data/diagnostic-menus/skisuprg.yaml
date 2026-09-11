@@ -1,0 +1,57 @@
+schema_version: 1
+
+game:
+  set: skisuprg
+  parent: skisuprg
+  title: Sega Ski Super G
+  board: model2c
+  declared_manufacturer: Sega
+
+classification:
+  gameplay_type: alpine_ski_racing
+  control_family: analog_swing_inclining
+  observed_menu_family: sega_model2_extended_40_byte_eeprom
+  developer: not_declared_in_current_metadata
+  evidence: [game_metadata, diagnostic_boot_sequence, root_menu_layout, option_cycle, mirrored_eeprom_layout]
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  startup_wait_seconds: 41
+  diagnostic_boot_sequence: [wait_30_seconds, press_test, wait_5_seconds, press_test, wait_5_seconds]
+  complete_campaign:
+    samples: 105
+    common_baseline: skisuprg-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/skisuprg/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_settings_bank]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 40}
+    mirror: {offset: 0x30, size: 40}
+  integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: unidentified}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    editable_option_count: 11
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x1f, mirror_offset: 0x47, values: [1, 0]}}
+      - {key: country, label: COUNTRY, position: 2, value_count: 3, values: [JAPAN, USA, EXPORT], nvram: {storage: eeprom, offset: 0x19, mirror_offset: 0x41, values: [0, 1, 2]}}
+      - {key: network_type, label: NETWORK TYPE, position: 3, value_count: 3, values: [NO LINK, MASTER, SLAVE], nvram: {storage: eeprom, offset: 0x20, mirror_offset: 0x48, values: [0, 1, 2]}}
+      - {key: cabinet_id, label: CABINET ID, position: 4, value_count: 4, values: [1, 2, 3, 4], nvram: {storage: eeprom, offset: 0x21, mirror_offset: 0x49, values: [0, 1, 2, 3]}}
+      - {key: drive_board_power, label: DRIVE BOARD POWER, position: 5, value_count: 4, values: [2, 3, 4, 1], nvram: {storage: eeprom, offset: 0x22, mirror_offset: 0x4a, values: [1, 2, 3, 0]}}
+      - {key: live_display, label: LIVE DISPLAY, position: 6, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x23, mirror_offset: 0x4b, values: [1, 0]}}
+      - {key: victoria_display, label: VICTORIA DISPLAY, position: 7, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x24, mirror_offset: 0x4c, values: [1, 0]}}
+      - {key: initial_time, label: INITIAL TIME, position: 8, value_count: 21, values: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9], nvram: {storage: eeprom, offset: 0x1b, mirror_offset: 0x43, encoding: direct}}
+      - {key: stage_time_white_forest, label: STAGE TIME (WHITE FOREST), position: 9, value_count: 21, values: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9], nvram: {storage: eeprom, offset: 0x1c, mirror_offset: 0x44, encoding: direct}}
+      - {key: stage_time_night_valley, label: STAGE TIME (NIGHT VALLEY), position: 10, value_count: 21, values: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9], nvram: {storage: eeprom, offset: 0x1d, mirror_offset: 0x45, encoding: direct}}
+      - {key: stage_time_wild_king, label: STAGE TIME (WILD KING), position: 11, value_count: 21, values: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9], nvram: {storage: eeprom, offset: 0x1e, mirror_offset: 0x46, encoding: direct}}
+    commands: [{label: EXIT, position: 0}]

@@ -1,0 +1,44 @@
+schema_version: 1
+
+game:
+  set: vcop
+  parent: vcop
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 27
+    common_baseline: vcop-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/vcop/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, mirrored_settings_bank, expected_fields]
+
+controls:
+  profile: sega_service_l3_r3
+  enter_test_menu: L3
+  next_item: R3
+  select_or_change: L3
+
+nvram_layout:
+  storage: backup_ram
+  settings_banks:
+    first: {offset: 0x00, size: 128}
+    mirror: {offset: 0x80, size: 128}
+  note: HUMAN TYPE and RELOAD TYPE are displayed but skipped by the cursor and are not operator-editable
+
+menus:
+  game_system:
+    root_position: {initial_item: EXIT, service_presses: 2}
+    editable_option_count: 5
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, value_count: 2, values: ["ON", "OFF"], nvram: {offset: 0x19, mirror_offset: 0x99, values: [0, 1]}}
+      - {key: country, label: COUNTRY, position: 2, value_count: 3, values: [JPN, EXP, USA], nvram: {offset: 0x1b, mirror_offset: 0x9b, values: [1, 2, 0]}}
+      - {key: cabinet, label: CABINET, position: 3, value_count: 3, values: [DX, SP U/R, U/R], nvram: {offset: 0x1a, mirror_offset: 0x9a, values: [0, 1, 2]}}
+      - {key: difficulty, label: DIFFICULTY, position: 4, value_count: 9, values: [NORMAL, MEDIUM HARD, HARD, VERY HARD, HARDEST, EASIEST, VERY EASY, EASY, MEDIUM EASY], nvram: {offset: 0x20, mirror_offset: 0xa0, values: [4, 5, 6, 7, 8, 0, 1, 2, 3]}}
+      - {key: life, label: LIFE, position: 5, value_count: 9, values: [1, 2, 3, 4, 5, 6, 7, 8, 9], nvram: {offset: 0x21, mirror_offset: 0xa1, values: [0, 1, 2, 3, 4, 5, 6, 7, 8]}}
+    display_only: [HUMAN TYPE, RELOAD TYPE]
+    commands: [{label: EXIT, position: 0}]

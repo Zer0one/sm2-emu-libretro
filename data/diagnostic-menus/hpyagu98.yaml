@@ -1,0 +1,55 @@
+schema_version: 1
+
+game:
+  set: hpyagu98
+  parent: hpyagu98
+  title: Hanguk Pro Yagu 98
+  board: model2a
+  declared_manufacturer: Deniam
+
+classification:
+  gameplay_type: baseball
+  control_family: dual_player_joystick_three_buttons
+  observed_menu_family: sega_baseball_game_assignments_with_shipped_defaults
+  developer: not_declared_in_current_metadata
+  evidence: [game_metadata, root_menu_layout, option_cycle, persistence_campaign]
+
+verification:
+  status: menu_verified_persistence_not_restored
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  startup_wait_seconds: 12
+  complete_campaign:
+    samples: 22
+    common_baseline: hpyagu98-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/hpyagu98/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, complete_value_cycles]
+  persistence_reopen:
+    source_sample: hpyagu98-favorite-tigers.srm
+    expected_value: TIGERS
+    observed_value: OFF
+    screenshot: ~/Documents/RetroArch/sm2-nvram-analysis/hpyagu98/generated/verification/reopen-favorite-tigers.png
+    result: current_core_does_not_restore_menu_changes
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: unresolved_for_menu_settings
+  shipped_defaults: [backup1_16kb, eeprom_128b]
+  observation: all 22 extracted EEPROM images are identical and backup-RAM changes do not correlate with selected menu values
+  limitation: values are verified in-menu but must not be exposed as core options until persistence is understood and restored
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    editable_option_count: 5
+    persistence_sequence_tested: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game, reload_saved_sram]
+    options:
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, value_count: 4, values: [NORMAL, HARD, HARDEST, EASY]}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 2, value_count: 2, values: ["ON", "OFF"]}
+      - {key: cabinet_type, label: CABINET TYPE, position: 3, value_count: 3, values: [US, CITY, MEGALO]}
+      - {key: favorite, label: FAVORITE, position: 4, value_count: 9, values: ["OFF", GIANTS, EAGLES, UNICORNS, LIONS, RAIDERS, BEARS, TWINS, TIGERS]}
+      - {key: innings, label: INNINGS, position: 5, value_count: 3, values: ["1CREDIT 2INNINGS", "1CREDIT 3INNINGS", "1CREDIT 1INNING"]}
+    commands: [{label: EXIT, position: 0}]

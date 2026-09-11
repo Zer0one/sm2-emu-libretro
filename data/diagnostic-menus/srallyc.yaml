@@ -1,0 +1,42 @@
+schema_version: 1
+
+game:
+  set: srallyc
+  parent: srallyc
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 22
+    common_baseline: srallyc-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/srallyc/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields]
+
+controls:
+  profile: sega_service_l3_r3
+  enter_test_menu: L3
+  next_item: R3
+  select_or_change: L3
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_header: {checksum_offset: 0x00, declared_size_offset: 0x02, declared_size: 0x24}
+  note: bytes 0x00-0x01 change consistently as an integrity field; its algorithm is not yet identified
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 6}
+    editable_option_count: 6
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x08, values: [1, 0]}}
+      - {key: country, label: COUNTRY, position: 2, value_count: 3, values: [JPN, USA, EXPORT], nvram: {storage: eeprom, offset: 0x09, values: [0, 1, 2]}}
+      - {key: cabinet_type, label: CABINET TYPE, position: 3, value_count: 2, values: [TWIN, DELUXE], nvram: {storage: eeprom, offset: 0x0a, values: [1, 0]}}
+      - {key: link_type, label: LINK TYPE, position: 4, value_count: 6, values: [NOTLINK, CAR 1, CAR 2, CAR 3, CAR 4, RELAY], nvram: {storage: eeprom, offset: 0x0b, values: [0, 1, 2, 3, 4, 5]}}
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 5, value_count: 4, values: [NORMAL, EASY, HARD, HARDEST], nvram: {storage: eeprom, offset: 0x0c, values: [0, 1, 2, 3]}}
+      - {key: game_mode, label: GAME MODE, position: 6, value_count: 4, values: [NORMAL, SHORT, LONG, LONGEST], nvram: {storage: eeprom, offset: 0x0d, values: [0, 1, 2, 3]}}
+    commands: [{label: EXIT, position: 0}]

@@ -1,0 +1,77 @@
+schema_version: 1
+
+game:
+  set: von
+  parent: von
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 117
+    common_baseline: von-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/von/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, eeprom_mirror, backup_ram_mirror, cross_storage_fields]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: eeprom_93c46_and_backup_ram
+  eeprom_banks:
+    first: {offset: 0x00, size: 60}
+    mirror: {offset: 0x3c, size: 60}
+    integrity: {checksum_offset_within_bank: 0x08, size: 2, algorithm: unidentified}
+  backup_ram_banks:
+    first: {offset: 0x0014, size: 32}
+    mirror: {offset: 0x0220, size: 32}
+    integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: unidentified}
+  field_relationship: backup RAM field offset equals EEPROM field offset plus 0x06; each storage also maintains its own mirror
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    editable_option_count: 18
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - key: play_time_1p_stage_1_5
+        label: PLAY TIME 1P (STAGE 1~5)
+        position: 1
+        value_count: 15
+        values: ["30 SECS", "35 SECS", "40 SECS", "45 SECS", "50 SECS", "55 SECS", "60 SECS", "65 SECS", "70 SECS", "75 SECS", "80 SECS", "85 SECS", "90 SECS", "95 SECS", DEATH-MATCH]
+        nvram: {eeprom_offset: 0x10, eeprom_mirror_offset: 0x4c, backup_ram_offset: 0x16, backup_ram_mirror_offset: 0x222, values: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 255]}
+      - key: play_time_1p_penalty
+        label: PLAY TIME 1P (PENALTY)
+        position: 2
+        value_count: 15
+        values: ["30 SECS", "35 SECS", "40 SECS", "45 SECS", "50 SECS", "55 SECS", "60 SECS", "65 SECS", "70 SECS", "75 SECS", "80 SECS", "85 SECS", "90 SECS", "95 SECS", DEATH-MATCH]
+        nvram: {eeprom_offset: 0x11, eeprom_mirror_offset: 0x4d, backup_ram_offset: 0x17, backup_ram_mirror_offset: 0x223, values: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 255]}
+      - key: play_time_1p_stage_6_8
+        label: PLAY TIME 1P (STAGE 6~8)
+        position: 3
+        value_count: 15
+        values: ["30 SECS", "35 SECS", "40 SECS", "45 SECS", "50 SECS", "55 SECS", "60 SECS", "65 SECS", "70 SECS", "75 SECS", "80 SECS", "85 SECS", "90 SECS", "95 SECS", DEATH-MATCH]
+        nvram: {eeprom_offset: 0x12, eeprom_mirror_offset: 0x4e, backup_ram_offset: 0x18, backup_ram_mirror_offset: 0x224, values: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 255]}
+      - {key: play_time_1p_last_stage, label: PLAY TIME 1P (LAST STG), position: 4, value_count: 3, values: ["90 SECS", "95 SECS", DEATH-MATCH], nvram: {eeprom_offset: 0x13, eeprom_mirror_offset: 0x4f, backup_ram_offset: 0x19, backup_ram_mirror_offset: 0x225, values: [17, 18, 255]}}
+      - key: play_time_versus
+        label: PLAY TIME VERSUS
+        position: 5
+        value_count: 15
+        values: ["30 SECS", "35 SECS", "40 SECS", "45 SECS", "50 SECS", "55 SECS", "60 SECS", "65 SECS", "70 SECS", "75 SECS", "80 SECS", "85 SECS", "90 SECS", "95 SECS", DEATH-MATCH]
+        nvram: {eeprom_offset: 0x14, eeprom_mirror_offset: 0x50, backup_ram_offset: 0x1a, backup_ram_mirror_offset: 0x226, values: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 255]}
+      - {key: match_count_1p_stage_1_5, label: MATCH COUNT 1P (STAGE 1~5), position: 6, value_count: 5, values: [1, 2, 3, 4, 5], nvram: {eeprom_offset: 0x15, eeprom_mirror_offset: 0x51, backup_ram_offset: 0x1b, backup_ram_mirror_offset: 0x227, values: [0, 1, 2, 3, 4]}}
+      - {key: match_count_1p_penalty, label: MATCH COUNT 1P (PENALTY), position: 7, value_count: 5, values: [1, 2, 3, 4, 5], nvram: {eeprom_offset: 0x16, eeprom_mirror_offset: 0x52, backup_ram_offset: 0x1c, backup_ram_mirror_offset: 0x228, values: [0, 1, 2, 3, 4]}}
+      - {key: match_count_1p_stage_6_8, label: MATCH COUNT 1P (STAGE 6~8), position: 8, value_count: 5, values: [1, 2, 3, 4, 5], nvram: {eeprom_offset: 0x17, eeprom_mirror_offset: 0x53, backup_ram_offset: 0x1d, backup_ram_mirror_offset: 0x229, values: [0, 1, 2, 3, 4]}}
+      - {key: match_count_versus, label: MATCH COUNT VERSUS, position: 9, value_count: 5, values: [1, 2, 3, 4, 5], nvram: {eeprom_offset: 0x19, eeprom_mirror_offset: 0x55, backup_ram_offset: 0x1f, backup_ram_mirror_offset: 0x22b, values: [0, 1, 2, 3, 4]}}
+      - {key: network_link_attribute, label: NETWORK LINK ATTRIBUTE, position: 10, value_count: 3, values: [NO LINK, SLAVE, MASTER], nvram: {eeprom_offset: 0x22, eeprom_mirror_offset: 0x5e, backup_ram_offset: 0x28, backup_ram_mirror_offset: 0x234, values: [2, 0, 1]}}
+      - {key: winning_by_decision, label: WINNING BY DECISION, position: 11, value_count: 2, values: ["ON", "OFF"], nvram: {eeprom_offset: 0x1a, eeprom_mirror_offset: 0x56, backup_ram_offset: 0x20, backup_ram_mirror_offset: 0x22c, values: [1, 0]}}
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 12, value_count: 4, values: [NORMAL, HARD, VERY HARD, EASY], nvram: {eeprom_offset: 0x1b, eeprom_mirror_offset: 0x57, backup_ram_offset: 0x21, backup_ram_mirror_offset: 0x22d, values: [0, 1, 2, 3]}}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 13, value_count: 3, values: [LOUD, "OFF", SOFT], nvram: {eeprom_offset: 0x1c, eeprom_mirror_offset: 0x58, backup_ram_offset: 0x22, backup_ram_mirror_offset: 0x22e, values: [2, 0, 1]}}
+      - {key: continue, label: CONTINUE, position: 14, value_count: 2, values: ["ON", "OFF"], nvram: {eeprom_offset: 0x1d, eeprom_mirror_offset: 0x59, backup_ram_offset: 0x23, backup_ram_mirror_offset: 0x22f, values: [0, 1]}}
+      - {key: replay_and_posing_mode, label: REPLAY AND POSING MODE, position: 15, value_count: 4, values: ["REPLAY&POSING", NONE, REPLAY ONLY, POSING ONLY], nvram: {eeprom_offset: 0x1f, eeprom_mirror_offset: 0x5b, backup_ram_offset: 0x25, backup_ram_mirror_offset: 0x231, values: [3, 0, 1, 2]}}
+      - {key: ranking_mode, label: RANKING MODE, position: 16, value_count: 2, values: ["ON", "OFF"], nvram: {eeprom_offset: 0x20, eeprom_mirror_offset: 0x5c, backup_ram_offset: 0x26, backup_ram_mirror_offset: 0x232, values: [1, 0]}}
+      - {key: versus_always_finish, label: VERSUS ALWAYS FINISH, position: 17, value_count: 2, values: ["OFF", "ON"], nvram: {eeprom_offset: 0x1e, eeprom_mirror_offset: 0x5a, backup_ram_offset: 0x24, backup_ram_mirror_offset: 0x230, values: [0, 1]}}
+      - {key: display_brightness, label: DISPLAY BRIGHTNESS, position: 18, value_count: 11, values: [0, "+1", "+2", "+3", "+4", "+5", "-5", "-4", "-3", "-2", "-1"], nvram: {eeprom_offset: 0x21, eeprom_mirror_offset: 0x5d, backup_ram_offset: 0x27, backup_ram_mirror_offset: 0x233, values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}}
+    commands: [{label: INITIALIZE, position: 19, sampled: false}, {label: EXIT, position: 20}]

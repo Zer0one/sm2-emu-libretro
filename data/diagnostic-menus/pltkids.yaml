@@ -1,0 +1,40 @@
+schema_version: 1
+
+game: {set: pltkids, parent: pltkids, title: Pilot Kids, board: model2b, declared_manufacturer: Psikyo}
+classification:
+  gameplay_type: scrolling_shooter
+  control_family: dual_player_joystick_three_buttons
+  observed_menu_family: psikyo_directional_configuration_non_persistent_in_current_core
+  developer: not_declared_in_current_metadata
+  evidence: [game_metadata, root_menu_layout, option_cycle, persistence_campaign]
+verification:
+  status: menu_verified_persistence_unavailable
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 37
+    common_baseline: pltkids-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/pltkids/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, option_values]
+  persistence_note: all menu changes were visible before Exit, but the current core produced EEPROM data identical to the baseline after every restart
+controls: {enter_test_menu: L3, next_item: DOWN, previous_item: UP, decrease: LEFT, increase: RIGHT, activate: B}
+nvram_layout:
+  storage: eeprom_93c46
+  settings_mapping: unresolved_because_changes_do_not_persist
+menus:
+  game_configuring:
+    root_position: {initial_item: Display Check, down_presses: 3, activate: B}
+    editable_option_count: 8
+    persistence_sequence_attempted: [select_Exit, select_test_mode_Exit, wait_for_game]
+    options:
+      - {key: fighters, label: Fighters, position: 1, value_count: 5, values: [3, 4, 5, 1, 2]}
+      - {key: difficulty, label: Difficult, position: 2, value_count: 4, values: [Normal, Difficult, More Difficult, Easy]}
+      - {key: demo_sound, label: Demo Sound, position: 3, value_count: 2, values: ["Off", "On"]}
+      - {key: coin_slot, label: Coin Slot, position: 4, value_count: 2, values: [Same, Individual]}
+      - {key: coin_mode, label: Coin Mode, position: 5, value_count: 3, values: [Normal, Continue Start = 2Coins, Free Play]}
+      - {key: coin_1, label: Coin-1, position: 6, value_count: 9, values: [1Coin = 1Credit, 2Coins = 1Credit, 3Coins = 1Credit, 4Coins = 1Credit, 5Coins = 1Credit, 6Coins = 1Credit, 1Coin = 2Credits, 1Coin = 3Credits, 1Coin = 4Credits]}
+      - {key: coin_2, label: Coin-2, position: 7, value_count: 9, values: [1Coin = 1Credit, 2Coins = 1Credit, 3Coins = 1Credit, 4Coins = 1Credit, 5Coins = 1Credit, 6Coins = 1Credit, 1Coin = 2Credits, 1Coin = 3Credits, 1Coin = 4Credits]}
+      - {key: continue, label: Continue, position: 8, value_count: 2, values: ["On", "Off"]}
+    commands: [{label: Factory Setting, position: 9}, {label: Exit, position: 10}]

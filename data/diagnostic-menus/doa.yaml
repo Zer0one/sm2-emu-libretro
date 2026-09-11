@@ -1,0 +1,51 @@
+game:
+  set: doa
+  parent: doa
+
+schema_version: 1
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 41
+    common_baseline: doa-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/doa/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, mirrored_settings_bank, expected_fields, additive_checksum]
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 36}
+    mirror: {offset: 0x2c, size: 36}
+  integrity:
+    checksum_offset_within_bank: 0
+    algorithm: sum of bytes 1..35 modulo 256
+
+controls:
+  enter_test_menu: L3
+  next_item: R3
+  select_or_change: L3
+
+menus:
+  game_mode_settings:
+    root_position: {initial_item: EXIT, service_presses: 6}
+    editable_option_count: 10
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: vjcom_set_count, label: VJCOM SET COUNT, position: 1, value_count: 4, values: [2, 3, 4, 5], nvram: {storage: eeprom, offset: 0x1a, mirror_offset: 0x3e, values: [2, 3, 4, 5]}}
+      - {key: vjman_set_count, label: VJMAN SET COUNT, position: 2, value_count: 4, values: [2, 3, 4, 5], nvram: {storage: eeprom, offset: 0x1b, mirror_offset: 0x3f, values: [2, 3, 4, 5]}}
+      - {key: vjcom_difficulty, label: VJCOM DIFFICULTY, position: 3, value_count: 4, values: [NORMAL, EASY, HARD, VERY HARD], nvram: {storage: eeprom, offset: 0x17, mirror_offset: 0x3b, values: [0, 1, 2, 3]}}
+      - {key: vjcom_energy, label: VJCOM ENERGY, position: 4, value_count: 4, values: [NORMAL, EASY, HARD, VERY HARD], nvram: {storage: eeprom, offset: 0x18, mirror_offset: 0x3c, values: [0, 1, 2, 3]}}
+      - {key: vjman_energy, label: VJMAN ENERGY, position: 5, value_count: 4, values: [NORMAL, EASY, HARD, VERY HARD], nvram: {storage: eeprom, offset: 0x19, mirror_offset: 0x3d, values: [0, 1, 2, 3]}}
+      - {key: demo_sound, label: DEMO SOUND, position: 6, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x1c, mirror_offset: 0x40, values: [1, 0]}}
+      - {key: nation, label: NATION, position: 7, value_count: 3, values: [JAPAN, U.S.A., EXPORT], nvram: {storage: eeprom, offset: 0x1e, mirror_offset: 0x42, values: [0, 1, 2]}}
+      - {key: continue, label: CONTINUE, position: 8, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x1d, mirror_offset: 0x41, values: [1, 0]}}
+      - {key: vs_finish, label: V.S FINISH, position: 9, value_count: 11, values: ["OFF", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], nvram: {storage: eeprom, offset: 0x1f, mirror_offset: 0x43, values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}}
+      - {key: burst_mode, label: BURST MODE, position: 10, value_count: 2, values: ["OFF", "ON"], nvram: {storage: eeprom, offset: 0x20, mirror_offset: 0x44, values: [0, 1]}}
+    commands:
+      - {label: INITIALIZE, position: 11}
+      - {label: EXIT, position: 0}

@@ -1,0 +1,104 @@
+schema_version: 1
+
+game:
+  set: airwlkrs
+  parent: airwlkrs
+
+verification:
+  status: verified
+  date: "2026-09-10"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 28
+    common_baseline: airwlkrs-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/airwlkrs/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots,
+      mirrored_settings_bank, expected_fields]
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 24}
+    mirror: {offset: 0x20, size: 24}
+  integrity:
+    checksum_offset_within_bank: 0
+    algorithm: unresolved
+    note: both game-written banks are byte-identical in every verified sample
+
+controls:
+  enter_test_menu: L3
+  next_item: R3
+  select_or_change: L3
+
+menus:
+  game_options:
+    root_position:
+      initial_item: EXIT
+      service_presses: 2
+    editable_option_count: 8
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - key: start_button_select
+        label: START BUTTON SELECT
+        position: 1
+        value_count: 2
+        values: [START BUTTON, SHOT BUTTON]
+        nvram: {storage: eeprom, offset: 0x16, mirror_offset: 0x2e,
+          values: [0, 1]}
+      - key: player_selection
+        label: PLAYER SELECTION
+        position: 2
+        value_count: 2
+        values: [2P SIMULTANEOUS, 4P SIMULTANEOUS]
+        nvram: {storage: eeprom, offset: 0x1a, mirror_offset: 0x32,
+          values: [0, 1]}
+      - key: attract_sound
+        label: ATTRACT SOUND
+        position: 3
+        value_count: 2
+        values: ["OFF", "ON"]
+        nvram: {storage: eeprom, offset: 0x17, mirror_offset: 0x2f,
+          values: [0, 1]}
+      - key: difficulty
+        label: GAME DIFFICULTY
+        position: 4
+        value_count: 5
+        values: [NORMAL, HARD, HARDEST, EASIEST, EASY]
+        nvram: {storage: eeprom, offset: 0x18, mirror_offset: 0x30,
+          values: [2, 3, 4, 0, 1]}
+      - key: game_time
+        label: GAME TIME
+        position: 5
+        value_count: 9
+        values: ["2:00", "2:30", "3:00", "3:30", "4:00", "4:30", "5:00", "1:00", "1:30"]
+        nvram: {storage: eeprom, offset: 0x19, mirror_offset: 0x31,
+          values: [2, 3, 4, 5, 6, 7, 8, 0, 1]}
+      - key: replay
+        label: REPLAY
+        position: 6
+        value_count: 2
+        values: ["ON", "OFF"]
+        nvram: {storage: eeprom, offset: 0x1b, mirror_offset: 0x33,
+          values: [1, 0]}
+      - key: win_for_free_play
+        label: WIN FOR FREE PLAY
+        position: 7
+        value_count: 3
+        values:
+          - {cpu_play: "YES", vs_play: "YES"}
+          - {cpu_play: "YES", vs_play: "NO"}
+          - {cpu_play: "NO", vs_play: "NO"}
+        nvram: {storage: eeprom, offset: 0x1c, mirror_offset: 0x34,
+          values: [0, 1, 2]}
+      - key: character_type
+        label: CHARACTER TYPE
+        position: 8
+        value_count: 2
+        values: [NORMAL, DEFORMATION]
+        nvram: {storage: eeprom, offset: 0x1d, mirror_offset: 0x35,
+          values: [0, 1]}
+    commands:
+      - {label: FACTORY SETTING, position: 9}
+      - {label: EXIT, position: 0}

@@ -1,0 +1,45 @@
+schema_version: 1
+
+game:
+  set: indy500
+  parent: indy500
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  startup_wait_seconds: 12
+  complete_campaign:
+    samples: 35
+    common_baseline: indy500-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/indy500/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_settings_bank]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 36}
+    mirror: {offset: 0x2c, size: 36}
+  integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: unidentified}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    editable_option_count: 10
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, value_count: 5, values: [NORMAL, HARD, HARDEST, VERY EASY, EASY], nvram: {storage: eeprom, offset: 0x19, mirror_offset: 0x3d, values: [2, 3, 4, 0, 1]}}
+      - {key: race_mode, label: RACE MODE, position: 2, value_count: 2, values: [NORMAL, LONG], nvram: {storage: eeprom, offset: 0x18, mirror_offset: 0x3c, values: [0, 1]}}
+      - {key: handicap, label: HANDICAP, position: 3, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x1a, mirror_offset: 0x3e, values: [1, 0]}}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 4, value_count: 2, values: ["OFF", "ON"], nvram: {storage: eeprom, offset: 0x1b, mirror_offset: 0x3f, values: [0, 1]}}
+      - {key: country, label: COUNTRY, position: 5, value_count: 3, values: [USA, EXP, JAPAN], nvram: {storage: eeprom, offset: 0x16, mirror_offset: 0x3a, values: [1, 2, 0]}}
+      - {key: cabinet_type, label: CABINET TYPE, position: 6, value_count: 2, values: [TWIN, DELUXE], nvram: {storage: eeprom, offset: 0x17, mirror_offset: 0x3b, values: [0, 1]}}
+      - {key: network_type, label: NETWORK TYPE, position: 7, value_count: 3, values: [STAND ALONE, MASTER, SLAVE], nvram: {storage: eeprom, offset: 0x1e, mirror_offset: 0x42, values: [0, 1, 2]}}
+      - {key: cabinet_id, label: CABINET ID, position: 8, value_count: 8, values: [1, 2, 3, 4, 5, 6, 7, 8], nvram: {storage: eeprom, offset: 0x1f, mirror_offset: 0x43, values: [0, 1, 2, 3, 4, 5, 6, 7]}}
+      - {key: engine_volume, label: ENGINE VOLUME, position: 9, value_count: 3, values: [1, 2, 3], nvram: {storage: eeprom, offset: 0x1c, mirror_offset: 0x40, values: [0, 1, 2]}}
+      - {key: default_view, label: DEFAULT VIEW, position: 10, value_count: 4, values: [1, 2, 3, 4], nvram: {storage: eeprom, offset: 0x1d, mirror_offset: 0x41, values: [0, 1, 2, 3]}}
+    commands: [{label: EXIT, position: 0}]

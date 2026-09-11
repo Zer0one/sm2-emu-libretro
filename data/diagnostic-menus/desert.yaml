@@ -1,0 +1,67 @@
+game:
+  set: desert
+  parent: desert
+
+schema_version: 1
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 34
+    common_baseline: desert-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/desert/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, eeprom_word_byte_order, expected_fields, configuration_crc]
+
+nvram_layout:
+  storage: backup_ram_with_eeprom_copy
+  settings_bank: {offset: 0x00, size: 128}
+  eeprom_relation: EEPROM equals the backup-RAM settings bank after swapping every 16-bit word's two bytes
+  crc: {offset_within_bank: 0x08, byte_order: little_endian, covered_range_within_bank: {offset: 0x0a, size: 118}, algorithm: CRC-16/CCITT, polynomial: 0x1021, initial_value: 0}
+
+controls:
+  enter_test_menu: HOLD L3 through diagnostic boot
+  next_item: R3
+  select_or_change: START
+  exit_test_menu: release L3 before selecting root EXIT
+
+menus:
+  game_system:
+    root_position: {initial_item: EXIT, service_presses: 2}
+    editable_option_count: 5
+    persistence_sequence: [select_submenu_EXIT, release_test, select_test_menu_EXIT, wait_for_game]
+    options:
+      - key: coin_credit_setting
+        label: COIN/CREDIT SETTING
+        position: 1
+        value_count: 18
+        selectable_settings: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 21, 27]
+        values:
+          - {setting: 1, chute1: "1C 1C", chute2: "1C 1C"}
+          - {setting: 2, chute1: "1C 1C", chute2: "1C 2C"}
+          - {setting: 3, chute1: "1C 1C", chute2: "1C 3C"}
+          - {setting: 4, chute1: "1C 1C", chute2: "1C 4C"}
+          - {setting: 5, chute1: "1C 1C", chute2: "1C 5C"}
+          - {setting: 6, chute1: "1C 2C", chute2: "1C 2C"}
+          - {setting: 7, chute1: "1C 2C", chute2: "1C 5C"}
+          - {setting: 8, chute1: "1C 3C", chute2: "1C 3C"}
+          - {setting: 9, chute1: "1C 4C", chute2: "1C 4C"}
+          - {setting: 10, chute1: "1C 5C", chute2: "1C 5C"}
+          - {setting: 11, chute1: "1C 6C", chute2: "1C 6C"}
+          - {setting: 12, chute1: "2C 1C", chute2: "2C 1C"}
+          - {setting: 13, chute1: "2C 1C", chute2: "1C 1C"}
+          - {setting: 14, chute1: "2C 1C", chute2: "1C 2C"}
+          - {setting: 17, chute1: "3C 1C", chute2: "3C 1C"}
+          - {setting: 18, chute1: "4C 1C", chute2: "4C 1C"}
+          - {setting: 21, chute1: "5C 1C", chute2: "5C 1C"}
+          - {setting: 27, chute1: "FREEPLAY", chute2: "FREEPLAY"}
+        nvram: {offset: 0x10, values: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 20, 26]}
+      - {key: country, label: COUNTRY, position: 2, value_count: 3, values: [JAPAN, U.S., EXPORT], nvram: {offset: 0x1b, values: [0, 1, 2]}}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 3, value_count: 2, values: ["ON", "OFF"], nvram: {offset: 0x19, values: [1, 0]}}
+      - {key: difficulty_desert, label: "DIFFICULTY: DESERT", position: 4, value_count: 5, values: [EASY, NORMAL, HARD, HARDEST, MONKEY], nvram: {offset: 0x21, values: [0, 1, 2, 3, 4]}}
+      - {key: difficulty_canyon, label: "DIFFICULTY: CANYON", position: 5, value_count: 5, values: [EASY, NORMAL, HARD, HARDEST, MONKEY], nvram: {offset: 0x22, values: [0, 1, 2, 3, 4]}}
+    commands:
+      - {label: EXIT, position: 0}

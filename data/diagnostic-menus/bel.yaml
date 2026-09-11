@@ -1,0 +1,106 @@
+game:
+  set: bel
+  parent: bel
+
+schema_version: 1
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 53
+    common_baseline: bel-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/bel/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots,
+      mirrored_settings_bank, expected_fields]
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x00, size: 64}
+    mirror: {offset: 0x40, size: 64}
+  integrity:
+    checksum_offsets_within_bank: [0x00, 0x01]
+    algorithm: unresolved
+  note: backup RAM also changes during boot but the operator settings are in EEPROM
+
+controls:
+  note: this title interprets the core Test and Service lines in reverse
+  enter_test_menu: R3
+  next_item: L3
+  select_or_change: R3
+
+menus:
+  game_system:
+    root_position: {initial_item: EXIT, service_presses: 2}
+    editable_option_count: 6
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - key: coin_credit_setting
+        label: COIN/CREDIT SETTING
+        position: 1
+        value_count: 27
+        values:
+          - {setting: 1, chute1: "1C 1C", chute2: "1C 1C"}
+          - {setting: 2, chute1: "1C 1C", chute2: "1C 2C"}
+          - {setting: 3, chute1: "1C 1C", chute2: "1C 3C"}
+          - {setting: 4, chute1: "1C 1C", chute2: "1C 4C"}
+          - {setting: 5, chute1: "1C 1C", chute2: "1C 5C"}
+          - {setting: 6, chute1: "1C 2C", chute2: "1C 2C"}
+          - {setting: 7, chute1: "1C 2C", chute2: "1C 5C"}
+          - {setting: 8, chute1: "1C 3C", chute2: "1C 3C"}
+          - {setting: 9, chute1: "1C 4C", chute2: "1C 4C"}
+          - {setting: 10, chute1: "1C 5C", chute2: "1C 5C"}
+          - {setting: 11, chute1: "1C 6C", chute2: "1C 6C"}
+          - {setting: 12, chute1: "2C 1C", chute2: "2C 1C"}
+          - {setting: 13, chute1: "2C 1C", chute2: "1C 1C"}
+          - {setting: 14, chute1: "2C 1C", chute2: "1C 2C"}
+          - {setting: 15, chute1: "2C 3C", chute2: "2C 3C"}
+          - {setting: 16, chute1: "2C 3C", chute2: "1C 3C"}
+          - {setting: 17, chute1: "3C 1C", chute2: "3C 1C"}
+          - {setting: 18, chute1: "4C 1C", chute2: "4C 1C"}
+          - {setting: 19, chute1: "4C 5C", chute2: "4C 5C"}
+          - {setting: 20, chute1: "4C 5C", chute2: "1C 1C"}
+          - {setting: 21, chute1: "5C 1C", chute2: "5C 1C"}
+          - {setting: 22, chute1: "5C 2C", chute2: "1C 1C"}
+          - {setting: 23, chute1: "5C 3C", chute2: "5C 3C"}
+          - {setting: 24, chute1: "5C 3C", chute2: "1C 3C"}
+          - {setting: 25, chute1: "5C 6C", chute2: "5C 6C"}
+          - {setting: 26, chute1: "5C 6C", chute2: "1C 1C"}
+          - {setting: 27, chute1: "FREEPLAY", chute2: "FREEPLAY"}
+        nvram: {storage: eeprom, offset: 0x0a, mirror_offset: 0x4a, values: "0..26"}
+      - key: start_credits
+        label: START CREDITS
+        position: 2
+        value_count: 5
+        values: [1, 2, 3, 4, 5]
+        nvram: {storage: eeprom, offset: 0x0f, mirror_offset: 0x4f, values: [1, 2, 3, 4, 5]}
+      - key: continue_credits
+        label: CONTINUE CREDITS
+        position: 3
+        value_count: 5
+        values: [1, 2, 3, 4, 5]
+        nvram: {storage: eeprom, offset: 0x10, mirror_offset: 0x50, values: [1, 2, 3, 4, 5]}
+      - key: country
+        label: COUNTRY
+        position: 4
+        value_count: 3
+        values: [U.S., EXPORT, JAPAN]
+        nvram: {storage: eeprom, offset: 0x15, mirror_offset: 0x55, values: [1, 2, 0]}
+      - key: advertise_sound
+        label: ADVERTISE SOUND
+        position: 5
+        value_count: 2
+        values: ["ON", "OFF"]
+        nvram: {storage: eeprom, offset: 0x13, mirror_offset: 0x53, values: [1, 0]}
+      - key: difficulty
+        label: DIFFICULTY
+        position: 6
+        value_count: 10
+        values: [6, 7, 8, 9, 10, 1, 2, 3, 4, 5]
+        nvram: {storage: eeprom, offset: 0x22, mirror_offset: 0x62, values: [5, 6, 7, 8, 9, 0, 1, 2, 3, 4]}
+    commands:
+      - {label: EXIT, position: 0}

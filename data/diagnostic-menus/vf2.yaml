@@ -1,0 +1,149 @@
+schema_version: 1
+
+game:
+  set: vf2
+  parent: vf2
+
+verification:
+  status: verified
+  date: "2026-09-10"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 30
+    common_baseline: vf2-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/vf2/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots,
+      expected_fields, configuration_crc]
+
+nvram_layout:
+  storage: backup_ram
+  configuration_block: {offset: 0x3340, size: 29}
+  crc:
+    offset: 0x3302
+    byte_order: little_endian
+    algorithm: CRC-16/CCITT
+    polynomial: 0x1021
+    initial_value: 0
+
+controls:
+  enter_test_menu: L3
+  next_item: R3
+  select_or_change: L3
+
+menus:
+  game_assignment:
+    root_position:
+      initial_item: EXIT
+      service_presses: 5
+    position_convention: >-
+      position is the number of Service presses from the initially selected
+      EXIT item; non-editable display rows are not counted.
+    editable_option_count: 11
+    classification:
+      cross_generation_reference:
+        - difficulty
+        - country
+        - display_type
+      model2_additional:
+        - match_count_1p
+        - match_count_vs
+        - advertise_sound
+        - continue
+        - drink
+        - vs_finish
+        - ranking_mode
+        - version
+      additional_option_commonality: undetermined_until_other_parents_are_verified
+    options:
+      - key: match_count_1p
+        label: MATCH COUNT(1P)
+        position: 1
+        value_count: 4
+        values: [2, 3, 4, 5]
+        nvram: {offset: 0x3340, values: [2, 3, 4, 5]}
+      - key: match_count_vs
+        label: MATCH COUNT(VS)
+        position: 2
+        value_count: 4
+        values: [2, 3, 4, 5]
+        nvram: {offset: 0x3341, values: [2, 3, 4, 5]}
+      - key: difficulty
+        label: DIFFICULTY
+        position: 3
+        value_count: 4
+        values: [NORMAL, HARD, HARDEST, EASY]
+        nvram:
+          offset: 0x3342
+          values: [1, 2, 3, 0]
+          dependent_offsets:
+            energy_max_1p: {offset: 0x3352, values: [160, 144, 128, 176]}
+            energy_max_vs: {offset: 0x3354, values: [200, 180, 160, 220]}
+            stage_width: {offset: 0x334f, values: [15, 14, 13, 16]}
+        display_only_dependents:
+          - ENERGY MAX(1P)
+          - ENERGY MAX(VS)
+          - STAGE WIDTH
+      - key: advertise_sound
+        label: ADVERTISE SOUND
+        position: 4
+        value_count: 2
+        values: [ON, OFF]
+        nvram: {offset: 0x3351, bit: 0, values: [0, 1]}
+      - key: continue
+        label: CONTINUE
+        position: 5
+        value_count: 2
+        values: [ON, OFF]
+        nvram: {offset: 0x3351, bit: 1, values: [0, 1]}
+      - key: drink
+        label: DRINK
+        position: 6
+        value_count: 2
+        values: [OK, NG]
+        nvram: {offset: 0x3351, bit: 3, values: [0, 1]}
+      - key: country
+        label: COUNTRY
+        position: 7
+        value_count: 3
+        values: [JAPAN, USA, EXPORT]
+        nvram:
+          offset: 0x3350
+          values: [0, 1, 2]
+          service_menu_note: selecting USA or EXPORT sets DRINK to NG
+      - key: display_type
+        label: DISPLAY TYPE
+        position: 8
+        value_count: 2
+        values: [PROJECTOR, C.R.T.]
+        nvram:
+          offset: 0x3351
+          bit: 2
+          values: [0, 1]
+          calibration:
+            rgb_bias: {offsets: [0x3356, 0x3357, 0x3358], values: [64, 117]}
+            rgb_gain: {offsets: [0x3359, 0x335a, 0x335b], values: [37, 34]}
+      - key: vs_finish
+        label: VS FINISH
+        position: 9
+        value_count: 2
+        values: [OFF, ON]
+        nvram: {offset: 0x3351, bit: 5, values: [0, 1]}
+      - key: ranking_mode
+        label: RANKING MODE
+        position: 10
+        value_count: 2
+        values: [OFF, ON]
+        nvram: {offset: 0x3351, bit: 4, values: [0, 1]}
+      - key: version
+        label: VERSION
+        position: 11
+        value_count: 2
+        values: [NORMAL, VERSION 2]
+        nvram: {offset: 0x3351, bit: 6, values: [0, 1]}
+    commands:
+      - label: INITIALIZE
+        position: 12
+      - label: EXIT
+        position: 0

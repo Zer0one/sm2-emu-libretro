@@ -1,0 +1,130 @@
+schema_version: 1
+
+game:
+  set: zerogun
+  parent: zerogun
+  title: Zero Gunner
+  board: model2b
+  declared_manufacturer: Psikyo
+
+classification:
+  gameplay_type: multidirectional_shooter
+  control_family: dual_player_joystick_three_buttons
+  observed_menu_family: psikyo_switch_configuration_20_byte_mirrored_eeprom_settings
+  developer: not_declared_in_current_metadata
+  evidence: [game_metadata, root_menu_layout, option_cycle, persistence_campaign]
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 35
+    common_baseline: zerogun-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/zerogun/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots,
+      mirrored_settings_bank, expected_fields]
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 20}
+    mirror: {offset: 0x1c, size: 20}
+  integrity:
+    checksum_offset_within_bank: 0
+    algorithm: unresolved
+    note: both game-written banks are byte-identical in every verified sample
+
+controls:
+  enter_test_menu: L3
+  next_item: DOWN
+  previous_item: UP
+  decrease_or_activate: B
+  increase_or_activate: A
+
+menus:
+  configuring:
+    root_position:
+      initial_item: EXIT [GAME PLAY]
+      down_presses: 4
+      activate: B
+    editable_option_count: 9
+    persistence_sequence: [select_SAVE_SETTING_AND_EXIT, wait_for_test_menu]
+    options:
+      - key: credit_mode
+        label: Credit Mode
+        position: 1
+        value_count: 2
+        values: [Same, Individual]
+        nvram: {storage: eeprom, offset: 0x10, mirror_offset: 0x24,
+          values: [0, 1]}
+        interaction: Individual makes Coin Slot 2 display Same as Slot 1 and non-selectable
+      - key: continue_mode
+        label: Continue Mode
+        position: 2
+        value_count: 2
+        values: [Normal Mode, Free Play Mode]
+        nvram: {storage: eeprom, offset: 0x11, mirror_offset: 0x25,
+          values: [0, 1]}
+        interaction: Free Play Mode hides both Coin Slot rows
+      - key: coin_slot_1
+        label: Coin Slot 1
+        position: 3
+        value_count: 8
+        values: [1 coin(s) 1 credit(s), 2 coin(s) 1 credit(s),
+          3 coin(s) 1 credit(s), 1 coin(s) 2 credit(s),
+          1 coin(s) 3 credit(s), 1 coin(s) 4 credit(s),
+          1 coin(s) 5 credit(s), 1 coin(s) 6 credit(s)]
+        nvram: {storage: eeprom, offset: 0x12, mirror_offset: 0x26,
+          values: [0, 1, 2, 3, 4, 5, 6, 7]}
+      - key: coin_slot_2
+        label: Coin Slot 2
+        position: 4
+        value_count: 8
+        values: [1 coin(s) 1 credit(s), 2 coin(s) 1 credit(s),
+          3 coin(s) 1 credit(s), 1 coin(s) 2 credit(s),
+          1 coin(s) 3 credit(s), 1 coin(s) 4 credit(s),
+          1 coin(s) 5 credit(s), 1 coin(s) 6 credit(s)]
+        nvram: {storage: eeprom, offset: 0x13, mirror_offset: 0x27,
+          values: [0, 1, 2, 3, 4, 5, 6, 7]}
+      - key: demo_sound
+        label: Demo Sound
+        position: 5
+        value_count: 2
+        values: ["ON", "OFF"]
+        nvram: {storage: eeprom, offset: 0x14, mirror_offset: 0x28,
+          values: [1, 0]}
+      - key: difficulty
+        label: Difficulty
+        position: 6
+        value_count: 4
+        values: [EASY, NORMAL, HARD, VERY HARD]
+        nvram: {storage: eeprom, offset: 0x15, mirror_offset: 0x29,
+          values: [0, 1, 2, 3]}
+      - key: fighters
+        label: Fighters
+        position: 7
+        value_count: 4
+        values: [1 fighter, 2 fighters, 3 fighters, 4 fighters]
+        nvram: {storage: eeprom, offset: 0x16, mirror_offset: 0x2a,
+          values: [1, 2, 3, 4]}
+      - key: extend_points
+        label: Extend Points
+        position: 8
+        value_count: 2
+        values: [600000, 800000]
+        nvram: {storage: eeprom, offset: 0x17, mirror_offset: 0x2b,
+          values: [0, 1]}
+      - key: ranking_data
+        label: Ranking Data
+        position: 9
+        value_count: 2
+        values: [Do Initialize, Do NOT Initialize]
+        nvram: {storage: eeprom, offset: 0x18, mirror_offset: 0x2c,
+          values: [1, 0]}
+    commands:
+      - {label: Factory Setting, position: 10}
+      - {label: Save Setting & Exit, position: 11}
+      - {label: Cancel & Exit, position: 12}

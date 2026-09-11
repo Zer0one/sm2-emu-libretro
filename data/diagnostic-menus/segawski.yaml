@@ -1,0 +1,49 @@
+schema_version: 1
+
+game:
+  set: segawski
+  parent: segawski
+  title: Sega Water Ski
+  board: model2c
+  declared_manufacturer: Sega
+
+classification:
+  gameplay_type: water_ski_racing
+  control_family: analog_slide
+  observed_menu_family: sega_model2_minimal_32_byte_eeprom
+  developer: not_declared_in_current_metadata
+  evidence: [game_metadata, root_menu_layout, option_cycle, mirrored_eeprom_layout]
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  startup_wait_seconds: 12
+  complete_campaign:
+    samples: 8
+    common_baseline: segawski-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/segawski/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_settings_bank]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 32}
+    mirror: {offset: 0x28, size: 32}
+  integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: unidentified}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    editable_option_count: 2
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    informational:
+      - {label: COUNTRY TYPE, value: JAPAN, selectable: false}
+    options:
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, value_count: 5, values: [NORMAL, HARD, HARDEST, VERY EASY, EASY], nvram: {storage: eeprom, offset: 0x19, mirror_offset: 0x39, values: [2, 3, 4, 0, 1]}}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 2, value_count: 2, values: ["OFF", "ON"], nvram: {storage: eeprom, offset: 0x1a, mirror_offset: 0x3a, values: [0, 1]}}
+    commands: [{label: EXIT, position: 0}]

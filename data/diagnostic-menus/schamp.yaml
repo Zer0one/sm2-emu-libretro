@@ -1,0 +1,59 @@
+schema_version: 1
+
+game:
+  set: schamp
+  parent: schamp
+  title: Sonic Championship
+  board: model2b
+  declared_manufacturer: Sega
+
+classification:
+  gameplay_type: fighting
+  control_family: dual_player_joystick_three_buttons
+  observed_menu_family: sega_model2_fighting_32_byte_backup_settings
+  developer: not_declared_in_current_metadata
+  evidence: [game_metadata, root_menu_layout, option_cycle, persistence_campaign]
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  startup_wait_seconds: 12
+  complete_campaign:
+    samples: 60
+    common_baseline: schamp-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/schamp/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, crc16_ccitt]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: backup_ram
+  settings: {offset: 0x3340, size: 32}
+  integrity: {checksum_offset: 0x3302, size: 2, byte_order: little_endian, algorithm: crc16_ccitt, covered_range: 0x3340-0x335f}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    editable_option_count: 16
+    persistence_sequence: [select_submenu_EXIT_after_INITIALIZE, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: match_count_1p, label: MATCH COUNT(1P), position: 1, value_count: 4, values: [2, 3, 4, 5], nvram: {storage: backup_ram, offset: 0x3340, encoding: direct}}
+      - {key: match_count_vs, label: MATCH COUNT(VS), position: 2, value_count: 4, values: [2, 3, 4, 5], nvram: {storage: backup_ram, offset: 0x3341, encoding: direct}}
+      - {key: enemy_rank, label: ENEMY RANK, position: 3, value_count: 4, values: [NORMAL, HARD, HARDEST, EASY], nvram: {storage: backup_ram, offset: 0x3342, values: [1, 2, 3, 0]}}
+      - {key: time, label: TIME, position: 4, value_count: 10, values: [30, 40, 50, 60, 70, 80, 90, 99, 10, 20], nvram: {storage: backup_ram, offset: 0x3351, values: [2, 3, 4, 5, 6, 7, 8, 9, 0, 1]}}
+      - {key: energy_1p, label: ENERGY(1P), position: 5, value_count: 4, values: [NORMAL, HARD, HARDEST, EASY], nvram: {storage: backup_ram, selector_offset: 0x3343, selector_values: [1, 2, 3, 0], derived_offset: 0x3354, derived_values: [160, 144, 128, 176]}}
+      - {key: energy_vs, label: ENERGY(VS), position: 6, value_count: 4, values: [NORMAL, HARD, HARDEST, EASY], nvram: {storage: backup_ram, selector_offset: 0x3344, selector_values: [1, 2, 3, 0], derived_offset: 0x3354, derived_values: [160, 180, 160, 220]}}
+      - {key: barrier, label: BARRIER, position: 7, value_count: 10, values: [5, 6, 7, 8, 9, 10, 1, 2, 3, 4], nvram: {storage: backup_ram, offset: 0x3358, encoding: direct}}
+      - {key: barrier_reset, label: BARRIER RESET, position: 8, value_count: 2, values: ["OFF", "ON"], nvram: {storage: backup_ram, flags_offset: 0x3353, bit: 3, bit_values: [0, 1]}}
+      - {key: automatic, label: AUTOMATIC, position: 9, value_count: 2, values: ["ON", "OFF"], nvram: {storage: backup_ram, flags_offset: 0x3353, bit: 4, bit_values: [1, 0]}}
+      - {key: hyper_mode, label: HYPER MODE, position: 10, value_count: 2, values: ["ON", "OFF"], nvram: {storage: backup_ram, flags_offset: 0x3353, bit: 6, bit_values: [0, 1]}}
+      - {key: damage, label: DAMAGE, position: 11, value_count: 2, values: [NORMAL, REAL], nvram: {storage: backup_ram, flags_offset: 0x3353, bit: 7, bit_values: [0, 1]}}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 12, value_count: 2, values: ["ON", "OFF"], nvram: {storage: backup_ram, flags_offset: 0x3353, bit: 0, bit_values: [0, 1]}}
+      - {key: continue, label: CONTINUE, position: 13, value_count: 2, values: ["ON", "OFF"], nvram: {storage: backup_ram, flags_offset: 0x3353, bit: 1, bit_values: [0, 1]}}
+      - {key: country, label: COUNTRY, position: 14, value_count: 3, values: [USA, EXPORT, JAPAN], nvram: {storage: backup_ram, offset: 0x3352, values: [1, 2, 0]}}
+      - {key: display_type, label: DISPLAY TYPE, position: 15, value_count: 2, values: ["C.R.T.", PROJECTOR], nvram: {storage: backup_ram, flags_offset: 0x3353, bit: 2, bit_values: [0, 1], derived_ranges: [0x3359-0x335b, 0x335c-0x335e]}}
+      - {key: vs_finish, label: VS FINISH, position: 16, value_count: 2, values: ["OFF", "ON"], nvram: {storage: backup_ram, flags_offset: 0x3353, bit: 5, bit_values: [0, 1]}}
+    commands: [{label: INITIALIZE, position: 17, destructive: true}, {label: EXIT, position: 0}]

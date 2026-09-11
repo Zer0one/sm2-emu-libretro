@@ -1,0 +1,72 @@
+schema_version: 1
+
+game:
+  set: skytargt
+  parent: skytargt
+
+verification:
+  status: verified
+  date: "2026-09-10"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 12
+    common_baseline: skytargt-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/skytargt/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots,
+      mirrored_settings_bank, expected_fields]
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 40}
+    mirror: {offset: 0x30, size: 40}
+  integrity:
+    checksum_offset_within_bank: 0
+    algorithm: unresolved
+    note: both game-written banks are byte-identical in every verified sample
+
+controls:
+  enter_test_menu: L3
+  next_item: R3
+  select_or_change: L3
+
+menus:
+  game_assignments:
+    root_position:
+      initial_item: EXIT
+      service_presses: 7
+    editable_option_count: 4
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - key: difficulty
+        label: GAME DIFFICULTY
+        position: 1
+        value_count: 4
+        values: [NORMAL, HARD, HARDEST, EASY]
+        nvram: {storage: eeprom, offset: 0x1b, mirror_offset: 0x43,
+          values: [1, 2, 3, 0]}
+      - key: advertise_sound
+        label: ADVERTISE SOUND
+        position: 2
+        value_count: 2
+        values: ["ON", "OFF"]
+        nvram: {storage: eeprom, offset: 0x1c, mirror_offset: 0x44,
+          values: [1, 0]}
+      - key: country
+        label: COUNTRY
+        position: 3
+        value_count: 3
+        values: [JAPAN, USA, EXPORT]
+        nvram: {storage: eeprom, offset: 0x19, mirror_offset: 0x41,
+          values: [0, 1, 2]}
+      - key: cabinet_type
+        label: CABINET TYPE
+        position: 4
+        value_count: 2
+        values: [STANDARD, DELUXE]
+        nvram: {storage: eeprom, offset: 0x1a, mirror_offset: 0x42,
+          values: [0, 1]}
+    commands:
+      - {label: EXIT, position: 0}

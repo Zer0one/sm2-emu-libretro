@@ -1,0 +1,43 @@
+schema_version: 1
+
+game:
+  set: lastbrnx
+  parent: lastbrnx
+
+verification:
+  status: verified
+  date: "2026-09-11"
+  base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
+  core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 30
+    common_baseline: lastbrnx-base.srm
+    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/lastbrnx/generated
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_settings_bank]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 60}
+    mirror: {offset: 0x44, size: 60}
+  integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: unidentified}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    editable_option_count: 9
+    persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
+    options:
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, value_count: 4, values: ["1 NORMAL", "2 HARD", "3 HARDEST", "0 EASY"], nvram: {storage: eeprom, offset: 0x1d, mirror_offset: 0x59, values: [1, 2, 3, 0]}}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 2, value_count: 2, values: ["OFF", "ON"], nvram: {storage: eeprom, offset: 0x1b, mirror_offset: 0x57, values: [0, 1]}}
+      - {key: vs_finish, label: VS FINISH, position: 3, value_count: 2, values: ["OFF", "ON"], nvram: {storage: eeprom, offset: 0x1e, mirror_offset: 0x5a, values: [0, 1]}}
+      - {key: survival_mode, label: SURVIVAL MODE, position: 4, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x1f, mirror_offset: 0x5b, values: [1, 0]}}
+      - {key: match_point_cpu, label: MATCH POINT(CPU), position: 5, value_count: 4, values: [2, 3, 4, 5], nvram: {storage: eeprom, offset: 0x20, mirror_offset: 0x5c, values: [2, 3, 4, 5]}}
+      - {key: match_point_vs, label: MATCH POINT(VS), position: 6, value_count: 4, values: [2, 3, 4, 5], nvram: {storage: eeprom, offset: 0x21, mirror_offset: 0x5d, values: [2, 3, 4, 5]}}
+      - {key: cut_cross_street, label: CUT CROSS STREET, position: 7, value_count: 2, values: ["OFF", "ON"], nvram: {storage: eeprom, offset: 0x22, mirror_offset: 0x5e, values: [0, 1]}}
+      - {key: display_type, label: DISPLAY TYPE, position: 8, value_count: 2, values: [C.R.T., PROJECTOR], nvram: {storage: eeprom, offset: 0x23, mirror_offset: 0x5f, values: [0, 1], compound_fields: [0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a]}}
+      - {key: master_volume, label: MASTER VOLUME, position: 9, value_count: 7, values: [1, 2, 3, 4, 5, 6, 7], nvram: {storage: eeprom, offset: 0x24, mirror_offset: 0x60, values: [0, 1, 3, 4, 5, 6, 7]}}
+    commands: [{label: INITIALIZE, position: 10, sampled: false}, {label: EXIT, position: 0}]
