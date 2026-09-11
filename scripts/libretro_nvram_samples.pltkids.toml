@@ -1,0 +1,171 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "pltkids"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/pltkids/generated"
+startup_wait = 12.0
+button_hold = 0.1
+button_hold_long = 1.0
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterConfig = ["L3", "WAIT(3.0)", "DOWN*3", "B", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterConfig", "SCREENSHOT(base)", "DOWN*9", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "fighters-3"
+sequence = ["@EnterConfig", "SCREENSHOT(fighters-3)", "DOWN*9", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "fighters-4"
+sequence = ["@EnterConfig", "RIGHT*1", "SCREENSHOT(fighters-4)", "DOWN*9", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "fighters-5"
+sequence = ["@EnterConfig", "RIGHT*2", "SCREENSHOT(fighters-5)", "DOWN*9", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "fighters-1"
+sequence = ["@EnterConfig", "RIGHT*3", "SCREENSHOT(fighters-1)", "DOWN*9", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "fighters-2"
+sequence = ["@EnterConfig", "RIGHT*4", "SCREENSHOT(fighters-2)", "DOWN*9", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-normal"
+sequence = ["@EnterConfig", "DOWN*1", "SCREENSHOT(difficulty-normal)", "DOWN*8", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-difficult"
+sequence = ["@EnterConfig", "DOWN*1", "RIGHT*1", "SCREENSHOT(difficulty-difficult)", "DOWN*8", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-more-difficult"
+sequence = ["@EnterConfig", "DOWN*1", "RIGHT*2", "SCREENSHOT(difficulty-more-difficult)", "DOWN*8", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-easy"
+sequence = ["@EnterConfig", "DOWN*1", "RIGHT*3", "SCREENSHOT(difficulty-easy)", "DOWN*8", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "demo-sound-off"
+sequence = ["@EnterConfig", "DOWN*2", "SCREENSHOT(demo-sound-off)", "DOWN*7", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "demo-sound-on"
+sequence = ["@EnterConfig", "DOWN*2", "RIGHT*1", "SCREENSHOT(demo-sound-on)", "DOWN*7", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-same"
+sequence = ["@EnterConfig", "DOWN*3", "SCREENSHOT(coin-slot-same)", "DOWN*6", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-individual"
+sequence = ["@EnterConfig", "DOWN*3", "RIGHT*1", "SCREENSHOT(coin-slot-individual)", "DOWN*6", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-mode-normal"
+sequence = ["@EnterConfig", "DOWN*4", "SCREENSHOT(coin-mode-normal)", "DOWN*5", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-mode-continue-start-2-coins"
+sequence = ["@EnterConfig", "DOWN*4", "RIGHT*1", "SCREENSHOT(coin-mode-continue-start-2-coins)", "DOWN*5", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-mode-free-play"
+sequence = ["@EnterConfig", "DOWN*4", "RIGHT*2", "SCREENSHOT(coin-mode-free-play)", "DOWN*5", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-1-1c1c"
+sequence = ["@EnterConfig", "DOWN*5", "SCREENSHOT(coin-1-1c1c)", "DOWN*4", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-1-2c1c"
+sequence = ["@EnterConfig", "DOWN*5", "RIGHT*1", "SCREENSHOT(coin-1-2c1c)", "DOWN*4", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-1-3c1c"
+sequence = ["@EnterConfig", "DOWN*5", "RIGHT*2", "SCREENSHOT(coin-1-3c1c)", "DOWN*4", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-1-4c1c"
+sequence = ["@EnterConfig", "DOWN*5", "RIGHT*3", "SCREENSHOT(coin-1-4c1c)", "DOWN*4", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-1-5c1c"
+sequence = ["@EnterConfig", "DOWN*5", "RIGHT*4", "SCREENSHOT(coin-1-5c1c)", "DOWN*4", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-1-6c1c"
+sequence = ["@EnterConfig", "DOWN*5", "RIGHT*5", "SCREENSHOT(coin-1-6c1c)", "DOWN*4", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-1-1c2c"
+sequence = ["@EnterConfig", "DOWN*5", "RIGHT*6", "SCREENSHOT(coin-1-1c2c)", "DOWN*4", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-1-1c3c"
+sequence = ["@EnterConfig", "DOWN*5", "RIGHT*7", "SCREENSHOT(coin-1-1c3c)", "DOWN*4", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-1-1c4c"
+sequence = ["@EnterConfig", "DOWN*5", "RIGHT*8", "SCREENSHOT(coin-1-1c4c)", "DOWN*4", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-2-1c1c"
+sequence = ["@EnterConfig", "DOWN*6", "SCREENSHOT(coin-2-1c1c)", "DOWN*3", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-2-2c1c"
+sequence = ["@EnterConfig", "DOWN*6", "RIGHT*1", "SCREENSHOT(coin-2-2c1c)", "DOWN*3", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-2-3c1c"
+sequence = ["@EnterConfig", "DOWN*6", "RIGHT*2", "SCREENSHOT(coin-2-3c1c)", "DOWN*3", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-2-4c1c"
+sequence = ["@EnterConfig", "DOWN*6", "RIGHT*3", "SCREENSHOT(coin-2-4c1c)", "DOWN*3", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-2-5c1c"
+sequence = ["@EnterConfig", "DOWN*6", "RIGHT*4", "SCREENSHOT(coin-2-5c1c)", "DOWN*3", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-2-6c1c"
+sequence = ["@EnterConfig", "DOWN*6", "RIGHT*5", "SCREENSHOT(coin-2-6c1c)", "DOWN*3", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-2-1c2c"
+sequence = ["@EnterConfig", "DOWN*6", "RIGHT*6", "SCREENSHOT(coin-2-1c2c)", "DOWN*3", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-2-1c3c"
+sequence = ["@EnterConfig", "DOWN*6", "RIGHT*7", "SCREENSHOT(coin-2-1c3c)", "DOWN*3", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-2-1c4c"
+sequence = ["@EnterConfig", "DOWN*6", "RIGHT*8", "SCREENSHOT(coin-2-1c4c)", "DOWN*3", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-on"
+sequence = ["@EnterConfig", "DOWN*7", "SCREENSHOT(continue-on)", "DOWN*2", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-off"
+sequence = ["@EnterConfig", "DOWN*7", "RIGHT*1", "SCREENSHOT(continue-off)", "DOWN*2", "B", "WAIT(1.0)", "DOWN", "B", "WAIT(6.0)", "CLOSE"]

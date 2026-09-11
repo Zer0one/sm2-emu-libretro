@@ -1,0 +1,139 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "daytona"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/daytona/generated"
+startup_wait = 5.0
+button_hold = 0.08
+button_hold_long = 1.0
+default_wait = 0.45
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterGameSystem = ["L3", "WAIT(2.0)", "R3*2", "START", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterGameSystem", "SCREENSHOT(base)", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-id-master"
+sequence = ["@EnterGameSystem", "R3*1", "SCREENSHOT(link-id)", "R3*8", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-id-slave"
+sequence = ["@EnterGameSystem", "R3*1", "START*1", "SCREENSHOT(link-id)", "R3*8", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-id-single"
+sequence = ["@EnterGameSystem", "R3*1", "START*2", "SCREENSHOT(link-id)", "R3*8", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "car-number-1"
+sequence = ["@EnterGameSystem", "R3*2", "SCREENSHOT(car-number)", "R3*7", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "car-number-2"
+sequence = ["@EnterGameSystem", "R3*2", "START*1", "SCREENSHOT(car-number)", "R3*7", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "car-number-3"
+sequence = ["@EnterGameSystem", "R3*2", "START*2", "SCREENSHOT(car-number)", "R3*7", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "car-number-4"
+sequence = ["@EnterGameSystem", "R3*2", "START*3", "SCREENSHOT(car-number)", "R3*7", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "car-number-5"
+sequence = ["@EnterGameSystem", "R3*2", "START*4", "SCREENSHOT(car-number)", "R3*7", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "car-number-6"
+sequence = ["@EnterGameSystem", "R3*2", "START*5", "SCREENSHOT(car-number)", "R3*7", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "car-number-7"
+sequence = ["@EnterGameSystem", "R3*2", "START*6", "SCREENSHOT(car-number)", "R3*7", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "car-number-8"
+sequence = ["@EnterGameSystem", "R3*2", "START*7", "SCREENSHOT(car-number)", "R3*7", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-twin"
+sequence = ["@EnterGameSystem", "R3*3", "SCREENSHOT(cabinet)", "R3*6", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-upright"
+sequence = ["@EnterGameSystem", "R3*3", "START*1", "SCREENSHOT(cabinet)", "R3*6", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-deluxe"
+sequence = ["@EnterGameSystem", "R3*3", "START*2", "SCREENSHOT(cabinet)", "R3*6", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-jpn"
+sequence = ["@EnterGameSystem", "R3*4", "SCREENSHOT(country)", "R3*5", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-export"
+sequence = ["@EnterGameSystem", "R3*4", "START*1", "SCREENSHOT(country)", "R3*5", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-usa"
+sequence = ["@EnterGameSystem", "R3*4", "START*2", "SCREENSHOT(country)", "R3*5", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-normal"
+sequence = ["@EnterGameSystem", "R3*5", "SCREENSHOT(difficulty)", "R3*4", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-hard"
+sequence = ["@EnterGameSystem", "R3*5", "START*1", "SCREENSHOT(difficulty)", "R3*4", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-hardest"
+sequence = ["@EnterGameSystem", "R3*5", "START*2", "SCREENSHOT(difficulty)", "R3*4", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-easy"
+sequence = ["@EnterGameSystem", "R3*5", "START*3", "SCREENSHOT(difficulty)", "R3*4", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-on"
+sequence = ["@EnterGameSystem", "R3*6", "SCREENSHOT(advertise-sound)", "R3*3", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-off"
+sequence = ["@EnterGameSystem", "R3*6", "START*1", "SCREENSHOT(advertise-sound)", "R3*3", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-mode-normal"
+sequence = ["@EnterGameSystem", "R3*7", "SCREENSHOT(game-mode)", "R3*2", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-mode-grand-prix"
+sequence = ["@EnterGameSystem", "R3*7", "START*1", "SCREENSHOT(game-mode)", "R3*2", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-mode-endurance"
+sequence = ["@EnterGameSystem", "R3*7", "START*2", "SCREENSHOT(game-mode)", "R3*2", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "rival-arrow-on"
+sequence = ["@EnterGameSystem", "R3*8", "SCREENSHOT(rival-arrow)", "R3*1", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "rival-arrow-off"
+sequence = ["@EnterGameSystem", "R3*8", "START*1", "SCREENSHOT(rival-arrow)", "R3*1", "START", "WAIT(1.0)", "R3*9", "START", "WAIT(10.0)", "CLOSE"]

@@ -1,0 +1,135 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "dynabb"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/dynabb/generated"
+startup_wait = 12.0
+button_hold = 0.1
+button_hold_long = 1.0
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterAssignments = ["L3", "WAIT(7.0)", "R3*7", "WAIT(1.0)", "L3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterAssignments", "SCREENSHOT(base)", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-normal"
+sequence = ["@EnterAssignments", "R3*1", "SCREENSHOT(game-difficulty-normal)", "R3*5", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-hard"
+sequence = ["@EnterAssignments", "R3*1", "L3*1", "SCREENSHOT(game-difficulty-hard)", "R3*5", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-hardest"
+sequence = ["@EnterAssignments", "R3*1", "L3*2", "SCREENSHOT(game-difficulty-hardest)", "R3*5", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-easy"
+sequence = ["@EnterAssignments", "R3*1", "L3*3", "SCREENSHOT(game-difficulty-easy)", "R3*5", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-on"
+sequence = ["@EnterAssignments", "R3*2", "SCREENSHOT(advertise-sound-on)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-off"
+sequence = ["@EnterAssignments", "R3*2", "L3*1", "SCREENSHOT(advertise-sound-off)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-type-us"
+sequence = ["@EnterAssignments", "R3*3", "SCREENSHOT(cabinet-type-us)", "R3*3", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-type-city"
+sequence = ["@EnterAssignments", "R3*3", "L3*1", "SCREENSHOT(cabinet-type-city)", "R3*3", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-type-megalo"
+sequence = ["@EnterAssignments", "R3*3", "L3*2", "SCREENSHOT(cabinet-type-megalo)", "R3*3", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-off"
+sequence = ["@EnterAssignments", "R3*4", "SCREENSHOT(favorite-off)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-swallows"
+sequence = ["@EnterAssignments", "R3*4", "L3*1", "SCREENSHOT(favorite-swallows)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-carp"
+sequence = ["@EnterAssignments", "R3*4", "L3*2", "SCREENSHOT(favorite-carp)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-giants"
+sequence = ["@EnterAssignments", "R3*4", "L3*3", "SCREENSHOT(favorite-giants)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-baystars"
+sequence = ["@EnterAssignments", "R3*4", "L3*4", "SCREENSHOT(favorite-baystars)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-dragons"
+sequence = ["@EnterAssignments", "R3*4", "L3*5", "SCREENSHOT(favorite-dragons)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-tigers"
+sequence = ["@EnterAssignments", "R3*4", "L3*6", "SCREENSHOT(favorite-tigers)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-bluewave"
+sequence = ["@EnterAssignments", "R3*4", "L3*7", "SCREENSHOT(favorite-bluewave)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-marines"
+sequence = ["@EnterAssignments", "R3*4", "L3*8", "SCREENSHOT(favorite-marines)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-lions"
+sequence = ["@EnterAssignments", "R3*4", "L3*9", "SCREENSHOT(favorite-lions)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-fighters"
+sequence = ["@EnterAssignments", "R3*4", "L3*10", "SCREENSHOT(favorite-fighters)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-hawks"
+sequence = ["@EnterAssignments", "R3*4", "L3*11", "SCREENSHOT(favorite-hawks)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "favorite-buffaloes"
+sequence = ["@EnterAssignments", "R3*4", "L3*12", "SCREENSHOT(favorite-buffaloes)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "innings-1c2"
+sequence = ["@EnterAssignments", "R3*5", "SCREENSHOT(innings-1c2)", "R3*1", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "innings-1c3"
+sequence = ["@EnterAssignments", "R3*5", "L3*1", "SCREENSHOT(innings-1c3)", "R3*1", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "innings-1c1-2c3-3c5-4c9"
+sequence = ["@EnterAssignments", "R3*5", "L3*2", "SCREENSHOT(innings-1c1-2c3-3c5-4c9)", "R3*1", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "innings-1c2-2c5-3c9"
+sequence = ["@EnterAssignments", "R3*5", "L3*3", "SCREENSHOT(innings-1c2-2c5-3c9)", "R3*1", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "innings-1c1"
+sequence = ["@EnterAssignments", "R3*5", "L3*4", "SCREENSHOT(innings-1c1)", "R3*1", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]

@@ -1,0 +1,163 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "zeroguna"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/zeroguna/generated"
+startup_wait = 7.0
+button_hold = 0.06
+button_hold_long = 0.5
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 15.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterConfig = ["L3", "WAIT(2.0)", "DOWN*4", "B", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterConfig", "SCREENSHOT(base)", "CLOSE"]
+
+[[samples]]
+suffix = "credit-mode-same"
+sequence = ["@EnterConfig", "SCREENSHOT(credit-mode-same)", "DOWN*10", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "credit-mode-individual"
+sequence = ["@EnterConfig", "A*1", "SCREENSHOT(credit-mode-individual)", "DOWN*9", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-mode-normal"
+sequence = ["@EnterConfig", "DOWN*1", "SCREENSHOT(continue-mode-normal)", "DOWN*9", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-mode-free-play"
+sequence = ["@EnterConfig", "DOWN*1", "A*1", "SCREENSHOT(continue-mode-free-play)", "DOWN*7", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-1-1c-1c"
+sequence = ["@EnterConfig", "DOWN*2", "SCREENSHOT(coin-slot-1-1c-1c)", "DOWN*8", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-1-2c-1c"
+sequence = ["@EnterConfig", "DOWN*2", "A*1", "SCREENSHOT(coin-slot-1-2c-1c)", "DOWN*8", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-1-3c-1c"
+sequence = ["@EnterConfig", "DOWN*2", "A*2", "SCREENSHOT(coin-slot-1-3c-1c)", "DOWN*8", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-1-1c-2c"
+sequence = ["@EnterConfig", "DOWN*2", "A*3", "SCREENSHOT(coin-slot-1-1c-2c)", "DOWN*8", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-1-1c-3c"
+sequence = ["@EnterConfig", "DOWN*2", "A*4", "SCREENSHOT(coin-slot-1-1c-3c)", "DOWN*8", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-1-1c-4c"
+sequence = ["@EnterConfig", "DOWN*2", "A*5", "SCREENSHOT(coin-slot-1-1c-4c)", "DOWN*8", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-1-1c-5c"
+sequence = ["@EnterConfig", "DOWN*2", "A*6", "SCREENSHOT(coin-slot-1-1c-5c)", "DOWN*8", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-1-1c-6c"
+sequence = ["@EnterConfig", "DOWN*2", "A*7", "SCREENSHOT(coin-slot-1-1c-6c)", "DOWN*8", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-2-1c-1c"
+sequence = ["@EnterConfig", "DOWN*3", "SCREENSHOT(coin-slot-2-1c-1c)", "DOWN*7", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-2-2c-1c"
+sequence = ["@EnterConfig", "DOWN*3", "A*1", "SCREENSHOT(coin-slot-2-2c-1c)", "DOWN*7", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-2-3c-1c"
+sequence = ["@EnterConfig", "DOWN*3", "A*2", "SCREENSHOT(coin-slot-2-3c-1c)", "DOWN*7", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-2-1c-2c"
+sequence = ["@EnterConfig", "DOWN*3", "A*3", "SCREENSHOT(coin-slot-2-1c-2c)", "DOWN*7", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-2-1c-3c"
+sequence = ["@EnterConfig", "DOWN*3", "A*4", "SCREENSHOT(coin-slot-2-1c-3c)", "DOWN*7", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-2-1c-4c"
+sequence = ["@EnterConfig", "DOWN*3", "A*5", "SCREENSHOT(coin-slot-2-1c-4c)", "DOWN*7", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-2-1c-5c"
+sequence = ["@EnterConfig", "DOWN*3", "A*6", "SCREENSHOT(coin-slot-2-1c-5c)", "DOWN*7", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-slot-2-1c-6c"
+sequence = ["@EnterConfig", "DOWN*3", "A*7", "SCREENSHOT(coin-slot-2-1c-6c)", "DOWN*7", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "demo-sound-on"
+sequence = ["@EnterConfig", "DOWN*4", "SCREENSHOT(demo-sound-on)", "DOWN*6", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "demo-sound-off"
+sequence = ["@EnterConfig", "DOWN*4", "A*1", "SCREENSHOT(demo-sound-off)", "DOWN*6", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-easy"
+sequence = ["@EnterConfig", "DOWN*5", "B*1", "SCREENSHOT(difficulty-easy)", "DOWN*5", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-normal"
+sequence = ["@EnterConfig", "DOWN*5", "SCREENSHOT(difficulty-normal)", "DOWN*5", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-hard"
+sequence = ["@EnterConfig", "DOWN*5", "A*1", "SCREENSHOT(difficulty-hard)", "DOWN*5", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-very-hard"
+sequence = ["@EnterConfig", "DOWN*5", "A*2", "SCREENSHOT(difficulty-very-hard)", "DOWN*5", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "fighters-1"
+sequence = ["@EnterConfig", "DOWN*6", "B*2", "SCREENSHOT(fighters-1)", "DOWN*4", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "fighters-2"
+sequence = ["@EnterConfig", "DOWN*6", "B*1", "SCREENSHOT(fighters-2)", "DOWN*4", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "fighters-3"
+sequence = ["@EnterConfig", "DOWN*6", "SCREENSHOT(fighters-3)", "DOWN*4", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "fighters-4"
+sequence = ["@EnterConfig", "DOWN*6", "A*1", "SCREENSHOT(fighters-4)", "DOWN*4", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "extend-points-600000"
+sequence = ["@EnterConfig", "DOWN*7", "SCREENSHOT(extend-points-600000)", "DOWN*3", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "extend-points-800000"
+sequence = ["@EnterConfig", "DOWN*7", "A*1", "SCREENSHOT(extend-points-800000)", "DOWN*3", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "ranking-data-do-initialize"
+sequence = ["@EnterConfig", "DOWN*8", "SCREENSHOT(ranking-data-do-initialize)", "DOWN*2", "B", "WAIT(1.0)", "CLOSE"]
+
+[[samples]]
+suffix = "ranking-data-do-not-initialize"
+sequence = ["@EnterConfig", "DOWN*8", "B*1", "SCREENSHOT(ranking-data-do-not-initialize)", "DOWN*2", "B", "WAIT(1.0)", "CLOSE"]

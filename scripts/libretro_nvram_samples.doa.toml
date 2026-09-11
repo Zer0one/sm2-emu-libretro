@@ -1,0 +1,187 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "doa"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/doa/generated"
+startup_wait = 5.0
+button_hold = 0.08
+button_hold_long = 1.0
+default_wait = 0.45
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterGameSystem = ["L3", "WAIT(2.0)", "R3*6", "L3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterGameSystem", "SCREENSHOT(base)", "R3*12", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-set-count-2"
+sequence = ["@EnterGameSystem", "R3*1", "SCREENSHOT(vjcom-set-count)", "R3*11", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-set-count-3"
+sequence = ["@EnterGameSystem", "R3*1", "L3*1", "SCREENSHOT(vjcom-set-count)", "R3*11", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-set-count-4"
+sequence = ["@EnterGameSystem", "R3*1", "L3*2", "SCREENSHOT(vjcom-set-count)", "R3*11", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-set-count-5"
+sequence = ["@EnterGameSystem", "R3*1", "L3*3", "SCREENSHOT(vjcom-set-count)", "R3*11", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjman-set-count-2"
+sequence = ["@EnterGameSystem", "R3*2", "SCREENSHOT(vjman-set-count)", "R3*10", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjman-set-count-3"
+sequence = ["@EnterGameSystem", "R3*2", "L3*1", "SCREENSHOT(vjman-set-count)", "R3*10", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjman-set-count-4"
+sequence = ["@EnterGameSystem", "R3*2", "L3*2", "SCREENSHOT(vjman-set-count)", "R3*10", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjman-set-count-5"
+sequence = ["@EnterGameSystem", "R3*2", "L3*3", "SCREENSHOT(vjman-set-count)", "R3*10", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-difficulty-normal"
+sequence = ["@EnterGameSystem", "R3*3", "SCREENSHOT(vjcom-difficulty)", "R3*9", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-difficulty-easy"
+sequence = ["@EnterGameSystem", "R3*3", "L3*1", "SCREENSHOT(vjcom-difficulty)", "R3*9", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-difficulty-hard"
+sequence = ["@EnterGameSystem", "R3*3", "L3*2", "SCREENSHOT(vjcom-difficulty)", "R3*9", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-difficulty-very-hard"
+sequence = ["@EnterGameSystem", "R3*3", "L3*3", "SCREENSHOT(vjcom-difficulty)", "R3*9", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-energy-normal"
+sequence = ["@EnterGameSystem", "R3*4", "SCREENSHOT(vjcom-energy)", "R3*8", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-energy-easy"
+sequence = ["@EnterGameSystem", "R3*4", "L3*1", "SCREENSHOT(vjcom-energy)", "R3*8", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-energy-hard"
+sequence = ["@EnterGameSystem", "R3*4", "L3*2", "SCREENSHOT(vjcom-energy)", "R3*8", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjcom-energy-very-hard"
+sequence = ["@EnterGameSystem", "R3*4", "L3*3", "SCREENSHOT(vjcom-energy)", "R3*8", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjman-energy-normal"
+sequence = ["@EnterGameSystem", "R3*5", "SCREENSHOT(vjman-energy)", "R3*7", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjman-energy-easy"
+sequence = ["@EnterGameSystem", "R3*5", "L3*1", "SCREENSHOT(vjman-energy)", "R3*7", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjman-energy-hard"
+sequence = ["@EnterGameSystem", "R3*5", "L3*2", "SCREENSHOT(vjman-energy)", "R3*7", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vjman-energy-very-hard"
+sequence = ["@EnterGameSystem", "R3*5", "L3*3", "SCREENSHOT(vjman-energy)", "R3*7", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "demo-sound-on"
+sequence = ["@EnterGameSystem", "R3*6", "SCREENSHOT(demo-sound)", "R3*6", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "demo-sound-off"
+sequence = ["@EnterGameSystem", "R3*6", "L3*1", "SCREENSHOT(demo-sound)", "R3*6", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "nation-japan"
+sequence = ["@EnterGameSystem", "R3*7", "SCREENSHOT(nation)", "R3*5", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "nation-usa"
+sequence = ["@EnterGameSystem", "R3*7", "L3*1", "SCREENSHOT(nation)", "R3*5", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "nation-export"
+sequence = ["@EnterGameSystem", "R3*7", "L3*2", "SCREENSHOT(nation)", "R3*5", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-on"
+sequence = ["@EnterGameSystem", "R3*8", "SCREENSHOT(continue)", "R3*4", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-off"
+sequence = ["@EnterGameSystem", "R3*8", "L3*1", "SCREENSHOT(continue)", "R3*4", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-off"
+sequence = ["@EnterGameSystem", "R3*9", "SCREENSHOT(vs-finish)", "R3*3", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-1"
+sequence = ["@EnterGameSystem", "R3*9", "L3*1", "SCREENSHOT(vs-finish)", "R3*3", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-2"
+sequence = ["@EnterGameSystem", "R3*9", "L3*2", "SCREENSHOT(vs-finish)", "R3*3", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-3"
+sequence = ["@EnterGameSystem", "R3*9", "L3*3", "SCREENSHOT(vs-finish)", "R3*3", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-4"
+sequence = ["@EnterGameSystem", "R3*9", "L3*4", "SCREENSHOT(vs-finish)", "R3*3", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-5"
+sequence = ["@EnterGameSystem", "R3*9", "L3*5", "SCREENSHOT(vs-finish)", "R3*3", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-6"
+sequence = ["@EnterGameSystem", "R3*9", "L3*6", "SCREENSHOT(vs-finish)", "R3*3", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-7"
+sequence = ["@EnterGameSystem", "R3*9", "L3*7", "SCREENSHOT(vs-finish)", "R3*3", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-8"
+sequence = ["@EnterGameSystem", "R3*9", "L3*8", "SCREENSHOT(vs-finish)", "R3*3", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-9"
+sequence = ["@EnterGameSystem", "R3*9", "L3*9", "SCREENSHOT(vs-finish)", "R3*3", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-10"
+sequence = ["@EnterGameSystem", "R3*9", "L3*10", "SCREENSHOT(vs-finish)", "R3*3", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "burst-mode-off"
+sequence = ["@EnterGameSystem", "R3*10", "SCREENSHOT(burst-mode)", "R3*2", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "burst-mode-on"
+sequence = ["@EnterGameSystem", "R3*10", "L3*1", "SCREENSHOT(burst-mode)", "R3*2", "L3", "WAIT(1.0)", "R3*6", "L3", "WAIT(8.0)", "CLOSE"]

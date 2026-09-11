@@ -1,0 +1,71 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "skytargt"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/skytargt/generated"
+startup_wait = 5.0
+button_hold = 0.06
+button_hold_long = 0.5
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 15.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterGameAssignments = ["L3", "WAIT(2.0)", "R3*7", "L3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterGameAssignments", "SCREENSHOT(base)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-normal"
+sequence = ["@EnterGameAssignments", "R3*1", "SCREENSHOT(difficulty-normal)", "R3*4", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-hard"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*1", "SCREENSHOT(difficulty-hard)", "R3*4", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-hardest"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*2", "SCREENSHOT(difficulty-hardest)", "R3*4", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-easy"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*3", "SCREENSHOT(difficulty-easy)", "R3*4", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-on"
+sequence = ["@EnterGameAssignments", "R3*2", "SCREENSHOT(advertise-sound-on)", "R3*3", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-off"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*1", "SCREENSHOT(advertise-sound-off)", "R3*3", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-japan"
+sequence = ["@EnterGameAssignments", "R3*3", "SCREENSHOT(country-japan)", "R3*2", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-usa"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*1", "SCREENSHOT(country-usa)", "R3*2", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-export"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*2", "SCREENSHOT(country-export)", "R3*2", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-standard"
+sequence = ["@EnterGameAssignments", "R3*4", "SCREENSHOT(cabinet-standard)", "R3*1", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-deluxe"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*1", "SCREENSHOT(cabinet-deluxe)", "R3*1", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]

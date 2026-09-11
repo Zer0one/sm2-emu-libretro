@@ -1,0 +1,264 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "manxtt"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/manxtt/generated"
+startup_wait = 12.0
+button_hold = 0.1
+button_hold_long = 1.0
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterGameAssignments = ["L3", "WAIT(7.0)", "R3*5", "WAIT(1.0)", "L3", "WAIT(2.0)"]
+
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterGameAssignments", "SCREENSHOT(base)", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-on"
+sequence = ["@EnterGameAssignments", "R3*1", "SCREENSHOT(advertise-sound-on)", "R3*13", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-off"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*1", "SCREENSHOT(advertise-sound-off)", "R3*13", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-japan"
+sequence = ["@EnterGameAssignments", "R3*2", "SCREENSHOT(country-japan)", "R3*12", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-usa"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*1", "SCREENSHOT(country-usa)", "R3*12", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-export"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*2", "SCREENSHOT(country-export)", "R3*12", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-type-deluxe"
+sequence = ["@EnterGameAssignments", "R3*3", "SCREENSHOT(cabinet-type-deluxe)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-type-twin"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*1", "SCREENSHOT(cabinet-type-twin)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-not-link"
+sequence = ["@EnterGameAssignments", "R3*4", "SCREENSHOT(link-type-not-link)", "R3*10", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-master"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*1", "SCREENSHOT(link-type-master)", "R3*10", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-slave"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*2", "SCREENSHOT(link-type-slave)", "R3*10", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-relay"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*3", "SCREENSHOT(link-type-relay)", "R3*10", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "bike-color-red-no1"
+sequence = ["@EnterGameAssignments", "R3*5", "SCREENSHOT(bike-color-red-no1)", "R3*9", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "bike-color-blue-no2"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*1", "SCREENSHOT(bike-color-blue-no2)", "R3*9", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "bike-color-yellow-no3"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*2", "SCREENSHOT(bike-color-yellow-no3)", "R3*9", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "bike-color-green-no4"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*3", "SCREENSHOT(bike-color-green-no4)", "R3*9", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "bike-color-green-no5"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*4", "SCREENSHOT(bike-color-green-no5)", "R3*9", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "bike-color-yellow-no6"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*5", "SCREENSHOT(bike-color-yellow-no6)", "R3*9", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "bike-color-blue-no7"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*6", "SCREENSHOT(bike-color-blue-no7)", "R3*9", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "bike-color-red-no8"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*7", "SCREENSHOT(bike-color-red-no8)", "R3*9", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "race-mode-race"
+sequence = ["@EnterGameAssignments", "R3*6", "SCREENSHOT(race-mode-race)", "R3*8", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "race-mode-tt"
+sequence = ["@EnterGameAssignments", "R3*6", "L3*1", "SCREENSHOT(race-mode-tt)", "R3*8", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-number-of-lap-2"
+sequence = ["@EnterGameAssignments", "R3*7", "SCREENSHOT(laxey-number-of-lap-2)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-number-of-lap-3"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*1", "SCREENSHOT(laxey-number-of-lap-3)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-number-of-lap-4"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*2", "SCREENSHOT(laxey-number-of-lap-4)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-number-of-lap-5"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*3", "SCREENSHOT(laxey-number-of-lap-5)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-number-of-lap-6"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*4", "SCREENSHOT(laxey-number-of-lap-6)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-number-of-lap-7"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*5", "SCREENSHOT(laxey-number-of-lap-7)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-number-of-lap-8"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*6", "SCREENSHOT(laxey-number-of-lap-8)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-number-of-lap-9"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*7", "SCREENSHOT(laxey-number-of-lap-9)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-number-of-lap-10"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*8", "SCREENSHOT(laxey-number-of-lap-10)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-number-of-lap-1"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*9", "SCREENSHOT(laxey-number-of-lap-1)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-game-difficulty-normal"
+sequence = ["@EnterGameAssignments", "R3*8", "SCREENSHOT(laxey-game-difficulty-normal)", "R3*6", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-game-difficulty-hard"
+sequence = ["@EnterGameAssignments", "R3*8", "L3*1", "SCREENSHOT(laxey-game-difficulty-hard)", "R3*6", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-game-difficulty-hardest"
+sequence = ["@EnterGameAssignments", "R3*8", "L3*2", "SCREENSHOT(laxey-game-difficulty-hardest)", "R3*6", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-game-difficulty-easy"
+sequence = ["@EnterGameAssignments", "R3*8", "L3*3", "SCREENSHOT(laxey-game-difficulty-easy)", "R3*6", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-revise-mode-2-of-3"
+sequence = ["@EnterGameAssignments", "R3*9", "SCREENSHOT(laxey-revise-mode-2-of-3)", "R3*5", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-revise-mode-3-of-3"
+sequence = ["@EnterGameAssignments", "R3*9", "L3*1", "SCREENSHOT(laxey-revise-mode-3-of-3)", "R3*5", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-revise-mode-not-revise"
+sequence = ["@EnterGameAssignments", "R3*9", "L3*2", "SCREENSHOT(laxey-revise-mode-not-revise)", "R3*5", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "laxey-revise-mode-1-of-3"
+sequence = ["@EnterGameAssignments", "R3*9", "L3*3", "SCREENSHOT(laxey-revise-mode-1-of-3)", "R3*5", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-number-of-lap-2"
+sequence = ["@EnterGameAssignments", "R3*10", "SCREENSHOT(tt-number-of-lap-2)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-number-of-lap-3"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*1", "SCREENSHOT(tt-number-of-lap-3)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-number-of-lap-4"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*2", "SCREENSHOT(tt-number-of-lap-4)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-number-of-lap-5"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*3", "SCREENSHOT(tt-number-of-lap-5)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-number-of-lap-6"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*4", "SCREENSHOT(tt-number-of-lap-6)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-number-of-lap-7"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*5", "SCREENSHOT(tt-number-of-lap-7)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-number-of-lap-8"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*6", "SCREENSHOT(tt-number-of-lap-8)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-number-of-lap-9"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*7", "SCREENSHOT(tt-number-of-lap-9)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-number-of-lap-10"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*8", "SCREENSHOT(tt-number-of-lap-10)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-number-of-lap-1"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*9", "SCREENSHOT(tt-number-of-lap-1)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-game-difficulty-normal"
+sequence = ["@EnterGameAssignments", "R3*11", "SCREENSHOT(tt-game-difficulty-normal)", "R3*3", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-game-difficulty-hard"
+sequence = ["@EnterGameAssignments", "R3*11", "L3*1", "SCREENSHOT(tt-game-difficulty-hard)", "R3*3", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-game-difficulty-hardest"
+sequence = ["@EnterGameAssignments", "R3*11", "L3*2", "SCREENSHOT(tt-game-difficulty-hardest)", "R3*3", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-game-difficulty-easy"
+sequence = ["@EnterGameAssignments", "R3*11", "L3*3", "SCREENSHOT(tt-game-difficulty-easy)", "R3*3", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-revise-mode-2-of-3"
+sequence = ["@EnterGameAssignments", "R3*12", "SCREENSHOT(tt-revise-mode-2-of-3)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-revise-mode-3-of-3"
+sequence = ["@EnterGameAssignments", "R3*12", "L3*1", "SCREENSHOT(tt-revise-mode-3-of-3)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-revise-mode-not-revise"
+sequence = ["@EnterGameAssignments", "R3*12", "L3*2", "SCREENSHOT(tt-revise-mode-not-revise)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "tt-revise-mode-1-of-3"
+sequence = ["@EnterGameAssignments", "R3*12", "L3*3", "SCREENSHOT(tt-revise-mode-1-of-3)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "start-switch-op-on"
+sequence = ["@EnterGameAssignments", "R3*13", "SCREENSHOT(start-switch-op-on)", "R3*1", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "start-switch-op-off"
+sequence = ["@EnterGameAssignments", "R3*13", "L3*1", "SCREENSHOT(start-switch-op-off)", "R3*1", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]

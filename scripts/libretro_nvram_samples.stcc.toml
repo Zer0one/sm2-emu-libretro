@@ -1,0 +1,179 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "stcc"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/stcc/generated"
+startup_wait = 12.0
+button_hold = 0.1
+button_hold_long = 1.0
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterGameAssignments = ["L3", "WAIT(7.0)", "R3*7", "WAIT(1.0)", "L3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterGameAssignments", "SCREENSHOT(base)", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-on"
+sequence = ["@EnterGameAssignments", "R3*1", "SCREENSHOT(advertise-sound-on)", "R3*10", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-off"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*1", "SCREENSHOT(advertise-sound-off)", "R3*10", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "url-address-on"
+sequence = ["@EnterGameAssignments", "R3*2", "SCREENSHOT(url-address-on)", "R3*9", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "url-address-off"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*1", "SCREENSHOT(url-address-off)", "R3*9", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-japan"
+sequence = ["@EnterGameAssignments", "R3*3", "SCREENSHOT(country-japan)", "R3*8", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-usa"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*1", "SCREENSHOT(country-usa)", "R3*8", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-export"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*2", "SCREENSHOT(country-export)", "R3*8", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-type-twin"
+sequence = ["@EnterGameAssignments", "R3*4", "SCREENSHOT(cabinet-type-twin)", "R3*7", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-type-deluxe"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*1", "SCREENSHOT(cabinet-type-deluxe)", "R3*7", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-stand-alone"
+sequence = ["@EnterGameAssignments", "R3*5", "SCREENSHOT(link-type-stand-alone)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-1"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*1", "SCREENSHOT(link-type-car-1)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-2"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*2", "SCREENSHOT(link-type-car-2)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-3"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*3", "SCREENSHOT(link-type-car-3)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-4"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*4", "SCREENSHOT(link-type-car-4)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-5"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*5", "SCREENSHOT(link-type-car-5)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-6"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*6", "SCREENSHOT(link-type-car-6)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-7"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*7", "SCREENSHOT(link-type-car-7)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-8"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*8", "SCREENSHOT(link-type-car-8)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-relay"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*9", "SCREENSHOT(link-type-relay)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-normal"
+sequence = ["@EnterGameAssignments", "R3*6", "SCREENSHOT(difficulty-normal)", "R3*5", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-easy"
+sequence = ["@EnterGameAssignments", "R3*6", "L3*1", "SCREENSHOT(difficulty-easy)", "R3*5", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-hard"
+sequence = ["@EnterGameAssignments", "R3*6", "L3*2", "SCREENSHOT(difficulty-hard)", "R3*5", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-hardest"
+sequence = ["@EnterGameAssignments", "R3*6", "L3*3", "SCREENSHOT(difficulty-hardest)", "R3*5", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-mode-normal"
+sequence = ["@EnterGameAssignments", "R3*7", "SCREENSHOT(game-mode-normal)", "R3*4", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-mode-short"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*1", "SCREENSHOT(game-mode-short)", "R3*4", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-mode-long"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*2", "SCREENSHOT(game-mode-long)", "R3*4", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-mode-grand-prix"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*3", "SCREENSHOT(game-mode-grand-prix)", "R3*4", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "default-car-random"
+sequence = ["@EnterGameAssignments", "R3*8", "SCREENSHOT(default-car-random)", "R3*3", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "default-car-alfa-romeo"
+sequence = ["@EnterGameAssignments", "R3*8", "L3*1", "SCREENSHOT(default-car-alfa-romeo)", "R3*3", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "default-car-mercedes"
+sequence = ["@EnterGameAssignments", "R3*8", "L3*2", "SCREENSHOT(default-car-mercedes)", "R3*3", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "default-car-opel"
+sequence = ["@EnterGameAssignments", "R3*8", "L3*3", "SCREENSHOT(default-car-opel)", "R3*3", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "default-car-toyota"
+sequence = ["@EnterGameAssignments", "R3*8", "L3*4", "SCREENSHOT(default-car-toyota)", "R3*3", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "name-entry-before-3"
+sequence = ["@EnterGameAssignments", "R3*9", "SCREENSHOT(name-entry-before-3)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "name-entry-after-3"
+sequence = ["@EnterGameAssignments", "R3*9", "L3*1", "SCREENSHOT(name-entry-after-3)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "name-entry-before-7"
+sequence = ["@EnterGameAssignments", "R3*9", "L3*2", "SCREENSHOT(name-entry-before-7)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "name-entry-after-7"
+sequence = ["@EnterGameAssignments", "R3*9", "L3*3", "SCREENSHOT(name-entry-after-7)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "default-view-birds"
+sequence = ["@EnterGameAssignments", "R3*10", "SCREENSHOT(default-view-birds)", "R3*1", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "default-view-drivers"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*1", "SCREENSHOT(default-view-drivers)", "R3*1", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]

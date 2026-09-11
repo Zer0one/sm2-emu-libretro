@@ -1,0 +1,129 @@
+# SM2-Emu Libretro NVRAM sample campaign.
+# Paths support ~ and environment variables.
+
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "vf2"
+baseline_sample = "base"
+# Optional: use a frontend baseline, or legacy native files for one-time import.
+#standard_srm = "~/Documents/RetroArch/sm2-nvram-analysis/vf2/game-base.srm"
+#standard_nvram = "~/Documents/RetroArch/sm2-nvram-analysis/vf2/game-base.nv"
+#standard_eeprom = "~/Documents/RetroArch/sm2-nvram-analysis/vf2/game-base.eeprom"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/vf2/generated"
+
+# Common timings, in real seconds.
+startup_wait = 5.0
+button_hold = 0.06
+button_hold_long = 0.5
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 15.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterGameAssignment = ["L3", "WAIT(2.0)", "R3*5", "L3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterGameAssignment", "SCREENSHOT(base)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-2"
+sequence = ["@EnterGameAssignment", "R3", "SCREENSHOT(match-count-1p-2)", "CLOSE"]
+[[samples]]
+suffix = "match-count-1p-3"
+sequence = ["@EnterGameAssignment", "R3", "L3", "SCREENSHOT(match-count-1p-3)", "CLOSE"]
+[[samples]]
+suffix = "match-count-1p-4"
+sequence = ["@EnterGameAssignment", "R3", "L3*2", "SCREENSHOT(match-count-1p-4)", "CLOSE"]
+[[samples]]
+suffix = "match-count-1p-5"
+sequence = ["@EnterGameAssignment", "R3", "L3*3", "SCREENSHOT(match-count-1p-5)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-vs-2"
+sequence = ["@EnterGameAssignment", "R3*2", "SCREENSHOT(match-count-vs-2)", "CLOSE"]
+[[samples]]
+suffix = "match-count-vs-3"
+sequence = ["@EnterGameAssignment", "R3*2", "L3", "SCREENSHOT(match-count-vs-3)", "CLOSE"]
+[[samples]]
+suffix = "match-count-vs-4"
+sequence = ["@EnterGameAssignment", "R3*2", "L3*2", "SCREENSHOT(match-count-vs-4)", "CLOSE"]
+[[samples]]
+suffix = "match-count-vs-5"
+sequence = ["@EnterGameAssignment", "R3*2", "L3*3", "SCREENSHOT(match-count-vs-5)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-normal"
+sequence = ["@EnterGameAssignment", "R3*3", "SCREENSHOT(difficulty-normal)", "CLOSE"]
+[[samples]]
+suffix = "difficulty-hard"
+sequence = ["@EnterGameAssignment", "R3*3", "L3", "SCREENSHOT(difficulty-hard)", "CLOSE"]
+[[samples]]
+suffix = "difficulty-hardest"
+sequence = ["@EnterGameAssignment", "R3*3", "L3*2", "SCREENSHOT(difficulty-hardest)", "CLOSE"]
+[[samples]]
+suffix = "difficulty-easy"
+sequence = ["@EnterGameAssignment", "R3*3", "L3*3", "SCREENSHOT(difficulty-easy)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-on"
+sequence = ["@EnterGameAssignment", "R3*4", "SCREENSHOT(advertise-sound-on)", "CLOSE"]
+[[samples]]
+suffix = "advertise-sound-off"
+sequence = ["@EnterGameAssignment", "R3*4", "L3", "SCREENSHOT(advertise-sound-off)", "CLOSE"]
+[[samples]]
+suffix = "continue-on"
+sequence = ["@EnterGameAssignment", "R3*5", "SCREENSHOT(continue-on)", "CLOSE"]
+[[samples]]
+suffix = "continue-off"
+sequence = ["@EnterGameAssignment", "R3*5", "L3", "SCREENSHOT(continue-off)", "CLOSE"]
+[[samples]]
+suffix = "drink-ok"
+sequence = ["@EnterGameAssignment", "R3*6", "SCREENSHOT(drink-ok)", "CLOSE"]
+[[samples]]
+suffix = "drink-ng"
+sequence = ["@EnterGameAssignment", "R3*6", "L3", "SCREENSHOT(drink-ng)", "CLOSE"]
+
+[[samples]]
+suffix = "country-japan"
+sequence = ["@EnterGameAssignment", "R3*7", "SCREENSHOT(country-japan)", "CLOSE"]
+[[samples]]
+suffix = "country-usa"
+sequence = ["@EnterGameAssignment", "R3*7", "L3", "SCREENSHOT(country-usa)", "CLOSE"]
+[[samples]]
+suffix = "country-export"
+sequence = ["@EnterGameAssignment", "R3*7", "L3*2", "SCREENSHOT(country-export)", "CLOSE"]
+
+[[samples]]
+suffix = "display-type-projector"
+sequence = ["@EnterGameAssignment", "R3*8", "SCREENSHOT(display-type-projector)", "CLOSE"]
+[[samples]]
+suffix = "display-type-crt"
+sequence = ["@EnterGameAssignment", "R3*8", "L3", "SCREENSHOT(display-type-crt)", "CLOSE"]
+[[samples]]
+suffix = "vs-finish-off"
+sequence = ["@EnterGameAssignment", "R3*9", "SCREENSHOT(vs-finish-off)", "CLOSE"]
+[[samples]]
+suffix = "vs-finish-on"
+sequence = ["@EnterGameAssignment", "R3*9", "L3", "SCREENSHOT(vs-finish-on)", "CLOSE"]
+[[samples]]
+suffix = "ranking-mode-off"
+sequence = ["@EnterGameAssignment", "R3*10", "SCREENSHOT(ranking-mode-off)", "CLOSE"]
+[[samples]]
+suffix = "ranking-mode-on"
+sequence = ["@EnterGameAssignment", "R3*10", "L3", "SCREENSHOT(ranking-mode-on)", "CLOSE"]
+[[samples]]
+suffix = "version-normal"
+sequence = ["@EnterGameAssignment", "R3*11", "SCREENSHOT(version-normal)", "CLOSE"]
+[[samples]]
+suffix = "version-2"
+sequence = ["@EnterGameAssignment", "R3*11", "L3", "SCREENSHOT(version-2)", "CLOSE"]

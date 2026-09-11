@@ -1,0 +1,23 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "rascot2"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/rascot2/generated"
+startup_wait = 12.0
+button_hold = 0.1
+button_hold_long = 1.0
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[[samples]]
+suffix = "seganet-wait"
+sequence = ["HOLD(L3)", "WAIT(12.0)", "SCREENSHOT(seganet-wait)", "RELEASE(L3)", "CLOSE"]

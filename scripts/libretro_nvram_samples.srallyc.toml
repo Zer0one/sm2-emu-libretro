@@ -1,0 +1,112 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+
+[campaign]
+game = "srallyc"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/srallyc/generated"
+startup_wait = 5.0
+button_hold = 0.08
+button_hold_long = 1.0
+default_wait = 0.45
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterGameAssignments = ["L3", "WAIT(2.0)", "R3*6", "L3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterGameAssignments", "SCREENSHOT(base)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-on"
+sequence = ["@EnterGameAssignments", "R3*1", "SCREENSHOT(advertise-sound)", "R3*6", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-off"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*1", "SCREENSHOT(advertise-sound)", "R3*6", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-jpn"
+sequence = ["@EnterGameAssignments", "R3*2", "SCREENSHOT(country)", "R3*5", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-usa"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*1", "SCREENSHOT(country)", "R3*5", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-export"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*2", "SCREENSHOT(country)", "R3*5", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-type-twin"
+sequence = ["@EnterGameAssignments", "R3*3", "SCREENSHOT(cabinet-type)", "R3*4", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-type-deluxe"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*1", "SCREENSHOT(cabinet-type)", "R3*4", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-notlink"
+sequence = ["@EnterGameAssignments", "R3*4", "SCREENSHOT(link-type)", "R3*3", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-1"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*1", "SCREENSHOT(link-type)", "R3*3", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-2"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*2", "SCREENSHOT(link-type)", "R3*3", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-3"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*3", "SCREENSHOT(link-type)", "R3*3", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-car-4"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*4", "SCREENSHOT(link-type)", "R3*3", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "link-type-relay"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*5", "SCREENSHOT(link-type)", "R3*3", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-normal"
+sequence = ["@EnterGameAssignments", "R3*5", "SCREENSHOT(game-difficulty)", "R3*2", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-easy"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*1", "SCREENSHOT(game-difficulty)", "R3*2", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-hard"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*2", "SCREENSHOT(game-difficulty)", "R3*2", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-hardest"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*3", "SCREENSHOT(game-difficulty)", "R3*2", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-mode-normal"
+sequence = ["@EnterGameAssignments", "R3*6", "SCREENSHOT(game-mode)", "R3*1", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-mode-short"
+sequence = ["@EnterGameAssignments", "R3*6", "L3*1", "SCREENSHOT(game-mode)", "R3*1", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-mode-long"
+sequence = ["@EnterGameAssignments", "R3*6", "L3*2", "SCREENSHOT(game-mode)", "R3*1", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-mode-longest"
+sequence = ["@EnterGameAssignments", "R3*6", "L3*3", "SCREENSHOT(game-mode)", "R3*1", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(10.0)", "CLOSE"]

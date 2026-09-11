@@ -1,0 +1,263 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "schamp"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/schamp/generated"
+startup_wait = 12.0
+button_hold = 0.1
+button_hold_long = 1.0
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterAssignments = ["L3", "WAIT(7.0)", "R3*7", "WAIT(1.0)", "L3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterAssignments", "SCREENSHOT(base)", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-2"
+sequence = ["@EnterAssignments", "R3*1", "SCREENSHOT(match-count-1p-2)", "R3*17", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-3"
+sequence = ["@EnterAssignments", "R3*1", "L3*1", "SCREENSHOT(match-count-1p-3)", "R3*17", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-4"
+sequence = ["@EnterAssignments", "R3*1", "L3*2", "SCREENSHOT(match-count-1p-4)", "R3*17", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-5"
+sequence = ["@EnterAssignments", "R3*1", "L3*3", "SCREENSHOT(match-count-1p-5)", "R3*17", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-vs-2"
+sequence = ["@EnterAssignments", "R3*2", "SCREENSHOT(match-count-vs-2)", "R3*16", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-vs-3"
+sequence = ["@EnterAssignments", "R3*2", "L3*1", "SCREENSHOT(match-count-vs-3)", "R3*16", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-vs-4"
+sequence = ["@EnterAssignments", "R3*2", "L3*2", "SCREENSHOT(match-count-vs-4)", "R3*16", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-vs-5"
+sequence = ["@EnterAssignments", "R3*2", "L3*3", "SCREENSHOT(match-count-vs-5)", "R3*16", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "enemy-rank-normal"
+sequence = ["@EnterAssignments", "R3*3", "SCREENSHOT(enemy-rank-normal)", "R3*15", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "enemy-rank-hard"
+sequence = ["@EnterAssignments", "R3*3", "L3*1", "SCREENSHOT(enemy-rank-hard)", "R3*15", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "enemy-rank-hardest"
+sequence = ["@EnterAssignments", "R3*3", "L3*2", "SCREENSHOT(enemy-rank-hardest)", "R3*15", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "enemy-rank-easy"
+sequence = ["@EnterAssignments", "R3*3", "L3*3", "SCREENSHOT(enemy-rank-easy)", "R3*15", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "time-30"
+sequence = ["@EnterAssignments", "R3*4", "SCREENSHOT(time-30)", "R3*14", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "time-40"
+sequence = ["@EnterAssignments", "R3*4", "L3*1", "SCREENSHOT(time-40)", "R3*14", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "time-50"
+sequence = ["@EnterAssignments", "R3*4", "L3*2", "SCREENSHOT(time-50)", "R3*14", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "time-60"
+sequence = ["@EnterAssignments", "R3*4", "L3*3", "SCREENSHOT(time-60)", "R3*14", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "time-70"
+sequence = ["@EnterAssignments", "R3*4", "L3*4", "SCREENSHOT(time-70)", "R3*14", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "time-80"
+sequence = ["@EnterAssignments", "R3*4", "L3*5", "SCREENSHOT(time-80)", "R3*14", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "time-90"
+sequence = ["@EnterAssignments", "R3*4", "L3*6", "SCREENSHOT(time-90)", "R3*14", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "time-99"
+sequence = ["@EnterAssignments", "R3*4", "L3*7", "SCREENSHOT(time-99)", "R3*14", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "time-10"
+sequence = ["@EnterAssignments", "R3*4", "L3*8", "SCREENSHOT(time-10)", "R3*14", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "time-20"
+sequence = ["@EnterAssignments", "R3*4", "L3*9", "SCREENSHOT(time-20)", "R3*14", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "energy-1p-normal"
+sequence = ["@EnterAssignments", "R3*5", "SCREENSHOT(energy-1p-normal)", "R3*13", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "energy-1p-hard"
+sequence = ["@EnterAssignments", "R3*5", "L3*1", "SCREENSHOT(energy-1p-hard)", "R3*13", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "energy-1p-hardest"
+sequence = ["@EnterAssignments", "R3*5", "L3*2", "SCREENSHOT(energy-1p-hardest)", "R3*13", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "energy-1p-easy"
+sequence = ["@EnterAssignments", "R3*5", "L3*3", "SCREENSHOT(energy-1p-easy)", "R3*13", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "energy-vs-normal"
+sequence = ["@EnterAssignments", "R3*6", "SCREENSHOT(energy-vs-normal)", "R3*12", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "energy-vs-hard"
+sequence = ["@EnterAssignments", "R3*6", "L3*1", "SCREENSHOT(energy-vs-hard)", "R3*12", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "energy-vs-hardest"
+sequence = ["@EnterAssignments", "R3*6", "L3*2", "SCREENSHOT(energy-vs-hardest)", "R3*12", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "energy-vs-easy"
+sequence = ["@EnterAssignments", "R3*6", "L3*3", "SCREENSHOT(energy-vs-easy)", "R3*12", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-5"
+sequence = ["@EnterAssignments", "R3*7", "SCREENSHOT(barrier-5)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-6"
+sequence = ["@EnterAssignments", "R3*7", "L3*1", "SCREENSHOT(barrier-6)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-7"
+sequence = ["@EnterAssignments", "R3*7", "L3*2", "SCREENSHOT(barrier-7)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-8"
+sequence = ["@EnterAssignments", "R3*7", "L3*3", "SCREENSHOT(barrier-8)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-9"
+sequence = ["@EnterAssignments", "R3*7", "L3*4", "SCREENSHOT(barrier-9)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-10"
+sequence = ["@EnterAssignments", "R3*7", "L3*5", "SCREENSHOT(barrier-10)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-1"
+sequence = ["@EnterAssignments", "R3*7", "L3*6", "SCREENSHOT(barrier-1)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-2"
+sequence = ["@EnterAssignments", "R3*7", "L3*7", "SCREENSHOT(barrier-2)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-3"
+sequence = ["@EnterAssignments", "R3*7", "L3*8", "SCREENSHOT(barrier-3)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-4"
+sequence = ["@EnterAssignments", "R3*7", "L3*9", "SCREENSHOT(barrier-4)", "R3*11", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-reset-off"
+sequence = ["@EnterAssignments", "R3*8", "SCREENSHOT(barrier-reset-off)", "R3*10", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "barrier-reset-on"
+sequence = ["@EnterAssignments", "R3*8", "L3*1", "SCREENSHOT(barrier-reset-on)", "R3*10", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "automatic-on"
+sequence = ["@EnterAssignments", "R3*9", "SCREENSHOT(automatic-on)", "R3*9", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "automatic-off"
+sequence = ["@EnterAssignments", "R3*9", "L3*1", "SCREENSHOT(automatic-off)", "R3*9", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "hyper-mode-on"
+sequence = ["@EnterAssignments", "R3*10", "SCREENSHOT(hyper-mode-on)", "R3*8", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "hyper-mode-off"
+sequence = ["@EnterAssignments", "R3*10", "L3*1", "SCREENSHOT(hyper-mode-off)", "R3*8", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "damage-normal"
+sequence = ["@EnterAssignments", "R3*11", "SCREENSHOT(damage-normal)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "damage-real"
+sequence = ["@EnterAssignments", "R3*11", "L3*1", "SCREENSHOT(damage-real)", "R3*7", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-on"
+sequence = ["@EnterAssignments", "R3*12", "SCREENSHOT(advertise-sound-on)", "R3*6", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-off"
+sequence = ["@EnterAssignments", "R3*12", "L3*1", "SCREENSHOT(advertise-sound-off)", "R3*6", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-on"
+sequence = ["@EnterAssignments", "R3*13", "SCREENSHOT(continue-on)", "R3*5", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-off"
+sequence = ["@EnterAssignments", "R3*13", "L3*1", "SCREENSHOT(continue-off)", "R3*5", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-usa"
+sequence = ["@EnterAssignments", "R3*14", "SCREENSHOT(country-usa)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-export"
+sequence = ["@EnterAssignments", "R3*14", "L3*1", "SCREENSHOT(country-export)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-japan"
+sequence = ["@EnterAssignments", "R3*14", "L3*2", "SCREENSHOT(country-japan)", "R3*4", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-type-crt"
+sequence = ["@EnterAssignments", "R3*15", "SCREENSHOT(display-type-crt)", "R3*3", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-type-projector"
+sequence = ["@EnterAssignments", "R3*15", "L3*1", "SCREENSHOT(display-type-projector)", "R3*3", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-off"
+sequence = ["@EnterAssignments", "R3*16", "SCREENSHOT(vs-finish-off)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-on"
+sequence = ["@EnterAssignments", "R3*16", "L3*1", "SCREENSHOT(vs-finish-on)", "R3*2", "WAIT(1.0)", "L3", "WAIT(1.0)", "R3*5", "L3", "WAIT(6.0)", "CLOSE"]

@@ -1,0 +1,491 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "von"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/von/generated"
+startup_wait = 7.0
+button_hold = 0.1
+button_hold_long = 1.0
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterGameAssignments = ["L3", "WAIT(6.0)", "R3*7", "WAIT(1.0)", "L3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterGameAssignments", "SCREENSHOT(base)", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-90-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "SCREENSHOT(play-time-1p-stage-1-5-90-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-95-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*1", "SCREENSHOT(play-time-1p-stage-1-5-95-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-death-match"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*2", "SCREENSHOT(play-time-1p-stage-1-5-death-match)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-30-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*3", "SCREENSHOT(play-time-1p-stage-1-5-30-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-35-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*4", "SCREENSHOT(play-time-1p-stage-1-5-35-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-40-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*5", "SCREENSHOT(play-time-1p-stage-1-5-40-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-45-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*6", "SCREENSHOT(play-time-1p-stage-1-5-45-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-50-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*7", "SCREENSHOT(play-time-1p-stage-1-5-50-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-55-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*8", "SCREENSHOT(play-time-1p-stage-1-5-55-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-60-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*9", "SCREENSHOT(play-time-1p-stage-1-5-60-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-65-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*10", "SCREENSHOT(play-time-1p-stage-1-5-65-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-70-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*11", "SCREENSHOT(play-time-1p-stage-1-5-70-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-75-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*12", "SCREENSHOT(play-time-1p-stage-1-5-75-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-80-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*13", "SCREENSHOT(play-time-1p-stage-1-5-80-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-1-5-85-secs"
+sequence = ["@EnterGameAssignments", "R3*1", "L3*14", "SCREENSHOT(play-time-1p-stage-1-5-85-secs)", "R3*19", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-60-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "SCREENSHOT(play-time-1p-penalty-60-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-65-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*1", "SCREENSHOT(play-time-1p-penalty-65-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-70-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*2", "SCREENSHOT(play-time-1p-penalty-70-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-75-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*3", "SCREENSHOT(play-time-1p-penalty-75-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-80-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*4", "SCREENSHOT(play-time-1p-penalty-80-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-85-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*5", "SCREENSHOT(play-time-1p-penalty-85-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-90-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*6", "SCREENSHOT(play-time-1p-penalty-90-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-95-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*7", "SCREENSHOT(play-time-1p-penalty-95-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-death-match"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*8", "SCREENSHOT(play-time-1p-penalty-death-match)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-30-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*9", "SCREENSHOT(play-time-1p-penalty-30-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-35-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*10", "SCREENSHOT(play-time-1p-penalty-35-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-40-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*11", "SCREENSHOT(play-time-1p-penalty-40-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-45-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*12", "SCREENSHOT(play-time-1p-penalty-45-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-50-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*13", "SCREENSHOT(play-time-1p-penalty-50-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-penalty-55-secs"
+sequence = ["@EnterGameAssignments", "R3*2", "L3*14", "SCREENSHOT(play-time-1p-penalty-55-secs)", "R3*18", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-90-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "SCREENSHOT(play-time-1p-stage-6-8-90-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-95-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*1", "SCREENSHOT(play-time-1p-stage-6-8-95-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-death-match"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*2", "SCREENSHOT(play-time-1p-stage-6-8-death-match)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-30-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*3", "SCREENSHOT(play-time-1p-stage-6-8-30-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-35-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*4", "SCREENSHOT(play-time-1p-stage-6-8-35-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-40-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*5", "SCREENSHOT(play-time-1p-stage-6-8-40-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-45-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*6", "SCREENSHOT(play-time-1p-stage-6-8-45-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-50-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*7", "SCREENSHOT(play-time-1p-stage-6-8-50-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-55-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*8", "SCREENSHOT(play-time-1p-stage-6-8-55-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-60-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*9", "SCREENSHOT(play-time-1p-stage-6-8-60-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-65-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*10", "SCREENSHOT(play-time-1p-stage-6-8-65-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-70-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*11", "SCREENSHOT(play-time-1p-stage-6-8-70-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-75-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*12", "SCREENSHOT(play-time-1p-stage-6-8-75-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-80-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*13", "SCREENSHOT(play-time-1p-stage-6-8-80-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-stage-6-8-85-secs"
+sequence = ["@EnterGameAssignments", "R3*3", "L3*14", "SCREENSHOT(play-time-1p-stage-6-8-85-secs)", "R3*17", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-last-stage-90-secs"
+sequence = ["@EnterGameAssignments", "R3*4", "SCREENSHOT(play-time-1p-last-stage-90-secs)", "R3*16", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-last-stage-95-secs"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*1", "SCREENSHOT(play-time-1p-last-stage-95-secs)", "R3*16", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-1p-last-stage-death-match"
+sequence = ["@EnterGameAssignments", "R3*4", "L3*2", "SCREENSHOT(play-time-1p-last-stage-death-match)", "R3*16", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-90-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "SCREENSHOT(play-time-versus-90-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-95-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*1", "SCREENSHOT(play-time-versus-95-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-death-match"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*2", "SCREENSHOT(play-time-versus-death-match)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-30-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*3", "SCREENSHOT(play-time-versus-30-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-35-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*4", "SCREENSHOT(play-time-versus-35-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-40-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*5", "SCREENSHOT(play-time-versus-40-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-45-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*6", "SCREENSHOT(play-time-versus-45-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-50-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*7", "SCREENSHOT(play-time-versus-50-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-55-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*8", "SCREENSHOT(play-time-versus-55-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-60-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*9", "SCREENSHOT(play-time-versus-60-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-65-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*10", "SCREENSHOT(play-time-versus-65-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-70-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*11", "SCREENSHOT(play-time-versus-70-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-75-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*12", "SCREENSHOT(play-time-versus-75-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-80-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*13", "SCREENSHOT(play-time-versus-80-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "play-time-versus-85-secs"
+sequence = ["@EnterGameAssignments", "R3*5", "L3*14", "SCREENSHOT(play-time-versus-85-secs)", "R3*15", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-stage-1-5-1"
+sequence = ["@EnterGameAssignments", "R3*6", "SCREENSHOT(match-count-1p-stage-1-5-1)", "R3*14", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-stage-1-5-2"
+sequence = ["@EnterGameAssignments", "R3*6", "L3*1", "SCREENSHOT(match-count-1p-stage-1-5-2)", "R3*14", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-stage-1-5-3"
+sequence = ["@EnterGameAssignments", "R3*6", "L3*2", "SCREENSHOT(match-count-1p-stage-1-5-3)", "R3*14", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-stage-1-5-4"
+sequence = ["@EnterGameAssignments", "R3*6", "L3*3", "SCREENSHOT(match-count-1p-stage-1-5-4)", "R3*14", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-stage-1-5-5"
+sequence = ["@EnterGameAssignments", "R3*6", "L3*4", "SCREENSHOT(match-count-1p-stage-1-5-5)", "R3*14", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-penalty-1"
+sequence = ["@EnterGameAssignments", "R3*7", "SCREENSHOT(match-count-1p-penalty-1)", "R3*13", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-penalty-2"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*1", "SCREENSHOT(match-count-1p-penalty-2)", "R3*13", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-penalty-3"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*2", "SCREENSHOT(match-count-1p-penalty-3)", "R3*13", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-penalty-4"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*3", "SCREENSHOT(match-count-1p-penalty-4)", "R3*13", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-penalty-5"
+sequence = ["@EnterGameAssignments", "R3*7", "L3*4", "SCREENSHOT(match-count-1p-penalty-5)", "R3*13", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-stage-6-8-1"
+sequence = ["@EnterGameAssignments", "R3*8", "SCREENSHOT(match-count-1p-stage-6-8-1)", "R3*12", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-stage-6-8-2"
+sequence = ["@EnterGameAssignments", "R3*8", "L3*1", "SCREENSHOT(match-count-1p-stage-6-8-2)", "R3*12", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-stage-6-8-3"
+sequence = ["@EnterGameAssignments", "R3*8", "L3*2", "SCREENSHOT(match-count-1p-stage-6-8-3)", "R3*12", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-stage-6-8-4"
+sequence = ["@EnterGameAssignments", "R3*8", "L3*3", "SCREENSHOT(match-count-1p-stage-6-8-4)", "R3*12", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-stage-6-8-5"
+sequence = ["@EnterGameAssignments", "R3*8", "L3*4", "SCREENSHOT(match-count-1p-stage-6-8-5)", "R3*12", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-versus-1"
+sequence = ["@EnterGameAssignments", "R3*9", "SCREENSHOT(match-count-versus-1)", "R3*11", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-versus-2"
+sequence = ["@EnterGameAssignments", "R3*9", "L3*1", "SCREENSHOT(match-count-versus-2)", "R3*11", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-versus-3"
+sequence = ["@EnterGameAssignments", "R3*9", "L3*2", "SCREENSHOT(match-count-versus-3)", "R3*11", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-versus-4"
+sequence = ["@EnterGameAssignments", "R3*9", "L3*3", "SCREENSHOT(match-count-versus-4)", "R3*11", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-versus-5"
+sequence = ["@EnterGameAssignments", "R3*9", "L3*4", "SCREENSHOT(match-count-versus-5)", "R3*11", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "network-link-attribute-no-link"
+sequence = ["@EnterGameAssignments", "R3*10", "SCREENSHOT(network-link-attribute-no-link)", "R3*10", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "network-link-attribute-slave"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*1", "SCREENSHOT(network-link-attribute-slave)", "R3*10", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "network-link-attribute-master"
+sequence = ["@EnterGameAssignments", "R3*10", "L3*2", "SCREENSHOT(network-link-attribute-master)", "R3*10", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "winning-by-decision-on"
+sequence = ["@EnterGameAssignments", "R3*11", "SCREENSHOT(winning-by-decision-on)", "R3*9", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "winning-by-decision-off"
+sequence = ["@EnterGameAssignments", "R3*11", "L3*1", "SCREENSHOT(winning-by-decision-off)", "R3*9", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-normal"
+sequence = ["@EnterGameAssignments", "R3*12", "SCREENSHOT(game-difficulty-normal)", "R3*8", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-hard"
+sequence = ["@EnterGameAssignments", "R3*12", "L3*1", "SCREENSHOT(game-difficulty-hard)", "R3*8", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-very-hard"
+sequence = ["@EnterGameAssignments", "R3*12", "L3*2", "SCREENSHOT(game-difficulty-very-hard)", "R3*8", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-easy"
+sequence = ["@EnterGameAssignments", "R3*12", "L3*3", "SCREENSHOT(game-difficulty-easy)", "R3*8", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-loud"
+sequence = ["@EnterGameAssignments", "R3*13", "SCREENSHOT(advertise-sound-loud)", "R3*7", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-off"
+sequence = ["@EnterGameAssignments", "R3*13", "L3*1", "SCREENSHOT(advertise-sound-off)", "R3*7", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-soft"
+sequence = ["@EnterGameAssignments", "R3*13", "L3*2", "SCREENSHOT(advertise-sound-soft)", "R3*7", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-on"
+sequence = ["@EnterGameAssignments", "R3*14", "SCREENSHOT(continue-on)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-off"
+sequence = ["@EnterGameAssignments", "R3*14", "L3*1", "SCREENSHOT(continue-off)", "R3*6", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "replay-and-posing-mode-replay-and-posing"
+sequence = ["@EnterGameAssignments", "R3*15", "SCREENSHOT(replay-and-posing-mode-replay-and-posing)", "R3*5", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "replay-and-posing-mode-none"
+sequence = ["@EnterGameAssignments", "R3*15", "L3*1", "SCREENSHOT(replay-and-posing-mode-none)", "R3*5", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "replay-and-posing-mode-replay-only"
+sequence = ["@EnterGameAssignments", "R3*15", "L3*2", "SCREENSHOT(replay-and-posing-mode-replay-only)", "R3*5", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "replay-and-posing-mode-posing-only"
+sequence = ["@EnterGameAssignments", "R3*15", "L3*3", "SCREENSHOT(replay-and-posing-mode-posing-only)", "R3*5", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "ranking-mode-on"
+sequence = ["@EnterGameAssignments", "R3*16", "SCREENSHOT(ranking-mode-on)", "R3*4", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "ranking-mode-off"
+sequence = ["@EnterGameAssignments", "R3*16", "L3*1", "SCREENSHOT(ranking-mode-off)", "R3*4", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "versus-always-finish-off"
+sequence = ["@EnterGameAssignments", "R3*17", "SCREENSHOT(versus-always-finish-off)", "R3*3", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "versus-always-finish-on"
+sequence = ["@EnterGameAssignments", "R3*17", "L3*1", "SCREENSHOT(versus-always-finish-on)", "R3*3", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-brightness-0"
+sequence = ["@EnterGameAssignments", "R3*18", "SCREENSHOT(display-brightness-0)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-brightness-plus-1"
+sequence = ["@EnterGameAssignments", "R3*18", "L3*1", "SCREENSHOT(display-brightness-plus-1)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-brightness-plus-2"
+sequence = ["@EnterGameAssignments", "R3*18", "L3*2", "SCREENSHOT(display-brightness-plus-2)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-brightness-plus-3"
+sequence = ["@EnterGameAssignments", "R3*18", "L3*3", "SCREENSHOT(display-brightness-plus-3)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-brightness-plus-4"
+sequence = ["@EnterGameAssignments", "R3*18", "L3*4", "SCREENSHOT(display-brightness-plus-4)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-brightness-plus-5"
+sequence = ["@EnterGameAssignments", "R3*18", "L3*5", "SCREENSHOT(display-brightness-plus-5)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-brightness-minus-5"
+sequence = ["@EnterGameAssignments", "R3*18", "L3*6", "SCREENSHOT(display-brightness-minus-5)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-brightness-minus-4"
+sequence = ["@EnterGameAssignments", "R3*18", "L3*7", "SCREENSHOT(display-brightness-minus-4)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-brightness-minus-3"
+sequence = ["@EnterGameAssignments", "R3*18", "L3*8", "SCREENSHOT(display-brightness-minus-3)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-brightness-minus-2"
+sequence = ["@EnterGameAssignments", "R3*18", "L3*9", "SCREENSHOT(display-brightness-minus-2)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-brightness-minus-1"
+sequence = ["@EnterGameAssignments", "R3*18", "L3*10", "SCREENSHOT(display-brightness-minus-1)", "R3*2", "L3", "WAIT(1.0)", "R3*4", "L3", "WAIT(6.0)", "CLOSE"]

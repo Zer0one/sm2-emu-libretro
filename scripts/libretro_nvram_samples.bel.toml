@@ -1,0 +1,235 @@
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro/libretro/sm2_libretro.dylib"
+rom_dir = "${SM2_ROM_DIR}"
+system_assets = "../build-libretro/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "bel"
+baseline_sample = "base"
+output_dir = "~/Documents/RetroArch/sm2-nvram-analysis/bel/generated"
+startup_wait = 5.0
+button_hold = 0.08
+button_hold_long = 1.0
+default_wait = 0.45
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[macros]
+EnterGameSystem = ["LONG(R3)", "WAIT(3.0)", "L3*2", "R3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterGameSystem", "SCREENSHOT(base)", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-01"
+sequence = ["@EnterGameSystem", "L3", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-02"
+sequence = ["@EnterGameSystem", "L3", "R3*1", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-03"
+sequence = ["@EnterGameSystem", "L3", "R3*2", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-04"
+sequence = ["@EnterGameSystem", "L3", "R3*3", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-05"
+sequence = ["@EnterGameSystem", "L3", "R3*4", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-06"
+sequence = ["@EnterGameSystem", "L3", "R3*5", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-07"
+sequence = ["@EnterGameSystem", "L3", "R3*6", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-08"
+sequence = ["@EnterGameSystem", "L3", "R3*7", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-09"
+sequence = ["@EnterGameSystem", "L3", "R3*8", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-10"
+sequence = ["@EnterGameSystem", "L3", "R3*9", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-11"
+sequence = ["@EnterGameSystem", "L3", "R3*10", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-12"
+sequence = ["@EnterGameSystem", "L3", "R3*11", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-13"
+sequence = ["@EnterGameSystem", "L3", "R3*12", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-14"
+sequence = ["@EnterGameSystem", "L3", "R3*13", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-15"
+sequence = ["@EnterGameSystem", "L3", "R3*14", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-16"
+sequence = ["@EnterGameSystem", "L3", "R3*15", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-17"
+sequence = ["@EnterGameSystem", "L3", "R3*16", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-18"
+sequence = ["@EnterGameSystem", "L3", "R3*17", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-19"
+sequence = ["@EnterGameSystem", "L3", "R3*18", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-20"
+sequence = ["@EnterGameSystem", "L3", "R3*19", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-21"
+sequence = ["@EnterGameSystem", "L3", "R3*20", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-22"
+sequence = ["@EnterGameSystem", "L3", "R3*21", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-23"
+sequence = ["@EnterGameSystem", "L3", "R3*22", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-24"
+sequence = ["@EnterGameSystem", "L3", "R3*23", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-25"
+sequence = ["@EnterGameSystem", "L3", "R3*24", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-26"
+sequence = ["@EnterGameSystem", "L3", "R3*25", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "coin-credit-setting-27"
+sequence = ["@EnterGameSystem", "L3", "R3*26", "SCREENSHOT(coin-credit-setting)", "L3*6", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "start-credits-1"
+sequence = ["@EnterGameSystem", "L3*2", "SCREENSHOT(start-credits)", "L3*5", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "start-credits-2"
+sequence = ["@EnterGameSystem", "L3*2", "R3*1", "SCREENSHOT(start-credits)", "L3*5", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "start-credits-3"
+sequence = ["@EnterGameSystem", "L3*2", "R3*2", "SCREENSHOT(start-credits)", "L3*5", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "start-credits-4"
+sequence = ["@EnterGameSystem", "L3*2", "R3*3", "SCREENSHOT(start-credits)", "L3*5", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "start-credits-5"
+sequence = ["@EnterGameSystem", "L3*2", "R3*4", "SCREENSHOT(start-credits)", "L3*5", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-credits-1"
+sequence = ["@EnterGameSystem", "L3*3", "SCREENSHOT(continue-credits)", "L3*4", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-credits-2"
+sequence = ["@EnterGameSystem", "L3*3", "R3*1", "SCREENSHOT(continue-credits)", "L3*4", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-credits-3"
+sequence = ["@EnterGameSystem", "L3*3", "R3*2", "SCREENSHOT(continue-credits)", "L3*4", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-credits-4"
+sequence = ["@EnterGameSystem", "L3*3", "R3*3", "SCREENSHOT(continue-credits)", "L3*4", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-credits-5"
+sequence = ["@EnterGameSystem", "L3*3", "R3*4", "SCREENSHOT(continue-credits)", "L3*4", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-u-s"
+sequence = ["@EnterGameSystem", "L3*4", "SCREENSHOT(country)", "L3*3", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-export"
+sequence = ["@EnterGameSystem", "L3*4", "R3*1", "SCREENSHOT(country)", "L3*3", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-japan"
+sequence = ["@EnterGameSystem", "L3*4", "R3*2", "SCREENSHOT(country)", "L3*3", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-on"
+sequence = ["@EnterGameSystem", "L3*5", "SCREENSHOT(advertise-sound)", "L3*2", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-off"
+sequence = ["@EnterGameSystem", "L3*5", "R3*1", "SCREENSHOT(advertise-sound)", "L3*2", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-6"
+sequence = ["@EnterGameSystem", "L3*6", "SCREENSHOT(difficulty)", "L3*1", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-7"
+sequence = ["@EnterGameSystem", "L3*6", "R3*1", "SCREENSHOT(difficulty)", "L3*1", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-8"
+sequence = ["@EnterGameSystem", "L3*6", "R3*2", "SCREENSHOT(difficulty)", "L3*1", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-9"
+sequence = ["@EnterGameSystem", "L3*6", "R3*3", "SCREENSHOT(difficulty)", "L3*1", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-10"
+sequence = ["@EnterGameSystem", "L3*6", "R3*4", "SCREENSHOT(difficulty)", "L3*1", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-1"
+sequence = ["@EnterGameSystem", "L3*6", "R3*5", "SCREENSHOT(difficulty)", "L3*1", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-2"
+sequence = ["@EnterGameSystem", "L3*6", "R3*6", "SCREENSHOT(difficulty)", "L3*1", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-3"
+sequence = ["@EnterGameSystem", "L3*6", "R3*7", "SCREENSHOT(difficulty)", "L3*1", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-4"
+sequence = ["@EnterGameSystem", "L3*6", "R3*8", "SCREENSHOT(difficulty)", "L3*1", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-5"
+sequence = ["@EnterGameSystem", "L3*6", "R3*9", "SCREENSHOT(difficulty)", "L3*1", "R3", "WAIT(1.0)", "L3*8", "R3", "WAIT(8.0)", "CLOSE"]
