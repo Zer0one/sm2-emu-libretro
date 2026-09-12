@@ -54,11 +54,24 @@ o firmware separati, valgono le regole del database upstream.
   Un `.srm` valido prevale; in sua assenza i file nativi `.nv`/`.eeprom` sono
   importati senza essere riscritti dal core Libretro.
 - Core Option v2 generale `NVRAM Settings`, Disabled per default come nel core
-  Supermodel. Quando è Enabled mostra `VF2 Difficulty`, `VF2 Country`,
-  `VF2 Display Type` e `VF2 Drink`, visibili soltanto per `vf2` e autonome.
-  I parametri mostrano soltanto i valori reali. La descrizione di Country segnala che il menu
-  Service originale porta Drink a NG scegliendo USA/Export, mentre il core
-  lascia esplicita la combinazione desiderata. Ogni modifica aggiorna il CRC.
+  Supermodel. Quando è Enabled mostra soltanto le opzioni del parent caricato e
+  applica tutti i valori scelti all'avvio. Non usa `Keep Current`: disabilitando
+  l'opzione generale il core lascia invariati i campi NVRAM.
+- 174 impostazioni operatore verificate per 30 parent. Oltre ai primi nove,
+  sono coperti `airwlkrs`, `dynabb`, `dynabb97`, `dynamcop`, `hotd`, `indy500`,
+  `lastbrnx`, `manxtt`, `motoraid`, `overrev`, `rchase2`, `segawski`,
+  `skisuprg`, `skytargt`, `srallyc`, `stcc`, `topskatr`, `von`, `waverunr`,
+  `zerogun` e `zeroguna`. I valori e le patch specifiche restano in una
+  tabella separata dal motore generico, così gli aggiornamenti upstream non
+  richiedono modifiche alle macchine emulate.
+- Country/Nation usa USA come default quando disponibile e prevede Export come
+  fallback per i giochi futuri che non espongono USA. Daytona usa inoltre
+  `SINGLE` come Link ID predefinito, evitando l'attesa di un cabinet collegato.
+  In VF2 Country e Drink sono indipendenti, anche se il Service Menu originale
+  modifica Drink durante alcune selezioni di Country.
+- Ogni formato viene riconosciuto prima della scrittura. Il core rigenera CRC o
+  checksum e sincronizza copie speculari ed EEPROM soltanto per i 30 layout
+  dimostrati dai campioni reali; un layout non riconosciuto resta intatto.
 - Errori di caricamento segnalati al frontend; dettagli del loader nel log
   stderr. Nessun percorso implicito nella directory corrente.
 
@@ -151,6 +164,19 @@ combinazione autonoma `Country=USA`, `Drink=OK`, `.srm` valido ed exit code 0.
 La prova combinata delle quattro opzioni ha inoltre confermato Difficulty
 Hardest e Display Type C.R.T. nello stesso salvataggio.
 
+Il 12 settembre 2026 la stessa Nightly ha verificato la nuova implementazione
+generica su ROM reali. VF2 ha mantenuto contemporaneamente Country=USA,
+Drink=OK, Difficulty=Hard e Display Type=C.R.T.; Daytona ha applicato
+Link ID=SINGLE e Country=USA con CRC, mirror ed EEPROM coerenti; Dead or Alive
+ha applicato Nation=USA con checksum additivo e mirror EEPROM coerenti. Le tre
+esecuzioni sono terminate con exit code 0 e hanno prodotto audio non silenzioso.
+
+Una successiva prova isolata con Air Walkers ha registrato tutte le 174 opzioni
+specifiche più l'interruttore generale tramite Core Options API v2. La ROM è
+arrivata alla schermata di avvio per 700 frame; `Difficulty=Hard` ha modificato
+entrambi i banchi EEPROM da 2 a 3, rigenerando il CRC e lasciando le copie
+speculari identiche. In questa prova l'audio era intenzionalmente disabilitato.
+
 ## Limiti
 
 Nel percorso software: nessun profilo completo volante/lightgun/twin-stick,
@@ -159,6 +185,13 @@ Video sono disponibili nella build descritta in [GPU.md](GPU.md). La geometria
 nativa software è fissa. Rewind, run-ahead e netplay non sono dichiarati supportati.
 Le etichette delle azioni specifiche dei giochi e le varianti dei dispositivi
 sono da completare nella milestone 3, seguendo [LIBRETRO_DESIGN.md](LIBRETRO_DESIGN.md).
+
+Le opzioni selezionate per gli altri parent restano rinviate finché il relativo
+formato non è scrivibile con controllo d'integrità dimostrato. `hpyagu98` e
+`pltkids` non ripristinano ancora le modifiche dopo il riavvio. `bel`,
+`gunblade` e la backup RAM di `sgt24h` usano formati per cui manca ancora una
+prova conclusiva dell'algoritmo d'integrità; questi tre giochi non espongono
+Core Options NVRAM. `rascot2` resta fuori dalla campagna corrente.
 
 La prova di gameplay usa input sintetici attraverso RetroArch: non convalida
 un controller fisico. CoreAudio e PCM registrato confermano il percorso audio;

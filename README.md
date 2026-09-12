@@ -9,12 +9,12 @@ for attribution, comparison and future upstream updates.
 The isolated adapter uses the upstream machine and software renderer, with
 native timing/audio, basic digital inputs and frontend-managed save RAM.
 1800-frame video/audio/NVRAM comparisons pass on all four board variants.
-Virtua Fighter 2 has also run in RetroArch with scripted gameplay inputs,
-a gameplay screenshot and recorded stereo audio.
+The data-driven NVRAM Core Options currently cover 174 reviewed operator
+settings across 30 parent sets. Each supported title validates its native
+layout and updates the corresponding integrity field and settings mirror.
 
 See [Libretro build and validation](LIBRETRO.md) for the artifact, commands
-and limits. The first per-game Core Options expose VF2 Difficulty, Country,
-Display Type and Drink; further game options and full control profiles remain planned. Physical controllers and
+and limits. Full control profiles remain planned. Physical controllers and
 audible quality need manual checks.
 The standalone and [headless validation runner](HEADLESS.md) remain available.
 
