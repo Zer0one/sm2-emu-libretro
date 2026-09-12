@@ -84,3 +84,25 @@ la baseline headless a 1800 frame (video/audio/NVRAM identici) ed eseguito con
 Vulkan in RetroArch macOS. Windows e macOS Intel hanno controlli di build/ABI,
 ma nessuna prova con giochi su quelle piattaforme. Restano da verificare altri
 giochi, controller fisici, Linux arm64 e altre combinazioni di frontend/driver.
+
+## Verifica delle Core Options del 12 settembre 2026
+
+La [CI della revisione `04a2132`](https://github.com/Zer0one/sm2-emu-libretro/actions/runs/34670297828)
+è verde per Linux x86_64, Windows x86_64, macOS Apple Silicon e macOS Intel.
+Tutti e quattro i job hanno compilato il core, eseguito i controlli input,
+SAVE_RAM e ABI e pubblicato il proprio artifact. Il pacchetto Linux riporta la
+revisione completa `04a21325caa0cfb1344e3a33a9d8bfbddc1fd709`; tutti i
+checksum inclusi sono validi e il core ha SHA-256
+`8e35bce806149a61d8449eb4260fc7c9839fe68c304a88d8d5411dbcd7b888df`.
+Sul dispositivo dipende soltanto da `libm`, `libc` e dal loader x86_64.
+
+Lo stesso artifact è stato copiato nella directory isolata
+`/userdata/system/sm2-libretro-tests/04a2132` del Batocera 43.1 già descritto.
+VF2 è stato eseguito per 2300 frame con Vulkan 2x, replay di gameplay e NVRAM
+inizialmente assente. Il core ha negoziato Vulkan 1.3 sulla Radeon Vega 11,
+renderizzato a 992x768 e applicato simultaneamente `Country=USA`, `Drink=OK`,
+`Difficulty=Hardest` e `Display Type=C.R.T.`. Il test è terminato con codice 0
+in 41,65 secondi, ha salvato una `.srm` valida da 16.576 byte e prodotto
+1.762.492 campioni stereo non silenziosi a 44.100 Hz. Lo screenshot finale di
+gameplay ha SHA-256
+`ab7fdcbc72f0be46c96349ecf9f1c5adb50d7884e2ea02a3628fab7cea864b05`.
