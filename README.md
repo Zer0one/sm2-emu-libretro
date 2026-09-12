@@ -9,8 +9,8 @@ for attribution, comparison and future upstream updates.
 The isolated adapter uses the upstream machine and software renderer, with
 native timing/audio, basic digital inputs and frontend-managed save RAM.
 1800-frame video/audio/NVRAM comparisons pass on all four board variants.
-The data-driven NVRAM Core Options currently cover 174 reviewed operator
-settings across 30 parent sets. Each supported title validates its native
+The data-driven NVRAM Core Options currently cover 181 reviewed operator
+settings across 31 parent sets. Each supported title validates its native
 layout and updates the corresponding integrity field and settings mirror.
 
 See [Libretro build and validation](LIBRETRO.md) for the artifact, commands

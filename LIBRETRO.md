@@ -57,10 +57,10 @@ o firmware separati, valgono le regole del database upstream.
   Supermodel. Quando è Enabled mostra soltanto le opzioni del parent caricato e
   applica tutti i valori scelti all'avvio. Non usa `Keep Current`: disabilitando
   l'opzione generale il core lascia invariati i campi NVRAM.
-- 174 impostazioni operatore verificate per 30 parent. Oltre ai primi nove,
+- 181 impostazioni operatore verificate per 31 parent. Oltre ai primi nove,
   sono coperti `airwlkrs`, `dynabb`, `dynabb97`, `dynamcop`, `hotd`, `indy500`,
   `lastbrnx`, `manxtt`, `motoraid`, `overrev`, `rchase2`, `segawski`,
-  `skisuprg`, `skytargt`, `srallyc`, `stcc`, `topskatr`, `von`, `waverunr`,
+  `sgt24h`, `skisuprg`, `skytargt`, `srallyc`, `stcc`, `topskatr`, `von`, `waverunr`,
   `zerogun` e `zeroguna`. I valori e le patch specifiche restano in una
   tabella separata dal motore generico, così gli aggiornamenti upstream non
   richiedono modifiche alle macchine emulate.
@@ -70,7 +70,7 @@ o firmware separati, valgono le regole del database upstream.
   In VF2 Country e Drink sono indipendenti, anche se il Service Menu originale
   modifica Drink durante alcune selezioni di Country.
 - Ogni formato viene riconosciuto prima della scrittura. Il core rigenera CRC o
-  checksum e sincronizza copie speculari ed EEPROM soltanto per i 30 layout
+  checksum e sincronizza copie speculari ed EEPROM soltanto per i 31 layout
   dimostrati dai campioni reali; un layout non riconosciuto resta intatto.
 - Errori di caricamento segnalati al frontend; dettagli del loader nel log
   stderr. Nessun percorso implicito nella directory corrente.
@@ -177,6 +177,15 @@ arrivata alla schermata di avvio per 700 frame; `Difficulty=Hard` ha modificato
 entrambi i banchi EEPROM da 2 a 3, rigenerando il CRC e lasciando le copie
 speculari identiche. In questa prova l'audio era intenzionalmente disabilitato.
 
+La prova di Super GT 24h ha eseguito la ROM reale per 2300 frame con le sette
+Core Options approvate. Il gioco è arrivato alla schermata coin-ready in
+modalità `STAND ALONE`; i valori scelti sono rimasti nel `.srm`, il contenitore
+è valido, il checksum additivo EEPROM a 16 bit è stato rigenerato e i due banchi
+sono rimasti identici. Un secondo avvio con `NVRAM Settings=Disabled` ha
+ricaricato lo stesso `.srm` e mantenuto invariati tutti i campi selezionati.
+Questa verifica copre avvio e persistenza NVRAM: non attribuisce a ogni opzione
+un effetto di gameplay, audio o rete.
+
 ## Limiti
 
 Nel percorso software: nessun profilo completo volante/lightgun/twin-stick,
@@ -188,10 +197,10 @@ sono da completare nella milestone 3, seguendo [LIBRETRO_DESIGN.md](LIBRETRO_DES
 
 Le opzioni selezionate per gli altri parent restano rinviate finché il relativo
 formato non è scrivibile con controllo d'integrità dimostrato. `hpyagu98` e
-`pltkids` non ripristinano ancora le modifiche dopo il riavvio. `bel`,
-`gunblade` e la backup RAM di `sgt24h` usano formati per cui manca ancora una
-prova conclusiva dell'algoritmo d'integrità; questi tre giochi non espongono
-Core Options NVRAM. `rascot2` resta fuori dalla campagna corrente.
+`pltkids` non ripristinano ancora le modifiche dopo il riavvio. `bel` e
+`gunblade` usano formati per cui manca ancora una prova conclusiva
+dell'algoritmo d'integrità; questi due giochi non espongono Core Options NVRAM.
+`rascot2` resta fuori dalla campagna corrente.
 
 La prova di gameplay usa input sintetici attraverso RetroArch: non convalida
 un controller fisico. CoreAudio e PCM registrato confermano il percorso audio;
