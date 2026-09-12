@@ -119,6 +119,9 @@ con periferiche reali per le combinazioni dichiarate supportate.
 
 - Trattare singolarmente Baseball, Water Ski, Ski Super G, Top Skater e Wave
   Runner; riesaminare i tre casi generici 1P sulla base di dati verificati.
+- Verificare e allineare gli I/O di Air Walkers alla matrice MAME P1-P4,
+  includendo multiplexing e linee Start/Coin, prima di implementare il profilo
+  a quattro giocatori.
 - Integrare ciascun profilo con i suoi test senza estendere implicitamente le
   conclusioni agli altri cabinet o confondere input supportati e gioco funzionante.
 
@@ -154,6 +157,36 @@ Criterio: matrice dei risultati automatici e delle prove fisiche. La milestone
 3 completa richiede prove di guida, combattimento e lightgun con almeno un
 controllo fisico appropriato per le categorie dichiarate supportate.
 
+### 3.8 Core Options derivate da Supermodel
+
+Stato: `A/V Timing` e `Timing / FPS Overlay` sono implementate. Il timing nativo
+57,524160 Hz resta il default; la modalità di compatibilità presenta a 60 Hz senza
+accelerare la macchina, distribuendo i frame duplicati e l'audio sulla cadenza
+del frontend. L'overlay usa lo status OSD Libretro e riporta medie su 61 callback
+per macchina, video, audio, `retro_run`, frame peggiore, cadenza effettiva e
+capacità stimata. `Frame Skip` è stato escluso per scelta progettuale.
+
+Opzioni legate ai controlli, da introdurre soltanto con i relativi profili:
+
+- modalità Lightgun/Mouse/Analog Stick, mirini e ricarica fuori schermo;
+- recoil della pistola e intensità;
+- cambio a quattro marce H-Gate/Standard;
+- risposta e intervallo di sterzo, acceleratore e freno;
+- rumble e force feedback, distinguendo le capacità realmente offerte da
+  Libretro da quelle direzionali dello standalone.
+
+Altre opzioni da valutare separatamente:
+
+- abilitazione dell'emulazione audio, solo se produce un risparmio reale;
+- volume separato della musica DSB/MPEG, se il mixer conserva flussi distinti;
+- network board e numero di cabinet dopo un trasporto Libretro Netpacket;
+- widescreen reale, con modifica di viewport 3D e composizione 2D;
+- filtri di upscaling 2D e supersampling;
+- adattamento colore CRT specifico Model 2, solo con una necessità misurata.
+
+Queste voci sono una roadmap, non funzionalità dichiarate. Renderer Model 3,
+PowerPC/JIT e DSP specifici di Supermodel restano esclusi perché non applicabili.
+
 ## 4. Compatibilità e build di distribuzione
 
 Prima matrice CI implementata: Linux x86_64, macOS arm64/Intel e Windows
@@ -174,7 +207,7 @@ Criterio: artefatti installabili e testati sulle piattaforme dichiarate, con
 matrice di compatibilità e limiti documentati. Prima di allargare la
 redistribuzione, verificare i termini dei componenti e conservare gli avvisi.
 
-## 5. Rendering GPU integrato nel frontend — anticipato, prima versione macOS verificata
+## 5. Rendering GPU integrato nel frontend — Vulkan e OpenGL implementati
 
 - Scegliere il backend dopo aver verificato i contesti realmente disponibili
   nelle build RetroArch target. Non assumere OpenGL 4.3 su macOS.
@@ -185,12 +218,24 @@ redistribuzione, verificare i termini dei componenti e conservare gli avvisi.
 Criterio: rendering hardware in RetroArch con recupero del contesto e
 confronti visivi documentati, mantenendo il percorso software funzionante.
 
-Stato: adattatore Vulkan implementato con passaggi/shader upstream condivisi,
+Stato: adattatori Vulkan e OpenGL implementati con passaggi/shader upstream condivisi,
 contesto del frontend, Core Options Video e risoluzioni 1×–4×. VF2 provato in
 RetroArch macOS; quattro schede provate nel frontend GPU di verifica; confronto
 pixel esatto con lo standalone Vulkan a 1×/4× e prove di ricreazione del dispositivo.
+OpenGL 4.3/OpenGL ES 3.1 riusa i pass upstream ed è stato verificato tramite
+EGL/Mesa con VF2 e Last Bronx, scale 1×/4× e perdita/ricreazione del contesto;
+immagine, audio e NVRAM coincidono con la baseline software nei casi confrontati.
+La modalità 60 Hz ora forza una nuova immagine dopo ogni ricreazione del contesto,
+anche quando il callback avrebbe duplicato il frame precedente; il percorso
+framebuffer speciale è stato verificato sul title screen di Last Bronx.
 La verifica degli altri sistemi e della compatibilità estesa continua al punto 4.
 Dettagli, limiti e avvio con MoltenVK aggiornato: [GPU.md](GPU.md).
+
+Da fare: validazione su Windows 11 con GPU dedicata e RetroArch reale. La prova
+deve distinguere build/ABI, caricamento del core e resa sulla GPU fisica; coprire
+OpenGL e Vulkan, scale 1×/4×, lifecycle e persistenza SRAM, conservando log e
+screenshot. L'accesso remoto può usare SSH per trasferimenti e comandi, con il
+test grafico avviato nella sessione desktop dell'utente.
 
 ## 6. Save state e funzioni avanzate
 

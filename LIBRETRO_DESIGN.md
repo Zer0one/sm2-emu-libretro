@@ -2,7 +2,7 @@
 
 Linee guida per le milestone 2 e successive di [PORTING_PLAN.md](PORTING_PLAN.md).
 Il primo core software della milestone 2 è implementato: vedere [LIBRETRO.md](LIBRETRO.md).
-Sono implementate anche le Core Options Video del renderer Vulkan, la SRAM
+Sono implementate anche le Core Options Video dei renderer Vulkan/OpenGL, la SRAM
 gestita dal frontend e le prime opzioni System per VF2. Profili completi, opzioni Input
 e altre funzioni descritte qui restano proposte per i passaggi successivi.
 
@@ -36,8 +36,10 @@ neutrali su backup RAM ed EEPROM; formato, import e opzioni restano nell'adattat
 La GPU aggiunge `render/vk/pass_context.h`, implementato dal contesto standalone
 e dall'adattatore. I passaggi tilemap/poly3D dipendono da questa interfaccia
 anziché dal contesto con finestra; shader e algoritmi restano condivisi.
-CMake abilita gli shader anche per Libretro Vulkan e compila i passaggi con
-entry point risolti dal frontend. Nessun nuovo accesso alla macchina/CPU.
+CMake abilita gli shader anche per Libretro Vulkan/OpenGL e compila i passaggi
+con entry point risolti dal frontend. Nessun nuovo accesso alla macchina/CPU.
+OpenGL riusa i passaggi upstream GL e riceve dal frontend funzioni e framebuffer;
+non introduce una finestra SDL né una copia dei renderer nell'adattatore.
 
 Per ogni aggiornamento, registrare il commit upstream integrato e i riferimenti
 dei submodule, rivedere API e metadati modificati e risolvere i conflitti nel
@@ -158,7 +160,9 @@ override aggiornano il CRC e non toccano altri campi o calibrazioni.
 
 Affidare al frontend remapping, opzioni per gioco, shader, volume generale,
 pausa, screenshot e sincronizzazione della presentazione. Il core comunica
-il timing hardware. Evitare una seconda interfaccia ImGui o nuovi parametri
+per default il timing hardware; la modalità esplicita `60 Hz Compatibility`
+mantiene la velocità della macchina distribuendo duplicazioni video e pacchetti
+audio sulla cadenza del frontend. Evitare una seconda interfaccia ImGui o nuovi parametri
 EmulationStation per funzioni già gestite da RetroArch.
 
 ## Funzioni da valutare separatamente

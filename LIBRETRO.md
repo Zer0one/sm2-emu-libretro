@@ -5,7 +5,7 @@ Adattatore in `src/libretro/`, indipendente da SDL, ImGui e API grafiche.
 Riutilizza loader, macchina, scheda audio e renderer software upstream.
 Nessun cambiamento ulteriore a CPU o scheduling rispetto alla milestone 1.
 
-Aggiornamento: è disponibile anche la build con renderer Vulkan e Core Options
+Aggiornamento: è disponibile anche la build con renderer Vulkan/OpenGL e Core Options
 Video, documentata in [GPU.md](GPU.md). Le funzioni e le prove descritte qui
 riguardano il percorso software originario.
 
@@ -57,10 +57,10 @@ o firmware separati, valgono le regole del database upstream.
   Supermodel. Quando è Enabled mostra soltanto le opzioni del parent caricato e
   applica tutti i valori scelti all'avvio. Non usa `Keep Current`: disabilitando
   l'opzione generale il core lascia invariati i campi NVRAM.
-- 186 impostazioni operatore verificate per 32 parent. Oltre ai primi nove,
-  sono coperti `airwlkrs`, `dynabb`, `dynabb97`, `dynamcop`, `hotd`, `indy500`,
+- 196 impostazioni operatore verificate per 35 parent. Oltre ai primi nove,
+  sono coperti `airwlkrs`, `bel`, `dynabb`, `dynabb97`, `dynamcop`, `hotd`, `hpyagu98`, `indy500`,
   `gunblade`, `lastbrnx`, `manxtt`, `motoraid`, `overrev`, `rchase2`, `segawski`,
-  `sgt24h`, `skisuprg`, `skytargt`, `srallyc`, `stcc`, `topskatr`, `von`, `waverunr`,
+  `pltkids`, `sgt24h`, `skisuprg`, `skytargt`, `srallyc`, `stcc`, `topskatr`, `von`, `waverunr`,
   `zerogun` e `zeroguna`. I valori e le patch specifiche restano in una
   tabella separata dal motore generico, così gli aggiornamenti upstream non
   richiedono modifiche alle macchine emulate.
@@ -70,7 +70,7 @@ o firmware separati, valgono le regole del database upstream.
   In VF2 Country e Drink sono indipendenti, anche se il Service Menu originale
   modifica Drink durante alcune selezioni di Country.
 - Ogni formato viene riconosciuto prima della scrittura. Il core rigenera CRC o
-  checksum e sincronizza copie speculari ed EEPROM soltanto per i 31 layout
+  checksum e sincronizza copie speculari ed EEPROM soltanto per i 34 layout
   dimostrati dai campioni reali; un layout non riconosciuto resta intatto.
 - Errori di caricamento segnalati al frontend; dettagli del loader nel log
   stderr. Nessun percorso implicito nella directory corrente.
@@ -195,10 +195,47 @@ valido. Un secondo avvio con `NVRAM Settings=Disabled` ha importato lo stesso
 exit code 0. La verifica copre avvio e persistenza; non attribuisce a ciascuna
 opzione un effetto specifico durante il gioco.
 
+La prova di Behind Enemy Lines ha distinto il checksum reale da una formula
+equivalente solo sui campioni già acquisiti: ogni banco EEPROM somma le 31
+parole little endian da 16 bit e aggiunge `0x000c`. L’algoritmo con riporto è
+stato verificato sui 53 campioni, sui 106 banchi speculari e sullo stato di
+fabbrica appena creato dal gioco. La ROM reale ha applicato Country=EXPORT,
+Advertise Sound=OFF e Difficulty=10, raggiungendo l’attract mode con contenitore,
+checksum e mirror validi. Un secondo avvio con `NVRAM Settings=Disabled` ha
+ricaricato il `.srm` e conservato i tre valori; entrambe le sessioni sono
+terminate con exit code 0. La prova copre avvio e persistenza.
+
+Hanguk Pro Yagu 98 e Pilot Kids sono stati verificati con due avvii reali per
+gioco. Il primo ha applicato rispettivamente Difficulty=HARDEST, Advertise
+Sound=OFF, Cabinet Type=MEGALO e Favorite=TIGERS; Difficulty=More Difficult,
+Demo Sound=On e Continue=Off. Entrambi hanno raggiunto il gioco con contenitore,
+CRC e mirror EEPROM validi. Il secondo avvio con `NVRAM Settings=Disabled` ha
+ricaricato il `.srm` e mantenuto l’intera EEPROM invariata, inclusi il prefisso
+di protezione di `hpyagu98` e la firma `S32A` di `pltkids`. Le quattro sessioni
+sono terminate con exit code 0. La prova copre avvio e persistenza.
+
+## A/V Timing e overlay diagnostico
+
+Le Core Options Video includono `A/V Timing`, con `Native (57.524160 Hz)` come
+default e `60 Hz Compatibility` come alternativa. La seconda non esegue un
+frame macchina per ogni callback a 60 Hz, perché ciò accelererebbe il gioco:
+mantiene la cadenza hardware e duplica periodicamente l'ultimo frame. L'audio
+resta al sample rate effettivo della scheda e viene distribuito su pacchetti da
+60 Hz; eventuali campioni non accettati o non ancora disponibili restano in
+coda e vengono recuperati nelle callback successive.
+
+`Timing / FPS Overlay` segue il diagnostico del core Supermodel adattandolo alle
+fasi disponibili in SM2. Ogni 61 callback pubblica tramite lo status OSD
+Libretro tempi medi di macchina, video e audio/pacing, durata media e peggiore
+di `retro_run`, FPS effettivi e capacità stimate di engine e callback. Funziona
+con output software, Vulkan e OpenGL senza introdurre ImGui o un secondo overlay nel
+renderer. L'opzione si aggiorna immediatamente; il cambio di timing richiede il
+riavvio del contenuto perché modifica le informazioni A/V dichiarate al frontend.
+
 ## Limiti
 
 Nel percorso software: nessun profilo completo volante/lightgun/twin-stick,
-cheat o save state. Renderer Vulkan e Core Options
+cheat o save state. Renderer Vulkan/OpenGL e Core Options
 Video sono disponibili nella build descritta in [GPU.md](GPU.md). La geometria
 nativa software è fissa. Rewind, run-ahead e netplay non sono dichiarati supportati.
 Le etichette delle azioni specifiche dei giochi e le varianti dei dispositivi
@@ -206,9 +243,26 @@ sono da completare nella milestone 3, seguendo [LIBRETRO_DESIGN.md](LIBRETRO_DES
 
 Le opzioni selezionate per gli altri parent restano rinviate finché il relativo
 formato non è scrivibile con controllo d'integrità dimostrato. `hpyagu98` e
-`pltkids` non ripristinano ancora le modifiche dopo il riavvio. `bel` usa un
-formato per cui manca ancora una prova conclusiva dell'algoritmo d'integrità e non espone Core Options NVRAM.
-`rascot2` resta fuori dalla campagna corrente.
+`pltkids` non ripristinano le modifiche eseguite dai rispettivi service menu dopo
+il riavvio. Per `hpyagu98`
+la stessa perdita è stata riprodotta nello standalone mainstream 0.9.4 e in
+MAME 0.289: il menu mostra `FAVORITE=TIGERS`, ma la riapertura mostra `OFF`.
+Anche MAME perde `Demo Sound=On` di `pltkids` e riapre il menu su `Off`.
+Il confronto esclude quindi il contenitore `.srm` Libretro. Lo stesso script conserva invece
+`ADVERTISE SOUND=OFF` di `vf2`, quindi il risultato non dipende dalla procedura
+di uscita automatica. MAME e SM2-Emu espongono entrambi la SRAM di backup da
+16 KiB all'indirizzo Model 2 `0x01d00000` e la EEPROM 93C46: non emerge una
+batteria tampone genericamente assente dall'emulazione. Il tracciamento mostra
+che i due programmi non eseguono il commit delle modifiche del menu. La lettura
+all'avvio funziona però correttamente: EEPROM con CRC e mirror rigenerati hanno
+prodotto `FAVORITE=TIGERS` in `hpyagu98` e `Demo Sound=On` in `pltkids`.
+Le Core Options aggirano il limite applicando i valori alla EEPROM prima del
+reset, senza patchare la RAM volatile. La causa originaria resta aperta: in un
+passaggio futuro va seguito il percorso di salvataggio dei due programmi per
+capire perché cambio ed `EXIT` non scrivono né sulla porta EEPROM né nella SRAM
+di backup, e correggere l'emulazione se il mancato commit dipende da SM2-Emu o
+dalla piattaforma Model 2 condivisa con MAME. `rascot2` resta fuori dalla
+campagna corrente.
 
 La prova di gameplay usa input sintetici attraverso RetroArch: non convalida
 un controller fisico. CoreAudio e PCM registrato confermano il percorso audio;

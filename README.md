@@ -7,10 +7,11 @@ for attribution, comparison and future upstream updates.
 
 **Status: first software Libretro core implemented and tested on macOS arm64.**
 The isolated adapter uses the upstream machine and software renderer, with
-native timing/audio, basic digital inputs and frontend-managed save RAM.
+native timing/audio by default, an optional speed-preserving 60 Hz cadence,
+a Libretro timing/FPS overlay, basic digital inputs and frontend-managed save RAM.
 1800-frame video/audio/NVRAM comparisons pass on all four board variants.
-The data-driven NVRAM Core Options currently cover 186 reviewed operator
-settings across 32 parent sets. Each supported title validates its native
+The data-driven NVRAM Core Options currently cover 196 reviewed operator
+settings across 35 parent sets. Each supported title validates its native
 layout and updates the corresponding integrity field and settings mirror.
 
 See [Libretro build and validation](LIBRETRO.md) for the artifact, commands
@@ -81,8 +82,11 @@ sequenza diagnostica di avvio specifica del gioco. Il settimo lotto comprende
 `dynabb`, `dynabb97`, `hpyagu98`, `schamp` e `vstriker`: 173 campioni verificati
 da `validate_nvram_batch7.py`. I due Dynamite Baseball condividono menu e
 struttura EEPROM, mentre Hanguk Pro Yagu 98 condivide il menu ma, nel core
-corrente, non ripristina le modifiche dopo il riavvio; il relativo YAML registra
-il limite senza proporre campi NVRAM non dimostrati. Sonic Championship e Virtua
+corrente, nello standalone mainstream 0.9.4 e in MAME 0.289, perde le modifiche
+al riavvio; MAME riproduce la perdita anche per `pltkids`. Il tracciamento ha
+però identificato i layout EEPROM validi e una patch diretta prima del boot ha
+ripristinato correttamente `FAVORITE=TIGERS` e `Demo Sound=On`. I relativi YAML
+registrano layout, mirror, CRC e offset dimostrati. Sonic Championship e Virtua
 Striker includono anche la verifica CRC16-CCITT delle rispettive strutture in
 backup RAM. I nuovi YAML classificano
 separatamente tipologia di gioco, famiglia dei controlli, produttore dichiarato
@@ -624,10 +628,11 @@ project's reverse engineering of this hardware. The emulation is derived from
 MAME's Sega Model 2 driver and its device cores, which their authors released
 under the same licence. See `NOTICE` for per-component attribution.
 
-## Core Libretro: renderer Vulkan
+## Core Libretro: renderer Vulkan e OpenGL
 
-La prima GPU del core è implementata e verificata su macOS, con passaggi
-upstream condivisi, risoluzione 1×–4× e Core Options Video. Istruzioni di build,
-avvio RetroArch con MoltenVK aggiornato e prove: [GPU.md](GPU.md).
+Il core offre Vulkan 1.3 e OpenGL 4.3/OpenGL ES 3.1 con passaggi upstream
+condivisi, risoluzione 1×–4× e Core Options Video. Vulkan è verificato in
+RetroArch macOS/Batocera; OpenGL è verificato con EGL/Mesa e resta da provare
+su un frontend e driver hardware. Build, avvio e prove: [GPU.md](GPU.md).
 
 Build multipiattaforma e pacchetti GitHub Actions: [CI.md](CI.md).
