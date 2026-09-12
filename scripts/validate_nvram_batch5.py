@@ -162,6 +162,10 @@ def main() -> None:
             if game == "overrev":
                 assert eeprom[0x08:0x3C] == eeprom[0x3C:0x70], f"{stem}: EEPROM mirror"
             elif game == "sgt24h":
+                assert nvram[0:2] == b"\x85\xad", f"{stem}: backup RAM signature"
+                assert eeprom[0x10:0x12] == b"\x85\xad", f"{stem}: link EEPROM signature"
+                stored_sum = int.from_bytes(eeprom[0x08:0x0A], "little")
+                assert stored_sum == sum(eeprom[0x0A:0x28]) & 0xFFFF, f"{stem}: link EEPROM checksum"
                 assert eeprom[0x08:0x28] == eeprom[0x28:0x48], f"{stem}: link EEPROM mirror"
             elif game == "stcc":
                 assert nvram[:0x490] == nvram[0x490:0x920], f"{stem}: backup RAM mirror"
@@ -171,7 +175,7 @@ def main() -> None:
                 validate_field(stem, nvram, eeprom, EXPECTED[game][name])
         print(f"{game}: validated {len(rows)} samples")
         total += len(rows)
-    print(f"Validated {total} samples: containers, memories, screenshots, fields and mirrors")
+    print(f"Validated {total} samples: containers, memories, screenshots, fields, checksums and mirrors")
 
 
 if __name__ == "__main__":

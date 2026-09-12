@@ -15,17 +15,23 @@ verification:
     samples: 33
     common_baseline: sgt24h-base.srm
     persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/sgt24h/generated
-    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_link_settings_bank]
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, backup_signature, additive_link_checksum, mirrored_link_settings_bank, game_code_save_routine]
 
 controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
 
 nvram_layout:
   storage: backup_ram_with_link_eeprom
-  backup_ram_settings: {range: {offset: 0x0a, size: 23}, integrity_offset: 0x68, integrity_size: 2, integrity_algorithm: unidentified}
+  backup_ram_settings:
+    range: {offset: 0x0a, size: 23}
+    validation_signature: {offset: 0x00, size: 2, byte_order: little_endian, value: 0xad85}
+    integrity: none
+    runtime_counter: {offset: 0x68, size: 4, note: initialized to zero by factory reset and never written by the Game Assignments save routine}
   link_eeprom_banks:
     first: {offset: 0x08, size: 32}
     mirror: {offset: 0x28, size: 32}
-  link_eeprom_integrity: {checksum_offset_within_bank: 0, size: 1, algorithm: unidentified}
+  link_eeprom_integrity:
+    checksum: {offset: 0x08, size: 2, byte_order: little_endian, algorithm: additive_sum16, data_range: {offset: 0x0a, size: 30}}
+    mirror_policy: copy_complete_first_bank_after_checksum
 
 menus:
   game_assignments:
