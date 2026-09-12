@@ -38,7 +38,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build g++ glslc libvulkan-dev
+          sudo apt-get install -y cmake ninja-build g++ glslc libvulkan-dev libegl1-mesa-dev libgles2-mesa-dev
       - name: macOS dependencies
         if: runner.os == 'macOS'
         run: brew install ninja shaderc vulkan-headers
@@ -56,18 +56,19 @@ jobs:
             mingw-w64-x86_64-python
             mingw-w64-x86_64-shaderc
             mingw-w64-x86_64-vulkan-headers
-      - name: Configure core with software and Vulkan renderers
+      - name: Configure core with software, Vulkan and OpenGL renderers
         run: |
           extra=()
           if [[ "$RUNNER_OS" == Linux ]]; then
             extra+=('-DCMAKE_SHARED_LINKER_FLAGS=-static-libgcc -static-libstdc++')
+            extra+=('-DSM2_LIBRETRO_GL_CHECKS=ON')
           elif [[ "$RUNNER_OS" == macOS ]]; then
             extra+=("-DCMAKE_PREFIX_PATH=$(brew --prefix)" '-DCMAKE_OSX_DEPLOYMENT_TARGET=13.0')
           fi
           cmake -S . -B build-ci -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DSM2_BUILD_STANDALONE=OFF -DSM2_BUILD_TESTS=OFF \
-            -DSM2_BUILD_LIBRETRO=ON -DSM2_LIBRETRO_VULKAN=ON \
+            -DSM2_BUILD_LIBRETRO=ON -DSM2_LIBRETRO_VULKAN=ON -DSM2_LIBRETRO_OPENGL=ON \
             -DSM2_BUILD_OPENGL_DESKTOP=OFF \
             -DSM2_LIBRETRO_CHECKS=ON -DSM2_LIBRETRO_GPU_CHECKS=OFF \
             -DCMAKE_DISABLE_FIND_PACKAGE_miniz=TRUE \

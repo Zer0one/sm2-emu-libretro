@@ -51,6 +51,25 @@ if(SM2_LIBRETRO_VULKAN)
     target_link_libraries(sm2_libretro PRIVATE sm2_libretro_gpu)
 endif()
 
+if(SM2_LIBRETRO_OPENGL)
+    # Reuse the upstream GL passes with the context and destination framebuffer
+    # supplied by Libretro. SDL headers provide Khronos declarations only; no
+    # SDL window, platform backend, ImGui renderer, or GL library is linked.
+    add_library(sm2_libretro_gl STATIC
+        opengl_renderer.cpp
+        ../render/gl/gl_common.cpp
+        ../render/gl/gl_poly3d_pass.cpp
+        ../render/gl/gl_present_pass.cpp
+        ../render/gl/gl_tilemap_pass.cpp)
+    target_include_directories(sm2_libretro_gl SYSTEM PRIVATE
+        "${PROJECT_SOURCE_DIR}/3rdparty/SDL/include")
+    target_include_directories(sm2_libretro_gl PRIVATE . include "${PROJECT_SOURCE_DIR}/src")
+    target_link_libraries(sm2_libretro_gl PRIVATE sm2_hw sm2_render sm2_shaders
+        sm2_warnings)
+    target_compile_definitions(sm2_libretro PRIVATE SM2_LIBRETRO_OPENGL=1)
+    target_link_libraries(sm2_libretro PRIVATE sm2_libretro_gl)
+endif()
+
 option(SM2_LIBRETRO_GPU_CHECKS "Build the separate Vulkan test frontend" ${SM2_LIBRETRO_CHECKS})
 if(SM2_LIBRETRO_VULKAN AND SM2_LIBRETRO_GPU_CHECKS)
     # A real GPU test frontend, never linked into the core.
@@ -59,5 +78,18 @@ if(SM2_LIBRETRO_VULKAN AND SM2_LIBRETRO_GPU_CHECKS)
     target_include_directories(sm2-vulkan-test-host PRIVATE include "${SM2_VULKAN_INCLUDE_DIR}")
     target_link_libraries(sm2-vulkan-test-host PRIVATE "${SM2_TEST_VULKAN_LOADER}")
     set_target_properties(sm2-vulkan-test-host PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/libretro-checks")
+endif()
+
+option(SM2_LIBRETRO_GL_CHECKS "Build the separate EGL/GLES test frontend" OFF)
+if(SM2_LIBRETRO_OPENGL AND SM2_LIBRETRO_GL_CHECKS)
+    find_path(SM2_TEST_EGL_INCLUDE_DIR EGL/egl.h REQUIRED)
+    find_library(SM2_TEST_EGL_LIBRARY NAMES EGL REQUIRED)
+    find_library(SM2_TEST_GLES_LIBRARY NAMES GLESv2 REQUIRED)
+    add_library(sm2-opengl-test-host SHARED checks/opengl_host.cpp)
+    target_include_directories(sm2-opengl-test-host PRIVATE include "${SM2_TEST_EGL_INCLUDE_DIR}")
+    target_link_libraries(sm2-opengl-test-host PRIVATE
+        "${SM2_TEST_EGL_LIBRARY}" "${SM2_TEST_GLES_LIBRARY}")
+    set_target_properties(sm2-opengl-test-host PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/libretro-checks")
 endif()

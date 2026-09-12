@@ -149,9 +149,10 @@ void PresentPass::upload_from_host(std::span<const u32> pixels)
                  static_cast<GLsizei>(kHeight), GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
 }
 
-void PresentPass::present(u32 window_width, u32 window_height)
+void PresentPass::present(u32 window_width, u32 window_height, u32 framebuffer,
+                          bool letterbox)
 {
-    BindFramebuffer(GL_FRAMEBUFFER, 0);
+    BindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
     // Clears the whole window so the letterbox bars are defined, matching
     // render::vk::PresentPass::record()'s own VK_ATTACHMENT_LOAD_OP_CLEAR.
@@ -162,7 +163,10 @@ void PresentPass::present(u32 window_width, u32 window_height)
     // No glEnable(GL_SCISSOR_TEST) needed: the viewport alone already
     // constrains the fullscreen triangle to the letterbox rectangle, and the
     // clear above already covers the full window for the bars outside it.
-    const render::Letterbox box = render::compute_letterbox(window_width, window_height);
+    const render::Letterbox box = letterbox
+        ? render::compute_letterbox(window_width, window_height)
+        : render::Letterbox{0.0F, 0.0F, static_cast<float>(window_width),
+                            static_cast<float>(window_height)};
     Viewport(static_cast<GLint>(box.x), static_cast<GLint>(box.y),
             static_cast<GLsizei>(box.width), static_cast<GLsizei>(box.height));
 
@@ -181,9 +185,28 @@ void PresentPass::present(u32 window_width, u32 window_height)
     Disable(GL_BLEND);
     ActiveTexture(GL_TEXTURE0);
     BindTexture(GL_TEXTURE_2D, m_native_texture);
+    // A Libretro hardware framebuffer is requested at the core's exact output
+    // size.  Keep that copy texel-exact; linear filtering at 1:1 can still mix
+    // neighbouring texels because of raster interpolation precision.  The
+    // standalone path retains linear filtering when its window requires a
+    // non-integer resize.
+    const GLint filter = box.width == width() && box.height == height()
+        ? GL_NEAREST : GL_LINEAR;
+    TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+    TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
 
     BindVertexArray(m_vao);
     DrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void PresentPass::abandon_context()
+{
+    m_native_texture = 0;
+    m_fbo = 0;
+    m_stencil_renderbuffer = 0;
+    m_program = 0;
+    m_push_ubo = 0;
+    m_vao = 0;
 }
 
 }  // namespace sm2::render::gl

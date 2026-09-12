@@ -44,6 +44,7 @@ public:
 
     [[nodiscard]] bool init();
     void shutdown();
+    void abandon_context();
 
     /// As render::vk::TilemapPass::compute(): dispatch the compose shader
     /// against tile RAM, character RAM and the pen table, refreshing this

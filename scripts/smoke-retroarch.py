@@ -54,8 +54,12 @@ def main():
     for name in ['retroarch','core','system','rom','output']:
         p.add_argument('--'+name,type=Path,required=True)
     p.add_argument('--timeout',type=int,default=180)
-    p.add_argument('--renderer',choices=['software','vulkan'],default='software')
+    p.add_argument('--renderer',choices=['software','vulkan','opengl'],default='software')
+    p.add_argument('--opengl-driver',choices=['gl','glcore'],default='glcore',
+                   help='RetroArch video driver used with --renderer opengl')
     p.add_argument('--scale',type=int,choices=range(1,5),default=1)
+    p.add_argument('--av-timing',choices=['native','60hz'],default='native')
+    p.add_argument('--timing-overlay',choices=['disabled','enabled'],default='disabled')
     p.add_argument('--nvram-settings',choices=['disabled','enabled'],default='disabled')
     p.add_argument('--vf2-country',choices=['japan','usa','export'],default='japan')
     p.add_argument('--vf2-drink',choices=['ok','ng'],default='ok')
@@ -91,25 +95,29 @@ def main():
                 movie+=struct.pack('<4BHh',port,1,0,0,button,int(port==0 and button in pressed))
         movie+=b'f'
     replay=out/'vf2-inputs.replay';replay.write_bytes(movie)
+    hardware=a.renderer!='software'
     cfg={'system_directory':str(a.system.resolve()),'savefile_directory':str(out/'saves'),
          'savestate_directory':str(out/'states'),'screenshot_directory':str(out/'screenshots'),
          'playlist_directory':str(out/'playlists'),'rgui_config_directory':str(out/'config'),
-         'video_driver':'vulkan' if a.renderer=='vulkan' else 'gl','audio_driver':a.audio_driver,'input_driver':a.input_driver,
+         'video_driver':{'vulkan':'vulkan','opengl':a.opengl_driver,'software':'gl'}[a.renderer],
+         'audio_driver':a.audio_driver,'input_driver':a.input_driver,
          'video_fullscreen':'false','video_windowed_fullscreen':'false','video_scale':'2',
          'video_vsync':'false','audio_sync':'true','audio_enable':'true',
          'config_save_on_exit':'false','content_history_enable':'false',
          'sort_savefiles_enable':'false','sort_savefiles_by_content_enable':'false',
          'savestate_auto_save':'false','savestate_auto_load':'false',
          'video_shader_enable':'false','video_threaded':'false','pause_nonactive':'false',
-         'record_driver':'wav','video_gpu_screenshot':'true' if a.renderer=='vulkan' else 'false','audio_max_timing_skew':'0.0',
+         'record_driver':'wav','video_gpu_screenshot':'true' if hardware else 'false','audio_max_timing_skew':'0.0',
          'auto_overrides_enable':'false','auto_remaps_enable':'false'}
     for key in ['content_history_path','content_favorites_path','content_image_history_path',
                 'content_music_history_path','content_video_history_path']:
         cfg[key]=str(out/(key+'.lpl'))
-    cfg['video_gpu_record']='true' if a.renderer=='vulkan' else 'false'
+    cfg['video_gpu_record']='true' if hardware else 'false'
     cfg['core_options_path']=str(out/'core-options.cfg')
     (out/'core-options.cfg').write_text(
         f'sm2_renderer = "{a.renderer}"\nsm2_internal_resolution = "{a.scale}"\n'
+        f'sm2_av_timing = "{a.av_timing}"\n'
+        f'sm2_timing_overlay = "{a.timing_overlay}"\n'
         f'sm2_nvram_settings = "{a.nvram_settings}"\n'
         f'sm2_nvram_vf2_country = "{a.vf2_country}"\n'
         f'sm2_nvram_vf2_drink = "{a.vf2_drink}"\n')
@@ -139,9 +147,14 @@ def main():
     run_log=(out/'run.log').read_text()
     assert '[Replay] Invalid' not in run_log and 'ran out of' not in run_log
     assert 'Failed to initialize audio driver' not in run_log
+    if a.timing_overlay=='enabled': assert '[SM2 Timing]' in run_log
     if a.renderer=='vulkan':
         assert '[SM2 GPU] Negotiated Vulkan 1.3:' in run_log
         assert '[SM2 GPU] Ready:' in run_log and 'upstream 2D compute + 3D' in run_log
+        assert '[libretro ERROR]' not in run_log
+    elif a.renderer=='opengl':
+        assert '[SM2 GPU] Ready: OpenGL' in run_log
+        assert 'upstream 2D compute + 3D' in run_log
         assert '[libretro ERROR]' not in run_log
     else:
         assert '[SM2 GPU] Ready:' not in run_log
@@ -164,7 +177,7 @@ def main():
     if a.nvram_settings=='enabled':
         assert difficulty==expected_difficulty
         assert display_crt==(a.vf2_display_type=='crt')
-    report={'recording_format':recording_format,'renderer':a.renderer,'internal_scale':a.scale,'vf2_country':country,'vf2_drink':'NG' if drink_ng else 'OK','vf2_difficulty':difficulty,'vf2_display_type':'C.R.T.' if display_crt else 'Projector','save_ram_size':len(srm),'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,
+    report={'recording_format':recording_format,'renderer':a.renderer,'internal_scale':a.scale,'av_timing':a.av_timing,'timing_overlay':a.timing_overlay,'vf2_country':country,'vf2_drink':'NG' if drink_ng else 'OK','vf2_difficulty':difficulty,'vf2_display_type':'C.R.T.' if display_crt else 'Projector','save_ram_size':len(srm),'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,
             'audio_peak':peak,'audio_sha256':hashlib.sha256(pcm).hexdigest(),
             'screenshot_sha256':hashlib.sha256(png).hexdigest(),
             'note':'Inspect screenshot for gameplay; audible quality and physical devices require manual validation.'}

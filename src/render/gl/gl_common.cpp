@@ -141,8 +141,11 @@ void resolve_buffer_storage(SDL_FunctionPointer (*get_proc)(const char*), bool i
     // GLES exposes this only as glBufferStorageEXT, never under the
     // unsuffixed desktop name. A null result is not an error here --
     // create_persistent_buffer() falls back to BufferSubData.
-    BufferStorage = reinterpret_cast<PFNGLBUFFERSTORAGEPROC>(
-        get_proc(is_es ? "glBufferStorageEXT" : "glBufferStorage"));
+    const char* extension = is_es ? "GL_EXT_buffer_storage" : "GL_ARB_buffer_storage";
+    BufferStorage = has_gl_extension(extension)
+        ? reinterpret_cast<PFNGLBUFFERSTORAGEPROC>(
+              get_proc(is_es ? "glBufferStorageEXT" : "glBufferStorage"))
+        : nullptr;
 }
 
 const char* active_version_directive()
@@ -374,7 +377,7 @@ PersistentBuffer create_persistent_buffer(usize bytes, u32 target)
     // BufferSubData per write is the correct fallback, not a gap: this
     // project's floor is 4.3, and 4.3-only hardware without this extension
     // is expected to exist even if none was available to test against.
-    if (has_gl_extension("GL_ARB_buffer_storage")) {
+    if (BufferStorage != nullptr) {
         constexpr GLbitfield kStorageFlags =
             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         BufferStorage(target, static_cast<GLsizeiptr>(bytes), nullptr, kStorageFlags);

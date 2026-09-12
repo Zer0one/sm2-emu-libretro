@@ -138,9 +138,12 @@ endif()
 
 endif() # SM2_BUILD_STANDALONE
 
+if(SM2_LIBRETRO_VULKAN OR SM2_LIBRETRO_OPENGL)
+    find_program(SM2_GLSLC NAMES glslc REQUIRED)
+endif()
+
 if(SM2_LIBRETRO_VULKAN)
     find_path(SM2_VULKAN_INCLUDE_DIR vulkan/vulkan.h REQUIRED)
-    find_program(SM2_GLSLC NAMES glslc REQUIRED)
     if(NOT TARGET GPUOpen::VulkanMemoryAllocator)
         add_library(GPUOpen::VulkanMemoryAllocator INTERFACE IMPORTED)
         set_target_properties(GPUOpen::VulkanMemoryAllocator PROPERTIES

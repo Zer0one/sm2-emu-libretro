@@ -38,7 +38,8 @@ set(SM2_EMBED_GLSL_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/EmbedGlsl.cmake"
 # variables known before this file runs (set in the root CMakeLists.txt ahead
 # of add_subdirectory(shaders)), so there is no per-build-config value to defer
 # a decision on.
-if(SM2_BUILD_STANDALONE AND (SM2_BUILD_OPENGL_DESKTOP OR SM2_BUILD_OPENGL_ES))
+if((SM2_BUILD_STANDALONE AND (SM2_BUILD_OPENGL_DESKTOP OR SM2_BUILD_OPENGL_ES))
+   OR SM2_LIBRETRO_OPENGL)
     set(SM2_NEEDS_GL_SHADERS TRUE)
 else()
     set(SM2_NEEDS_GL_SHADERS FALSE)

@@ -58,6 +58,7 @@ public:
     /// the vertex path stays in native coordinates. Identity at N=1.
     [[nodiscard]] bool init(u32 render_scale);
     void shutdown();
+    void abandon_context();
 
     /// As render::vk::Poly3DPass::build(): triangulate this frame's polygons
     /// and refresh whatever machine memory changed since it last ran.

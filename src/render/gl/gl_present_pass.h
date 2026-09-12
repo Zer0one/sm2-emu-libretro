@@ -65,7 +65,13 @@ public:
     /// (the window, via framebuffer 0), letterboxed to 4:3 within
     /// `window_width` by `window_height`. Clears the whole target first so
     /// the letterbox bars are defined.
-    void present(u32 window_width, u32 window_height);
+    void present(u32 window_width, u32 window_height, u32 framebuffer = 0,
+                 bool letterbox = true);
+
+    /// Forget resource names after an externally reported context loss. The
+    /// old context has already destroyed them, so issuing GL deletes would be
+    /// invalid and could collide with names in the replacement context.
+    void abandon_context();
 
 private:
     [[nodiscard]] bool create_target();

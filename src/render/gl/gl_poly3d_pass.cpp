@@ -86,6 +86,24 @@ void Poly3DPass::shutdown()
     destroy_persistent_buffer(&m_luma_buffer);
 }
 
+void Poly3DPass::abandon_context()
+{
+    m_polygon_program = 0;
+    m_polygon_program_early = 0;
+    m_polygon_push_ubo = 0;
+    m_vao = 0;
+    m_vertex_buffer = {};
+    m_polygon_buffer = {};
+    m_decode_program = 0;
+    m_decoded_texture = 0;
+    m_sheets_buffer = {};
+    m_tone_texture = 0;
+    m_luma_buffer = {};
+    m_texture_generation = 0;
+    m_table_generation = 0;
+    m_vertex_count = 0;
+}
+
 bool Poly3DPass::create_programs()
 {
     GenVertexArrays(1, &m_vao);
@@ -296,6 +314,7 @@ void Poly3DPass::draw_polygons()
     EnableVertexAttribArray(1);
     EnableVertexAttribArray(2);
     EnableVertexAttribArray(3);
+    Enable(GL_SCISSOR_TEST);
 
     // Bindings are global, shared by both programs; only UseProgram switches.
     u32 bound = 0;
@@ -317,6 +336,7 @@ void Poly3DPass::draw_polygons()
                   static_cast<GLsizei>(batch.vertex_count));
     }
 
+    Disable(GL_SCISSOR_TEST);
     Disable(GL_STENCIL_TEST);
 }
 

@@ -79,6 +79,25 @@ void TilemapPass::shutdown()
     destroy_persistent_buffer(&m_above_staging);
 }
 
+void TilemapPass::abandon_context()
+{
+    m_below_texture = 0;
+    m_above_texture = 0;
+    m_program = 0;
+    m_uniform_block_index = 0;
+    m_vao = 0;
+    m_push_ubo = 0;
+    m_compute_program = 0;
+    m_tile_ram = {};
+    m_char_ram = {};
+    m_pens = {};
+    m_below_staging = {};
+    m_above_staging = {};
+    m_tile_generation = 0;
+    m_char_generation = 0;
+    m_table_generation = 0;
+}
+
 bool TilemapPass::create_textures()
 {
     // NEAREST: at N=1 the bands draw 1:1; at N>1 the N*native FBO viewport
