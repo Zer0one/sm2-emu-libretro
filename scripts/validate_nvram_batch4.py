@@ -12,6 +12,13 @@ def crc16(data:bytes)->int:
   for _ in range(8): c=((c<<1)^0x1021)&0xffff if c&0x8000 else (c<<1)&0xffff
  return c
 
+def gunblade_crc(data:bytes)->int:
+ c=0xffff
+ for x in data:
+  c^=x<<8
+  for _ in range(8): c=((c<<1)^0x1021)&0xffff if c&0x8000 else (c<<1)&0xffff
+ return ((~c)&0xffff)^0x1d0f
+
 def put(d,n,off,val): d[n]=(off,val)
 G={}
 put(G,'advertise-sound-on',0x14,1);put(G,'advertise-sound-off',0x14,0)
@@ -69,7 +76,9 @@ def main():
    assert s[24:56].split(b'\0',1)[0].decode()==game and int.from_bytes(s[20:24],'little')==crc16(s[HEADER:]),stem
    assert s[HEADER:HEADER+NVRAM]==nv and s[HEADER+NVRAM:]==ep,stem
    shots=list((root/'screenshots').glob(f'{stem}-*.png'));assert len(shots)==1 and struct.unpack('>II',shots[0].read_bytes()[16:24])==(1024,768),stem
-   if game=='gunblade':assert nv[:0x3e0]==nv[0xc20:0x1000],f'{stem}: backup RAM mirror'
+   if game=='gunblade':
+    assert nv[:0x3e0]==nv[0xc20:0x1000],f'{stem}: backup RAM mirror'
+    assert ep[:8]==b'SEGAGBNY' and int.from_bytes(ep[8:10],'little')==gunblade_crc(ep[0x10:0x5a]) and int.from_bytes(ep[0x10:0x12],'little')==0x58,f'{stem}: EEPROM integrity'
    elif game=='lastbrnx':assert ep[0x08:0x44]==ep[0x44:0x80],f'{stem}: EEPROM mirror'
    elif game=='indy500':assert ep[0x08:0x2c]==ep[0x2c:0x50],f'{stem}: EEPROM mirror'
    else:
@@ -80,5 +89,5 @@ def main():
     elif game=='indy500':assert ep[off+0x24]==val,f'{stem}: EEPROM mirror field'
     elif game=='von':assert ep[off+0x3c]==val and nv[off+6]==val and nv[off+0x212]==val,f'{stem}: cross-storage field'
   print(f'{game}: validated {len(rows)} samples');total+=len(rows)
- print(f'Validated {total} samples: containers, memories, screenshots, fields, mirrors and cross-storage copies')
+ print(f'Validated {total} samples: containers, memories, screenshots, fields, integrity, mirrors and cross-storage copies')
 if __name__=='__main__':main()

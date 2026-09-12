@@ -10,11 +10,12 @@ verification:
   base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
   core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
   method: retroarch_scripted_diagnostic_menu
+  integrity_method: i960_disassembly_plus_33_sample_cross_check
   complete_campaign:
     samples: 33
     common_baseline: gunblade-base.srm
     persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/gunblade/generated
-    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, mirrored_backup_ram]
+    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, expected_fields, eeprom_integrity, mirrored_backup_ram]
 
 controls:
   profile: sega_service_l3_r3
@@ -25,7 +26,7 @@ controls:
 nvram_layout:
   storage: eeprom_93c46
   settings_range: {offset: 0x14, size: 11}
-  integrity: {checksum_offset: 0x08, size: 2, algorithm: unidentified}
+  integrity: {checksum_offset: 0x08, size: 2, data_range: {offset: 0x10, size: 74}, algorithm: crc16_ccitt_inverted_xor_1d0f}
   backup_ram_runtime_mirror:
     first: {offset: 0x0000, size: 992}
     mirror: {offset: 0x0c20, size: 992}
