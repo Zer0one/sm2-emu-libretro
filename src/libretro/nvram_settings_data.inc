@@ -3368,6 +3368,54 @@ static constexpr Value kValues180[] = {
     {"off", "OFF", kDesired180 + 1},
 };
 
+static constexpr Patch kPatches181[] = {{0x14, 0xff, MemoryKind::Eeprom}};
+static constexpr u8 kDesired181[] = {0x01, 0x00};
+static constexpr Value kValues181[] = {
+    {"on", "ON", kDesired181 + 0},
+    {"off", "OFF", kDesired181 + 1},
+};
+
+static constexpr Patch kPatches182[] = {{0x15, 0xff, MemoryKind::Eeprom}};
+static constexpr u8 kDesired182[] = {0x00, 0x01, 0x02};
+static constexpr Value kValues182[] = {
+    {"japan", "JAPAN", kDesired182 + 0},
+    {"usa", "USA", kDesired182 + 1},
+    {"export", "EXPORT", kDesired182 + 2},
+};
+
+static constexpr Patch kPatches183[] = {{0x19, 0xff, MemoryKind::Eeprom}};
+static constexpr u8 kDesired183[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+static constexpr Value kValues183[] = {
+    {"1_8", "1/8", kDesired183 + 0},
+    {"2_8", "2/8", kDesired183 + 1},
+    {"3_8", "3/8", kDesired183 + 2},
+    {"4_8", "4/8", kDesired183 + 3},
+    {"5_8", "5/8", kDesired183 + 4},
+    {"6_8", "6/8", kDesired183 + 5},
+    {"7_8", "7/8", kDesired183 + 6},
+    {"8_8", "8/8", kDesired183 + 7},
+};
+
+static constexpr Patch kPatches184[] = {{0x17, 0xff, MemoryKind::Eeprom}};
+static constexpr u8 kDesired184[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+static constexpr Value kValues184[] = {
+    {"1_8", "1/8", kDesired184 + 0},
+    {"2_8", "2/8", kDesired184 + 1},
+    {"3_8", "3/8", kDesired184 + 2},
+    {"4_8", "4/8", kDesired184 + 3},
+    {"5_8", "5/8", kDesired184 + 4},
+    {"6_8", "6/8", kDesired184 + 5},
+    {"7_8", "7/8", kDesired184 + 6},
+    {"8_8", "8/8", kDesired184 + 7},
+};
+
+static constexpr Patch kPatches185[] = {{0x1e, 0xff, MemoryKind::Eeprom}};
+static constexpr u8 kDesired185[] = {0x00, 0x01};
+static constexpr Value kValues185[] = {
+    {"dx", "DX", kDesired185 + 0},
+    {"sd", "SD", kDesired185 + 1},
+};
+
 static constexpr Option kOptions[] = {
     {"daytona", "link_id", "LINK ID", "Set LINK ID in daytona's operator NVRAM. The standalone value is the safe default when no peer cabinet is connected.", "single", kValues0, std::size(kValues0), kPatches0, std::size(kPatches0)},
     {"daytona", "car_number", "CAR NUMBER", "Set CAR NUMBER in daytona's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues1, std::size(kValues1), kPatches1, std::size(kPatches1)},
@@ -3518,6 +3566,11 @@ static constexpr Option kOptions[] = {
     {"sgt24h", "race_mode", "RACE MODE", "Set RACE MODE in sgt24h's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues178, std::size(kValues178), kPatches178, std::size(kPatches178)},
     {"sgt24h", "game_bgm", "GAME BGM", "Set GAME BGM in sgt24h's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues179, std::size(kValues179), kPatches179, std::size(kPatches179)},
     {"sgt24h", "demo_sound", "DEMO SOUND", "Set DEMO SOUND in sgt24h's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues180, std::size(kValues180), kPatches180, std::size(kPatches180)},
+    {"gunblade", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in gunblade's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues181, std::size(kValues181), kPatches181, std::size(kPatches181)},
+    {"gunblade", "country", "COUNTRY", "Set COUNTRY in gunblade's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues182, std::size(kValues182), kPatches182, std::size(kPatches182)},
+    {"gunblade", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in gunblade's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "4_8", kValues183, std::size(kValues183), kPatches183, std::size(kPatches183)},
+    {"gunblade", "shifting_difficulty", "SHIFTING DIFFICULTY", "Set SHIFTING DIFFICULTY in gunblade's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "4_8", kValues184, std::size(kValues184), kPatches184, std::size(kPatches184)},
+    {"gunblade", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in gunblade's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "dx", kValues185, std::size(kValues185), kPatches185, std::size(kPatches185)},
     {"stcc", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in stcc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues141, std::size(kValues141), kPatches141, std::size(kPatches141)},
     {"stcc", "url_address", "URL ADDRESS", "Set URL ADDRESS in stcc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues142, std::size(kValues142), kPatches142, std::size(kPatches142)},
     {"stcc", "country", "COUNTRY", "Set COUNTRY in stcc's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues143, std::size(kValues143), kPatches143, std::size(kPatches143)},

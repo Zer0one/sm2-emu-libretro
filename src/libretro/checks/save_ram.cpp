@@ -47,7 +47,7 @@ int main()
     {
         const auto options = libretro::nvram::all_options();
         std::set<std::string> keys;
-        expect(options.size() == 181, "reviewed NVRAM option catalog has 181 entries");
+        expect(options.size() == 186, "reviewed NVRAM option catalog has 186 entries");
         for (const auto& option : options) {
             const std::string key = std::string(option.game) + ":" + option.suffix;
             expect(keys.insert(key).second, "NVRAM option keys are unique");
@@ -62,8 +62,9 @@ int main()
                "Virtual On exposes the reviewed option set");
         expect(libretro::nvram::options_for_game("sgt24h").size() == 7,
                "Super GT 24h exposes the reviewed option set");
-        expect(libretro::nvram::options_for_game("bel").empty() &&
-               libretro::nvram::options_for_game("gunblade").empty(),
+        expect(libretro::nvram::options_for_game("gunblade").size() == 5,
+               "Gunblade NY exposes the reviewed option set");
+        expect(libretro::nvram::options_for_game("bel").empty(),
                "unresolved layouts are excluded from Core Options");
     }
 
@@ -225,6 +226,50 @@ int main()
         expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
                                      selections) == libretro::nvram::ApplyResult::Unchanged,
                "reapplying Super GT 24h values is idempotent");
+    }
+
+    {
+        std::array<u8, libretro::kBackupRamSize> settings_backup{};
+        std::array<u8, libretro::kEepromSize> settings_eeprom{};
+        std::copy_n("SEGAGBNY", 8, settings_eeprom.begin());
+        settings_eeprom[0x08] = 0x41;
+        settings_eeprom[0x09] = 0x8f;
+        settings_eeprom[0x10] = 0x58;
+        settings_eeprom[0x14] = 1;
+        settings_eeprom[0x17] = 3;
+        settings_eeprom[0x19] = 3;
+        settings_eeprom[0x1a] = 3;
+        settings_eeprom[0x1d] = 1;
+        const auto gunblade_checksum = [](std::span<const u8> bytes) {
+            u16 crc = 0xffff;
+            for (u8 value : bytes) {
+                crc ^= static_cast<u16>(value) << 8;
+                for (unsigned bit = 0; bit < 8; ++bit)
+                    crc = static_cast<u16>((crc & 0x8000) ?
+                        (crc << 1) ^ 0x1021 : crc << 1);
+            }
+            return static_cast<u16>((~crc) ^ 0x1d0f);
+        };
+        std::vector<std::string> selections;
+        for (const auto& option : libretro::nvram::options_for_game("gunblade"))
+            selections.emplace_back(option.default_value);
+        expect(selections.size() == 5, "Gunblade NY has five approved selections");
+        expect(libretro::nvram::apply("gunblade", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Changed,
+               "Gunblade NY defaults apply to a valid native layout");
+        expect(settings_eeprom[0x14] == 1 && settings_eeprom[0x15] == 1 &&
+               settings_eeprom[0x19] == 3 && settings_eeprom[0x17] == 3 &&
+               settings_eeprom[0x1e] == 0,
+               "Gunblade NY approved defaults are stored");
+        expect(static_cast<u16>(settings_eeprom[0x08] |
+                                (settings_eeprom[0x09] << 8)) == 0xef58,
+               "Gunblade NY known EEPROM integrity word is regenerated");
+        expect(gunblade_checksum(std::span<const u8>(settings_eeprom).subspan(
+                   0x10, 0x4a)) == 0xef58,
+               "Gunblade NY regenerated integrity word validates independently");
+        expect(libretro::nvram::apply("gunblade", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Unchanged,
+               "reapplying Gunblade NY values is idempotent");
     }
 
     if (failures) return 1;

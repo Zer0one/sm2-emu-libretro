@@ -86,6 +86,12 @@ u16 crc16_ccitt_inverted(std::span<const u8> bytes)
     return static_cast<u16>(~crc);
 }
 
+u16 gunblade_crc(std::span<const u8> bytes)
+{
+    // The title applies a fixed post-transform to the common inverted CCITT result.
+    return static_cast<u16>(crc16_ccitt_inverted(bytes) ^ 0x1d0f);
+}
+
 u16 virtual_on_crc(std::span<const u8> bytes)
 {
     u32 crc = 0xdebdeb00u;
@@ -164,6 +170,10 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
         return std::equal(first.begin(), first.end(), mirror.begin()) &&
                first[0] == static_cast<u8>(std::accumulate(first.begin() + 1, first.end(), 0u));
     }
+    if (game == "gunblade")
+        return std::equal(eeprom.begin(), eeprom.begin() + 8, "SEGAGBNY") &&
+               load_u16(eeprom, 0x08) == gunblade_crc(eeprom.subspan(0x10, 0x4a)) &&
+               load_u16(eeprom, 0x10) == 0x0058;
     if (game == "fvipers" || game == "vf2")
         return named_layout_valid(backup, "VIRTUA FIGHTER 2", 29) &&
                static_cast<u16>(backup[0x3302] | (static_cast<u16>(backup[0x3303]) << 8)) ==
@@ -246,6 +256,8 @@ void sync_integrity(std::string_view game, std::span<u8> backup,
         eeprom[0x08] = static_cast<u8>(std::accumulate(eeprom.begin() + 0x09,
                                                        eeprom.begin() + 0x2c, 0u));
         std::copy_n(eeprom.begin() + 0x08, 36, eeprom.begin() + 0x2c);
+    } else if (game == "gunblade") {
+        store_u16(eeprom, 0x08, gunblade_crc(eeprom.subspan(0x10, 0x4a)));
     } else if (game == "fvipers" || game == "vf2") {
         const u16 crc = crc16_ccitt(backup.subspan(0x3340, 29));
         backup[0x3302] = static_cast<u8>(crc);
