@@ -131,6 +131,25 @@ void update_mirrored_sega_bank(std::span<u8> eeprom, size_t bank_size,
     std::copy_n(eeprom.begin() + 0x08, bank_size, eeprom.begin() + 0x08 + bank_size);
 }
 
+bool sgt24h_link_bank_valid(std::span<const u8> eeprom)
+{
+    constexpr size_t first = 0x08;
+    constexpr size_t bank_size = 32;
+    constexpr size_t mirror = first + bank_size;
+    const u16 checksum = static_cast<u16>(std::accumulate(
+        eeprom.begin() + 0x0a, eeprom.begin() + 0x28, 0u));
+    return std::equal(eeprom.begin() + first, eeprom.begin() + mirror,
+                      eeprom.begin() + mirror) &&
+           load_u16(eeprom, first) == checksum && load_u16(eeprom, 0x10) == 0xad85;
+}
+
+void update_sgt24h_link_bank(std::span<u8> eeprom)
+{
+    store_u16(eeprom, 0x08, static_cast<u16>(std::accumulate(
+        eeprom.begin() + 0x0a, eeprom.begin() + 0x28, 0u)));
+    std::copy_n(eeprom.begin() + 0x08, 32, eeprom.begin() + 0x28);
+}
+
 bool layout_ready(std::string_view game, std::span<const u8> backup,
                   std::span<const u8> eeprom)
 {
@@ -189,6 +208,8 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
     if (game == "srallyc")
         return eeprom[2] == 0x24 && eeprom[3] == 0 &&
                load_u16(eeprom, 0) == crc16_ccitt_inverted(eeprom.subspan(2, 0x22));
+    if (game == "sgt24h")
+        return load_u16(backup, 0) == 0xad85 && sgt24h_link_bank_valid(eeprom);
     if (game == "stcc")
         return std::equal(eeprom.begin(), eeprom.begin() + 4, "SEGA") &&
                load_u16(eeprom, 0x08) == crc16_ccitt_inverted(eeprom.subspan(0x10, 0x70));
@@ -263,6 +284,8 @@ void sync_integrity(std::string_view game, std::span<u8> backup,
         store_u16(eeprom, 0, crc16_ccitt_inverted(eeprom.subspan(2, 0x2a)));
     } else if (game == "srallyc") {
         store_u16(eeprom, 0, crc16_ccitt_inverted(eeprom.subspan(2, 0x22)));
+    } else if (game == "sgt24h") {
+        update_sgt24h_link_bank(eeprom);
     } else if (game == "stcc") {
         store_u16(eeprom, 0x08, crc16_ccitt_inverted(eeprom.subspan(0x10, 0x70)));
     } else if (game == "topskatr") {

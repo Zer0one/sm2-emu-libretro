@@ -47,7 +47,7 @@ int main()
     {
         const auto options = libretro::nvram::all_options();
         std::set<std::string> keys;
-        expect(options.size() == 174, "reviewed NVRAM option catalog has 174 entries");
+        expect(options.size() == 181, "reviewed NVRAM option catalog has 181 entries");
         for (const auto& option : options) {
             const std::string key = std::string(option.game) + ":" + option.suffix;
             expect(keys.insert(key).second, "NVRAM option keys are unique");
@@ -60,9 +60,10 @@ int main()
                "Air Walkers exposes the reviewed option set");
         expect(libretro::nvram::options_for_game("von").size() == 8,
                "Virtual On exposes the reviewed option set");
+        expect(libretro::nvram::options_for_game("sgt24h").size() == 7,
+               "Super GT 24h exposes the reviewed option set");
         expect(libretro::nvram::options_for_game("bel").empty() &&
-               libretro::nvram::options_for_game("gunblade").empty() &&
-               libretro::nvram::options_for_game("sgt24h").empty(),
+               libretro::nvram::options_for_game("gunblade").empty(),
                "unresolved layouts are excluded from Core Options");
     }
 
@@ -166,6 +167,64 @@ int main()
                "DOA additive checksum is regenerated");
         expect(std::equal(settings_eeprom.begin() + 0x08, settings_eeprom.begin() + 0x2c,
                           settings_eeprom.begin() + 0x2c), "DOA EEPROM mirror is synchronized");
+    }
+
+    {
+        std::array<u8, libretro::kBackupRamSize> settings_backup{};
+        std::array<u8, libretro::kEepromSize> settings_eeprom{};
+        settings_backup[0] = 0x85;
+        settings_backup[1] = 0xad;
+        settings_backup[0x68] = 0x12;
+        settings_backup[0x69] = 0x34;
+        settings_backup[0x6a] = 0x56;
+        settings_backup[0x6b] = 0x78;
+        settings_backup[0x14] = 3;
+        settings_backup[0x1a] = 0;
+        settings_backup[0x1c] = 1;
+        settings_backup[0x1e] = 1;
+        settings_backup[0x20] = 1;
+        settings_eeprom[0x10] = 0x85;
+        settings_eeprom[0x11] = 0xad;
+        settings_eeprom[0x19] = 4;
+        settings_eeprom[0x1a] = 0;
+        settings_eeprom[0x1b] = 0;
+        settings_eeprom[0x1c] = 3;
+        const u16 initial_sum = static_cast<u16>(std::accumulate(
+            settings_eeprom.begin() + 0x0a, settings_eeprom.begin() + 0x28, 0u));
+        settings_eeprom[0x08] = static_cast<u8>(initial_sum);
+        settings_eeprom[0x09] = static_cast<u8>(initial_sum >> 8);
+        std::copy_n(settings_eeprom.begin() + 0x08, 32,
+                    settings_eeprom.begin() + 0x28);
+
+        std::vector<std::string> selections;
+        for (const auto& option : libretro::nvram::options_for_game("sgt24h"))
+            selections.emplace_back(option.default_value);
+        expect(selections.size() == 7, "Super GT 24h has seven approved selections");
+        expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Changed,
+               "Super GT 24h defaults apply to valid native layouts");
+        expect(settings_eeprom[0x19] == 2 && settings_eeprom[0x1a] == 1 &&
+               settings_eeprom[0x1b] == 1 && settings_eeprom[0x1c] == 0,
+               "Super GT 24h defaults to NOT LINK with Link Max 2");
+        expect(settings_backup[0x1a] == 1, "Super GT 24h defaults to USA");
+        expect(settings_backup[0x14] == 0 && settings_backup[0x1c] == 0 &&
+               settings_backup[0x1e] == 0 && settings_backup[0x20] == 0,
+               "Super GT 24h gameplay and sound defaults are stored");
+        expect(settings_backup[0x68] == 0x12 && settings_backup[0x69] == 0x34 &&
+               settings_backup[0x6a] == 0x56 && settings_backup[0x6b] == 0x78,
+               "Super GT 24h runtime counter is not treated as integrity data");
+        const u16 stored_sum = static_cast<u16>(settings_eeprom[0x08] |
+                                                (settings_eeprom[0x09] << 8));
+        expect(stored_sum == static_cast<u16>(std::accumulate(
+                   settings_eeprom.begin() + 0x0a, settings_eeprom.begin() + 0x28, 0u)),
+               "Super GT 24h additive checksum is regenerated");
+        expect(std::equal(settings_eeprom.begin() + 0x08,
+                          settings_eeprom.begin() + 0x28,
+                          settings_eeprom.begin() + 0x28),
+               "Super GT 24h EEPROM mirror is synchronized");
+        expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Unchanged,
+               "reapplying Super GT 24h values is idempotent");
     }
 
     if (failures) return 1;

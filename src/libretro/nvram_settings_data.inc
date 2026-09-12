@@ -3300,6 +3300,74 @@ static constexpr Value kValues173[] = {
     {"4_fighters", "4 fighters", kDesired173 + 6},
 };
 
+static constexpr Patch kPatches174[] = {
+    {0x1a, 0xff, MemoryKind::Eeprom},
+    {0x1b, 0xff, MemoryKind::Eeprom},
+    {0x1c, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired174[] = {
+    0x01, 0x01, 0x00,
+    0x00, 0x01, 0x00,
+    0x00, 0x00, 0x01,
+    0x00, 0x00, 0x02,
+    0x00, 0x00, 0x03,
+};
+static constexpr Value kValues174[] = {
+    {"not_link", "NOT LINK", kDesired174 + 0},
+    {"car_no1_master", "CAR NO1 Master", kDesired174 + 3},
+    {"car_no2_slave", "CAR NO2 Slave", kDesired174 + 6},
+    {"car_no3_slave", "CAR NO3 Slave", kDesired174 + 9},
+    {"car_no4_slave", "CAR NO4 Slave", kDesired174 + 12},
+};
+
+static constexpr Patch kPatches175[] = {
+    {0x19, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired175[] = {0x02, 0x03, 0x04};
+static constexpr Value kValues175[] = {
+    {"2", "2", kDesired175 + 0},
+    {"3", "3", kDesired175 + 1},
+    {"4", "4", kDesired175 + 2},
+};
+
+static constexpr Patch kPatches176[] = {{0x1a, 0xff}};
+static constexpr u8 kDesired176[] = {0x00, 0x01, 0x02};
+static constexpr Value kValues176[] = {
+    {"japan", "JAPAN", kDesired176 + 0},
+    {"usa", "USA", kDesired176 + 1},
+    {"eur", "EUR", kDesired176 + 2},
+};
+
+static constexpr Patch kPatches177[] = {{0x14, 0xff}};
+static constexpr u8 kDesired177[] = {0x00, 0x01, 0x02, 0x03};
+static constexpr Value kValues177[] = {
+    {"normal", "NORMAL", kDesired177 + 0},
+    {"easy", "EASY", kDesired177 + 1},
+    {"hard", "HARD", kDesired177 + 2},
+    {"hardest", "HARDEST", kDesired177 + 3},
+};
+
+static constexpr Patch kPatches178[] = {{0x1c, 0xff}};
+static constexpr u8 kDesired178[] = {0x00, 0x01};
+static constexpr Value kValues178[] = {
+    {"normal", "NORMAL", kDesired178 + 0},
+    {"long", "LONG", kDesired178 + 1},
+};
+
+static constexpr Patch kPatches179[] = {{0x1e, 0xff}};
+static constexpr u8 kDesired179[] = {0x00, 0x01};
+static constexpr Value kValues179[] = {
+    {"on", "ON", kDesired179 + 0},
+    {"off", "OFF", kDesired179 + 1},
+};
+
+static constexpr Patch kPatches180[] = {{0x20, 0xff}};
+static constexpr u8 kDesired180[] = {0x00, 0x01};
+static constexpr Value kValues180[] = {
+    {"on", "ON", kDesired180 + 0},
+    {"off", "OFF", kDesired180 + 1},
+};
+
 static constexpr Option kOptions[] = {
     {"daytona", "link_id", "LINK ID", "Set LINK ID in daytona's operator NVRAM. The standalone value is the safe default when no peer cabinet is connected.", "single", kValues0, std::size(kValues0), kPatches0, std::size(kPatches0)},
     {"daytona", "car_number", "CAR NUMBER", "Set CAR NUMBER in daytona's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues1, std::size(kValues1), kPatches1, std::size(kPatches1)},
@@ -3443,6 +3511,13 @@ static constexpr Option kOptions[] = {
     {"srallyc", "link_type", "LINK TYPE", "Set LINK TYPE in srallyc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "notlink", kValues138, std::size(kValues138), kPatches138, std::size(kPatches138)},
     {"srallyc", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in srallyc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues139, std::size(kValues139), kPatches139, std::size(kPatches139)},
     {"srallyc", "game_mode", "GAME MODE", "Set GAME MODE in srallyc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues140, std::size(kValues140), kPatches140, std::size(kPatches140)},
+    {"sgt24h", "link_type", "LINK TYPE", "Set LINK TYPE in sgt24h's operator NVRAM. NOT LINK is the safe default when no peer cabinet is connected.", "not_link", kValues174, std::size(kValues174), kPatches174, std::size(kPatches174)},
+    {"sgt24h", "link_max", "LINK MAX", "Set LINK MAX in sgt24h's operator NVRAM. The game uses this value when CAR NO1 Master is selected.", "2", kValues175, std::size(kValues175), kPatches175, std::size(kPatches175)},
+    {"sgt24h", "country", "COUNTRY", "Set COUNTRY in sgt24h's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues176, std::size(kValues176), kPatches176, std::size(kPatches176)},
+    {"sgt24h", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in sgt24h's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues177, std::size(kValues177), kPatches177, std::size(kPatches177)},
+    {"sgt24h", "race_mode", "RACE MODE", "Set RACE MODE in sgt24h's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues178, std::size(kValues178), kPatches178, std::size(kPatches178)},
+    {"sgt24h", "game_bgm", "GAME BGM", "Set GAME BGM in sgt24h's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues179, std::size(kValues179), kPatches179, std::size(kPatches179)},
+    {"sgt24h", "demo_sound", "DEMO SOUND", "Set DEMO SOUND in sgt24h's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues180, std::size(kValues180), kPatches180, std::size(kPatches180)},
     {"stcc", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in stcc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues141, std::size(kValues141), kPatches141, std::size(kPatches141)},
     {"stcc", "url_address", "URL ADDRESS", "Set URL ADDRESS in stcc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues142, std::size(kValues142), kPatches142, std::size(kPatches142)},
     {"stcc", "country", "COUNTRY", "Set COUNTRY in stcc's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues143, std::size(kValues143), kPatches143, std::size(kPatches143)},
