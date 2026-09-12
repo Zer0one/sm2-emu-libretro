@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include "save_ram.h"
+#include "nvram_settings.h"
 
 #include <algorithm>
 #include <array>
 #include <cstdio>
+#include <numeric>
+#include <set>
+#include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 namespace {
 using namespace sm2;
@@ -27,6 +33,9 @@ libretro::SaveRam valid_vf2_save(std::array<u8, libretro::kBackupRamSize>& backu
     backup[0x3307] = 0;
     constexpr std::string_view title = "VIRTUA FIGHTER 2";
     std::copy(title.begin(), title.end(), backup.begin() + 0x3308);
+    const u16 crc = libretro::crc16_ccitt(std::span<const u8>(backup).subspan(0x3340, 29));
+    backup[0x3302] = static_cast<u8>(crc);
+    backup[0x3303] = static_cast<u8>(crc >> 8);
     libretro::SaveRam save{};
     libretro::export_save_ram("vf2", backup, eeprom, save);
     return save;
@@ -35,6 +44,28 @@ libretro::SaveRam valid_vf2_save(std::array<u8, libretro::kBackupRamSize>& backu
 
 int main()
 {
+    {
+        const auto options = libretro::nvram::all_options();
+        std::set<std::string> keys;
+        expect(options.size() == 174, "reviewed NVRAM option catalog has 174 entries");
+        for (const auto& option : options) {
+            const std::string key = std::string(option.game) + ":" + option.suffix;
+            expect(keys.insert(key).second, "NVRAM option keys are unique");
+            const auto default_value = std::find_if(option.values, option.values + option.value_count,
+                [&](const auto& value) { return std::string_view(value.key) == option.default_value; });
+            expect(default_value != option.values + option.value_count,
+                   "every NVRAM option default belongs to its value list");
+        }
+        expect(libretro::nvram::options_for_game("airwlkrs").size() == 4,
+               "Air Walkers exposes the reviewed option set");
+        expect(libretro::nvram::options_for_game("von").size() == 8,
+               "Virtual On exposes the reviewed option set");
+        expect(libretro::nvram::options_for_game("bel").empty() &&
+               libretro::nvram::options_for_game("gunblade").empty() &&
+               libretro::nvram::options_for_game("sgt24h").empty(),
+               "unresolved layouts are excluded from Core Options");
+    }
+
     std::array<u8, libretro::kBackupRamSize> backup{};
     std::array<u8, libretro::kEepromSize> eeprom{};
     auto save = valid_vf2_save(backup, eeprom);
@@ -50,45 +81,92 @@ int main()
     expect(libretro::import_save_ram("vf2", save, restored_backup, restored_eeprom) ==
            libretro::SaveImportResult::Invalid, "corrupt payload is rejected");
 
-    auto check_country = [&](libretro::Vf2Country country, u8 expected) {
-        valid_vf2_save(backup, eeprom);
-        backup[0x3351] = 0x08;
-        expect(libretro::apply_vf2_country("vf2", backup, country) ==
-               libretro::OptionApplyResult::Changed, "VF2 country changes");
-        expect(backup[0x3350] == expected, "VF2 country byte matches selection");
-        expect((backup[0x3351] & 0x08) != 0, "country selection preserves Drink");
-        const u16 stored = static_cast<u16>(backup[0x3302] | (backup[0x3303] << 8));
-        expect(stored == libretro::crc16_ccitt(std::span<const u8>(backup).subspan(0x3340, 29)),
-               "VF2 settings CRC is updated");
-    };
-    check_country(libretro::Vf2Country::Japan, 0);
-    check_country(libretro::Vf2Country::Usa, 1);
-    check_country(libretro::Vf2Country::Export, 2);
-
     valid_vf2_save(backup, eeprom);
-    backup[0x3351] = 0x08;
-    expect(libretro::apply_vf2_drink("vf2", backup, libretro::Vf2Drink::Ok) ==
-           libretro::OptionApplyResult::Changed, "Drink OK changes independently");
-    expect((backup[0x3351] & 0x08) == 0, "Drink OK clears its flag");
-    expect(libretro::apply_vf2_drink("vf2", backup, libretro::Vf2Drink::Ng) ==
-           libretro::OptionApplyResult::Changed, "Drink NG changes independently");
-    expect((backup[0x3351] & 0x08) != 0, "Drink NG sets its flag");
-    expect(libretro::apply_vf2_difficulty("vf2", backup, libretro::Vf2Difficulty::Hardest) ==
-           libretro::OptionApplyResult::Changed, "Difficulty changes independently");
-    expect(backup[0x3342] == 3 && backup[0x334f] == 13 &&
-           backup[0x3352] == 128 && backup[0x3354] == 160,
-           "Hardest applies verified dependent values");
-    expect(libretro::apply_vf2_display_type("vf2", backup, libretro::Vf2DisplayType::Crt) ==
-           libretro::OptionApplyResult::Changed, "Display type changes independently");
-    expect((backup[0x3351] & 0x04) && backup[0x3356] == 117 &&
-           backup[0x3359] == 34 && backup[0x335c] == 31,
-           "CRT applies verified calibration values");
+    std::vector<std::string> vf2_selections;
+    const auto vf2_options = libretro::nvram::options_for_game("vf2");
+    for (const auto& option : vf2_options) vf2_selections.emplace_back(option.default_value);
+    auto select_vf2 = [&](std::string_view suffix, std::string value) {
+        const auto option = std::find_if(vf2_options.begin(), vf2_options.end(),
+            [suffix](const auto& candidate) { return suffix == candidate.suffix; });
+        expect(option != vf2_options.end(), "requested VF2 option exists");
+        if (option != vf2_options.end())
+            vf2_selections[static_cast<size_t>(option - vf2_options.begin())] = std::move(value);
+    };
+    select_vf2("country", "usa");
+    select_vf2("drink", "ok");
+    select_vf2("difficulty", "hardest");
+    select_vf2("display_type", "crt");
+    expect(vf2_selections.size() == 8, "VF2 exposes the reviewed option set");
+    expect(libretro::nvram::apply("vf2", backup, eeprom, vf2_selections) ==
+           libretro::nvram::ApplyResult::Changed, "VF2 reviewed values apply to a valid layout");
+    expect((backup[0x3350] & 0x03) == 1, "VF2 defaults to USA");
+    expect((backup[0x3351] & 0x08) == 0, "VF2 Country and Drink remain independent");
+    expect((backup[0x3342] & 0x03) == 3 && (backup[0x334f] & 0x1f) == 13 &&
+           (backup[0x3352] & 0x30) == 0 && (backup[0x3354] & 0x7c) == 0x20,
+           "Hardest applies the verified dependent fields");
+    expect((backup[0x3351] & 0x04) && (backup[0x3356] & 0x35) == 0x35 &&
+           (backup[0x3359] & 0x07) == 0x02,
+           "CRT applies the verified calibration fields");
+    const u16 vf2_stored_crc = static_cast<u16>(backup[0x3302] | (backup[0x3303] << 8));
+    expect(vf2_stored_crc ==
+           libretro::crc16_ccitt(std::span<const u8>(backup).subspan(0x3340, 29)),
+           "VF2 settings CRC is regenerated");
+    expect(libretro::nvram::apply("vf2", backup, eeprom, vf2_selections) ==
+           libretro::nvram::ApplyResult::Unchanged, "reapplying VF2 values is idempotent");
     auto invalid = backup;
     invalid[0x3308] = 0;
-    expect(libretro::apply_vf2_country("vf2", invalid, libretro::Vf2Country::Usa) ==
-           libretro::OptionApplyResult::LayoutNotReady, "unknown VF2 layout is not modified");
-    expect(libretro::apply_vf2_country("vf2a", backup, libretro::Vf2Country::Usa) ==
-           libretro::OptionApplyResult::NotApplicable, "option is restricted to the vf2 parent");
+    expect(libretro::nvram::apply("vf2", invalid, eeprom, vf2_selections) ==
+           libretro::nvram::ApplyResult::LayoutNotReady, "unknown VF2 layout is not modified");
+    expect(libretro::nvram::apply("vf2a", backup, eeprom, vf2_selections) ==
+           libretro::nvram::ApplyResult::Unsupported, "options are restricted to the parent set");
+
+    {
+        std::array<u8, libretro::kBackupRamSize> settings_backup{};
+        std::array<u8, libretro::kEepromSize> settings_eeprom{};
+        auto make_sega_bank = [&](size_t start) {
+            settings_backup[start + 0] = 'S'; settings_backup[start + 1] = 'E';
+            settings_backup[start + 2] = 'G'; settings_backup[start + 3] = 'A';
+            const u16 crc = libretro::crc16_ccitt(
+                std::span<const u8>(settings_backup).subspan(start + 10, 118));
+            settings_backup[start + 8] = static_cast<u8>(crc);
+            settings_backup[start + 9] = static_cast<u8>(crc >> 8);
+        };
+        make_sega_bank(0);
+        std::copy_n(settings_backup.begin(), 0x80, settings_backup.begin() + 0x80);
+        std::vector<std::string> selections;
+        for (const auto& option : libretro::nvram::options_for_game("daytona"))
+            selections.emplace_back(option.default_value);
+        expect(selections.size() == 8, "Daytona exposes the reviewed option set");
+        expect(libretro::nvram::apply("daytona", settings_backup, settings_eeprom, selections) ==
+               libretro::nvram::ApplyResult::Changed, "Daytona defaults apply to a valid layout");
+        expect(settings_backup[0x0b] == 0, "Daytona defaults to SINGLE for offline boot");
+        expect(settings_backup[0x1b] == 0, "Daytona defaults to USA");
+        expect(std::equal(settings_backup.begin(), settings_backup.begin() + 0x80,
+                          settings_backup.begin() + 0x80), "Daytona settings mirror is synchronized");
+        expect(static_cast<u16>(settings_backup[8] | (settings_backup[9] << 8)) ==
+               libretro::crc16_ccitt(std::span<const u8>(settings_backup).subspan(10, 118)),
+               "Daytona CRC is regenerated");
+        expect(settings_eeprom[0] == settings_backup[1] &&
+               settings_eeprom[1] == settings_backup[0], "Daytona EEPROM copy uses word-swapped order");
+    }
+
+    {
+        std::array<u8, libretro::kBackupRamSize> settings_backup{};
+        std::array<u8, libretro::kEepromSize> settings_eeprom{};
+        settings_eeprom[0x08] = 0;
+        std::copy_n(settings_eeprom.begin() + 0x08, 36, settings_eeprom.begin() + 0x2c);
+        std::vector<std::string> selections;
+        for (const auto& option : libretro::nvram::options_for_game("doa"))
+            selections.emplace_back(option.default_value);
+        expect(libretro::nvram::apply("doa", settings_backup, settings_eeprom, selections) ==
+               libretro::nvram::ApplyResult::Changed, "DOA defaults apply to a valid EEPROM layout");
+        expect(settings_eeprom[0x1e] == 1, "DOA Nation defaults to USA");
+        expect(settings_eeprom[0x08] == static_cast<u8>(std::accumulate(
+                   settings_eeprom.begin() + 0x09, settings_eeprom.begin() + 0x2c, 0u)),
+               "DOA additive checksum is regenerated");
+        expect(std::equal(settings_eeprom.begin() + 0x08, settings_eeprom.begin() + 0x2c,
+                          settings_eeprom.begin() + 0x2c), "DOA EEPROM mirror is synchronized");
+    }
 
     if (failures) return 1;
     std::puts("All Libretro save RAM checks passed");

@@ -111,11 +111,11 @@ def main():
     (out/'core-options.cfg').write_text(
         f'sm2_renderer = "{a.renderer}"\nsm2_internal_resolution = "{a.scale}"\n'
         f'sm2_nvram_settings = "{a.nvram_settings}"\n'
-        f'sm2_vf2_country = "{a.vf2_country}"\n'
-        f'sm2_vf2_drink = "{a.vf2_drink}"\n')
+        f'sm2_nvram_vf2_country = "{a.vf2_country}"\n'
+        f'sm2_nvram_vf2_drink = "{a.vf2_drink}"\n')
     with (out/'core-options.cfg').open('a') as options:
-        options.write(f'sm2_vf2_difficulty = "{a.vf2_difficulty}"\n')
-        options.write(f'sm2_vf2_display_type = "{a.vf2_display_type}"\n')
+        options.write(f'sm2_nvram_vf2_difficulty = "{a.vf2_difficulty}"\n')
+        options.write(f'sm2_nvram_vf2_display_type = "{a.vf2_display_type}"\n')
     runtime_env=os.environ.copy()
     if a.moltenvk:
         library=a.moltenvk.resolve(strict=True)

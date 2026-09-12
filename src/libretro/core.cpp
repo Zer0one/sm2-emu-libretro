@@ -56,10 +56,7 @@ struct Content {
     bool save_ram_initialized = false;
     bool option_pending = false;
     unsigned option_wait_frames = 0;
-    libretro::Vf2Country vf2_country = libretro::Vf2Country::Japan;
-    libretro::Vf2Drink vf2_drink = libretro::Vf2Drink::Ok;
-    libretro::Vf2Difficulty vf2_difficulty = libretro::Vf2Difficulty::Normal;
-    libretro::Vf2DisplayType vf2_display_type = libretro::Vf2DisplayType::Projector;
+    std::vector<std::string> nvram_values;
 #ifdef SM2_LIBRETRO_VULKAN
     std::unique_ptr<libretro::VulkanRenderer> gpu;
 #endif
@@ -67,57 +64,6 @@ struct Content {
 std::unique_ptr<Content> content;
 
 void message(enum retro_log_level level, const char* text);
-
-libretro::Vf2Country selected_vf2_country()
-{
-    retro_variable option{"sm2_vf2_country", nullptr};
-    if (!environment || !environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) || !option.value)
-        return libretro::Vf2Country::Japan;
-    const std::string value = option.value;
-    if (value == "japan") return libretro::Vf2Country::Japan;
-    if (value == "usa") return libretro::Vf2Country::Usa;
-    if (value == "export") return libretro::Vf2Country::Export;
-    return libretro::Vf2Country::Japan;
-}
-
-libretro::Vf2Drink selected_vf2_drink()
-{
-    retro_variable option{"sm2_vf2_drink", nullptr};
-    if (!environment || !environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) || !option.value)
-        return libretro::Vf2Drink::Ok;
-    const std::string value = option.value;
-    if (value == "ok") return libretro::Vf2Drink::Ok;
-    if (value == "ng") return libretro::Vf2Drink::Ng;
-    return libretro::Vf2Drink::Ok;
-}
-
-bool nvram_settings_enabled()
-{
-    retro_variable option{"sm2_nvram_settings", nullptr};
-    return environment && environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) &&
-           option.value && std::string(option.value) == "enabled";
-}
-
-libretro::Vf2Difficulty selected_vf2_difficulty()
-{
-    retro_variable option{"sm2_vf2_difficulty", nullptr};
-    if (!environment || !environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) || !option.value)
-        return libretro::Vf2Difficulty::Normal;
-    const std::string value = option.value;
-    if (value == "easy") return libretro::Vf2Difficulty::Easy;
-    if (value == "hard") return libretro::Vf2Difficulty::Hard;
-    if (value == "hardest") return libretro::Vf2Difficulty::Hardest;
-    return libretro::Vf2Difficulty::Normal;
-}
-
-libretro::Vf2DisplayType selected_vf2_display_type()
-{
-    retro_variable option{"sm2_vf2_display_type", nullptr};
-    if (!environment || !environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) || !option.value)
-        return libretro::Vf2DisplayType::Projector;
-    return std::string(option.value) == "crt" ? libretro::Vf2DisplayType::Crt
-                                               : libretro::Vf2DisplayType::Projector;
-}
 
 void export_frontend_save(Content& c)
 {
@@ -147,28 +93,17 @@ void initialize_frontend_save(Content& c)
 void apply_pending_option(Content& c)
 {
     if (!c.option_pending) return;
-    const auto country_result = libretro::apply_vf2_country(
-        c.game.name, c.machine->backup_ram(), c.vf2_country);
-    const auto drink_result = libretro::apply_vf2_drink(
-        c.game.name, c.machine->backup_ram(), c.vf2_drink);
-    const auto difficulty_result = libretro::apply_vf2_difficulty(
-        c.game.name, c.machine->backup_ram(), c.vf2_difficulty);
-    const auto display_result = libretro::apply_vf2_display_type(
-        c.game.name, c.machine->backup_ram(), c.vf2_display_type);
-    if (country_result == libretro::OptionApplyResult::LayoutNotReady ||
-        drink_result == libretro::OptionApplyResult::LayoutNotReady ||
-        difficulty_result == libretro::OptionApplyResult::LayoutNotReady ||
-        display_result == libretro::OptionApplyResult::LayoutNotReady) return;
+    const auto result = libretro::nvram::apply(c.game.name, c.machine->backup_ram(),
+                                                c.machine->settings_eeprom(),
+                                                c.nvram_values);
+    if (result == libretro::nvram::ApplyResult::LayoutNotReady) return;
     c.option_pending = false;
-    if (country_result == libretro::OptionApplyResult::Changed ||
-        drink_result == libretro::OptionApplyResult::Changed ||
-        difficulty_result == libretro::OptionApplyResult::Changed ||
-        display_result == libretro::OptionApplyResult::Changed) {
+    if (result == libretro::nvram::ApplyResult::Changed) {
         c.machine->reset();
         c.machine->sound_board().clear_pending_samples();
         c.audio.clear();
         export_frontend_save(c);
-        message(RETRO_LOG_INFO, "Applied VF2 NVRAM core options to backup RAM");
+        message(RETRO_LOG_INFO, "Applied NVRAM core options");
     }
 }
 
@@ -357,11 +292,8 @@ bool retro_load_game(const retro_game_info* game)
         next->rate = next->machine->sound_board().sample_rate();
         if (!next->rate) throw std::runtime_error("Sound board reported zero sample rate");
         next->fps = game_fps(next->game.board);
-        next->vf2_country = selected_vf2_country();
-        next->vf2_drink = selected_vf2_drink();
-        next->vf2_difficulty = selected_vf2_difficulty();
-        next->vf2_display_type = selected_vf2_display_type();
-        next->option_pending = next->game.name == "vf2" && nvram_settings_enabled();
+        next->nvram_values = libretro::selected_nvram_values(next->game.name);
+        next->option_pending = !next->nvram_values.empty() && libretro::nvram_settings_enabled();
         next->input_descriptors = libretro::descriptors(next->game);
         next->audio.reserve(static_cast<size_t>(next->rate) * 2);
         content = std::move(next);
@@ -413,7 +345,7 @@ void retro_run()
             apply_pending_option(*content);
             if (content->option_pending && ++content->option_wait_frames == 600) {
                 content->option_pending = false;
-                message(RETRO_LOG_WARN, "VF2 backup RAM layout did not become ready; Country option was not applied");
+                message(RETRO_LOG_WARN, "NVRAM layout did not become ready; core options were not applied");
             }
         }
         const auto status = content->machine->main_cpu_status();
