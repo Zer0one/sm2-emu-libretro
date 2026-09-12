@@ -32,7 +32,7 @@ controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, sele
 nvram_layout:
   storage: eeprom_93c46
   settings_range: {offset: 0x08, size: 19}
-  integrity: {checksum_offset: 0x00, size: 2, algorithm: unidentified}
+  integrity: {checksum_offset: 0x00, size: 2, algorithm: crc16_ccitt_init_ffff_xor_ffff}
   update_counter: {offset: 0x04, baseline: 2, after_change: 3}
   backup_ram_runtime_mirror:
     first: {offset: 0x0000, size: 5804}

@@ -21,7 +21,7 @@ verification:
 controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
 nvram_layout:
   storage: eeprom_93c46
-  integrity: {algorithm: unresolved}
+  integrity: {algorithm: crc16_ccitt_init_ffff_xor_ffff}
 menus:
   game_assignments:
     root_position: {initial_item: EXIT, service_presses: 6}

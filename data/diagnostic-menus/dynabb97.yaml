@@ -34,7 +34,7 @@ nvram_layout:
   settings_banks:
     first: {offset: 0x08, size: 28}
     mirror: {offset: 0x24, size: 28}
-  integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: unidentified}
+  integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: sega_crc16_1021_add_init_debdeb}
 
 menus:
   game_assignments:

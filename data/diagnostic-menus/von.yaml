@@ -23,11 +23,11 @@ nvram_layout:
   eeprom_banks:
     first: {offset: 0x00, size: 60}
     mirror: {offset: 0x3c, size: 60}
-    integrity: {checksum_offset_within_bank: 0x08, size: 2, algorithm: unidentified}
+    integrity: {checksum_offset_within_bank: 0x08, size: 2, algorithm: sega_table_crc16_init_debdeb}
   backup_ram_banks:
     first: {offset: 0x0014, size: 32}
     mirror: {offset: 0x0220, size: 32}
-    integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: unidentified}
+    integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: sega_table_crc16_init_debdeb}
   field_relationship: backup RAM field offset equals EEPROM field offset plus 0x06; each storage also maintains its own mirror
 
 menus:

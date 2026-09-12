@@ -22,7 +22,7 @@ controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, sele
 nvram_layout:
   storage: eeprom_93c46
   settings_banks: {first: {offset: 0x08, size: 40}, mirror: {offset: 0x30, size: 40}}
-  integrity: {algorithm: unresolved, note: both game-written banks are byte-identical in every verified sample}
+  integrity: {algorithm: sega_crc16_1021_add_init_debdeb_append_zero, note: both game-written banks are byte-identical in every verified sample}
 menus:
   game_assignments:
     root_position: {initial_item: EXIT, service_presses: 6}

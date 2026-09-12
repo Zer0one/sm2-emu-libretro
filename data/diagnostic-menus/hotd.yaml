@@ -30,7 +30,7 @@ nvram_layout:
   integrity:
     checksum_offset_within_bank: 0
     size: 2
-    algorithm: unidentified
+    algorithm: sega_crc16_1021_add_init_debdeb_append_zero
 
 menus:
   game_assignments:

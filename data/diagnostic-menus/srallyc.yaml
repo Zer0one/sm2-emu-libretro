@@ -25,7 +25,7 @@ controls:
 nvram_layout:
   storage: eeprom_93c46
   settings_header: {checksum_offset: 0x00, declared_size_offset: 0x02, declared_size: 0x24}
-  note: bytes 0x00-0x01 change consistently as an integrity field; its algorithm is not yet identified
+  integrity: {checksum_offset: 0x00, size: 2, algorithm: crc16_ccitt_init_ffff_xor_ffff}
 
 menus:
   game_assignments:

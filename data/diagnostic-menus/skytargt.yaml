@@ -24,7 +24,7 @@ nvram_layout:
     mirror: {offset: 0x30, size: 40}
   integrity:
     checksum_offset_within_bank: 0
-    algorithm: unresolved
+    algorithm: sega_crc16_1021_add_init_debdeb_append_zero
     note: both game-written banks are byte-identical in every verified sample
 
 controls:
