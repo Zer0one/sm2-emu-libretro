@@ -117,10 +117,9 @@ void store_u16(std::span<u8> memory, size_t offset, u16 value)
     memory[offset + 1] = static_cast<u8>(value >> 8);
 }
 
-bool mirrored_sega_bank_valid(std::span<const u8> eeprom, size_t bank_size,
-                              u32 initial, bool append_zero)
+bool mirrored_sega_bank_valid(std::span<const u8> eeprom, size_t first,
+                              size_t bank_size, u32 initial, bool append_zero)
 {
-    const size_t first = 0x08;
     const size_t mirror = first + bank_size;
     return mirror + bank_size <= eeprom.size() &&
            std::equal(eeprom.begin() + first, eeprom.begin() + mirror,
@@ -129,12 +128,24 @@ bool mirrored_sega_bank_valid(std::span<const u8> eeprom, size_t bank_size,
                                                    initial, append_zero);
 }
 
+bool mirrored_sega_bank_valid(std::span<const u8> eeprom, size_t bank_size,
+                              u32 initial, bool append_zero)
+{
+    return mirrored_sega_bank_valid(eeprom, 0x08, bank_size, initial, append_zero);
+}
+
+void update_mirrored_sega_bank(std::span<u8> eeprom, size_t first,
+                               size_t bank_size, u32 initial, bool append_zero)
+{
+    store_u16(eeprom, first, sega_crc_add(eeprom.subspan(first + 2, bank_size - 2),
+                                          initial, append_zero));
+    std::copy_n(eeprom.begin() + first, bank_size, eeprom.begin() + first + bank_size);
+}
+
 void update_mirrored_sega_bank(std::span<u8> eeprom, size_t bank_size,
                                u32 initial, bool append_zero)
 {
-    store_u16(eeprom, 0x08, sega_crc_add(eeprom.subspan(0x0a, bank_size - 2),
-                                         initial, append_zero));
-    std::copy_n(eeprom.begin() + 0x08, bank_size, eeprom.begin() + 0x08 + bank_size);
+    update_mirrored_sega_bank(eeprom, 0x08, bank_size, initial, append_zero);
 }
 
 bool sgt24h_link_bank_valid(std::span<const u8> eeprom)
@@ -156,6 +167,27 @@ void update_sgt24h_link_bank(std::span<u8> eeprom)
     std::copy_n(eeprom.begin() + 0x08, 32, eeprom.begin() + 0x28);
 }
 
+u16 bel_checksum(std::span<const u8> bank)
+{
+    u32 sum = 0x000c;
+    for (size_t offset = 2; offset < bank.size(); offset += 2)
+        sum += static_cast<u16>(bank[offset] |
+                                (static_cast<u16>(bank[offset + 1]) << 8));
+    return static_cast<u16>(sum);
+}
+
+bool bel_bank_valid(std::span<const u8> bank)
+{
+    return bank.size() == 0x40 && load_u16(bank, 0) == bel_checksum(bank);
+}
+
+void update_bel_eeprom(std::span<u8> eeprom)
+{
+    auto bank = eeprom.first(0x40);
+    store_u16(bank, 0, bel_checksum(bank));
+    std::copy_n(bank.begin(), bank.size(), eeprom.begin() + 0x40);
+}
+
 bool layout_ready(std::string_view game, std::span<const u8> backup,
                   std::span<const u8> eeprom)
 {
@@ -170,6 +202,10 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
         return std::equal(first.begin(), first.end(), mirror.begin()) &&
                first[0] == static_cast<u8>(std::accumulate(first.begin() + 1, first.end(), 0u));
     }
+    if (game == "bel")
+        return std::equal(eeprom.begin(), eeprom.begin() + 0x40, eeprom.begin() + 0x40) &&
+               std::equal(eeprom.begin() + 4, eeprom.begin() + 8, "LMC!") &&
+               bel_bank_valid(eeprom.first(0x40)) && bel_bank_valid(eeprom.subspan(0x40));
     if (game == "gunblade")
         return std::equal(eeprom.begin(), eeprom.begin() + 8, "SEGAGBNY") &&
                load_u16(eeprom, 0x08) == gunblade_crc(eeprom.subspan(0x10, 0x4a)) &&
@@ -194,12 +230,20 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
                load_u16(eeprom, 0x08) == sega_crc_or(eeprom.subspan(0x0a, 22), true);
     if (game == "dynabb" || game == "dynabb97")
         return mirrored_sega_bank_valid(eeprom, 28, 0xdebdeb00u, false);
+    if (game == "hpyagu98") {
+        constexpr std::array<u8, 4> protection = {0xfa, 0xe3, 0xa6, 0x29};
+        return std::equal(protection.begin(), protection.end(), eeprom.begin() + 0x08) &&
+               mirrored_sega_bank_valid(eeprom, 0x0c, 28, 0xdebdeb00u, false);
+    }
     if (game == "indy500" || game == "motoraid" || game == "waverunr")
         return mirrored_sega_bank_valid(eeprom, 36, 0xdebdec00u, false);
     if (game == "zerogun" || game == "zeroguna")
         return mirrored_sega_bank_valid(eeprom, 20, 0xdebdeb00u, false);
     if (game == "overrev")
         return mirrored_sega_bank_valid(eeprom, 52, 0xdebdeb00u, false);
+    if (game == "pltkids")
+        return std::equal(eeprom.begin(), eeprom.begin() + 4, "S32A") &&
+               mirrored_sega_bank_valid(eeprom, 28, 0xdebdeb00u, false);
     if (game == "segawski")
         return mirrored_sega_bank_valid(eeprom, 32, 0xdebdec00u, false);
     if (game == "dynamcop" || game == "hotd" || game == "skisuprg" ||
@@ -256,6 +300,8 @@ void sync_integrity(std::string_view game, std::span<u8> backup,
         eeprom[0x08] = static_cast<u8>(std::accumulate(eeprom.begin() + 0x09,
                                                        eeprom.begin() + 0x2c, 0u));
         std::copy_n(eeprom.begin() + 0x08, 36, eeprom.begin() + 0x2c);
+    } else if (game == "bel") {
+        update_bel_eeprom(eeprom);
     } else if (game == "gunblade") {
         store_u16(eeprom, 0x08, gunblade_crc(eeprom.subspan(0x10, 0x4a)));
     } else if (game == "fvipers" || game == "vf2") {
@@ -276,12 +322,16 @@ void sync_integrity(std::string_view game, std::span<u8> backup,
         std::copy_n(eeprom.begin() + 0x08, 24, eeprom.begin() + 0x20);
     } else if (game == "dynabb" || game == "dynabb97") {
         update_mirrored_sega_bank(eeprom, 28, 0xdebdeb00u, false);
+    } else if (game == "hpyagu98") {
+        update_mirrored_sega_bank(eeprom, 0x0c, 28, 0xdebdeb00u, false);
     } else if (game == "indy500" || game == "motoraid" || game == "waverunr") {
         update_mirrored_sega_bank(eeprom, 36, 0xdebdec00u, false);
     } else if (game == "zerogun" || game == "zeroguna") {
         update_mirrored_sega_bank(eeprom, 20, 0xdebdeb00u, false);
     } else if (game == "overrev") {
         update_mirrored_sega_bank(eeprom, 52, 0xdebdeb00u, false);
+    } else if (game == "pltkids") {
+        update_mirrored_sega_bank(eeprom, 28, 0xdebdeb00u, false);
     } else if (game == "segawski") {
         update_mirrored_sega_bank(eeprom, 32, 0xdebdec00u, false);
     } else if (game == "dynamcop" || game == "hotd" || game == "skisuprg" ||

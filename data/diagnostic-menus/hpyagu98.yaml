@@ -15,7 +15,7 @@ classification:
   evidence: [game_metadata, root_menu_layout, option_cycle, persistence_campaign]
 
 verification:
-  status: menu_verified_persistence_not_restored
+  status: menu_nonpersistent_direct_eeprom_patch_verified
   date: "2026-09-11"
   base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
   core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
@@ -32,14 +32,48 @@ verification:
     observed_value: OFF
     screenshot: ~/Documents/RetroArch/sm2-nvram-analysis/hpyagu98/generated/verification/reopen-favorite-tigers.png
     result: current_core_does_not_restore_menu_changes
+  standalone_confirmation:
+    date: "2026-09-12"
+    upstream_revision: 8b3a468
+    executable: sm2-emu_0.9.4_macos_arm64
+    method: isolated_native_nvram_with_scripted_operator_inputs
+    changed_value_observed_in_menu: "FAVORITE=TIGERS"
+    reopened_value_observed_in_menu: "FAVORITE=OFF"
+    native_files_before_and_after_exit: byte_identical
+    exit_codes: [0, 0]
+    result: shared_model2a_persistence_issue_not_libretro_container_specific
+  mame_confirmation:
+    date: "2026-09-12"
+    revision: 39dc789dcd5ed184061ef53122132339df402286
+    version: "0.289 (mame0289-767-g39dc789dcd5)"
+    method: two_scripted_runs_with_isolated_mame_nvram
+    changed_value_observed_in_menu: "FAVORITE=TIGERS"
+    reopened_value_observed_in_menu: "FAVORITE=OFF"
+    eeprom_sha256: 7deb766e84e6104e8c7bf3378afa3329d0c99f7cacee1ee95046f403b29df072
+    note: backup RAM changed during normal execution but did not restore FAVORITE
+    positive_control: the same harness preserved VF2 ADVERTISE SOUND=OFF
+    result: mame_does_not_restore_menu_change
+  direct_eeprom_patch:
+    method: patch shipped EEPROM before boot, update CRC and mirror, then inspect service menu
+    tested_option: {key: favorite, requested: TIGERS, observed: TIGERS}
+    tested_value: {offset: 0x1e, mirror_offset: 0x3a, encoded: 7}
+    checksum_after_patch: 0x4b62
+    result: startup_patch_bypasses_missing_game_commit
 
 controls: {profile: sega_service_l3_r3, enter_test_menu: L3, next_item: R3, select_or_change: L3}
 
 nvram_layout:
-  storage: unresolved_for_menu_settings
+  storage: eeprom_93c46
   shipped_defaults: [backup1_16kb, eeprom_128b]
-  observation: all 22 extracted EEPROM images are identical and backup-RAM changes do not correlate with selected menu values
-  limitation: values are verified in-menu but must not be exposed as core options until persistence is understood and restored
+  protection_prefix: {offset: 0x08, bytes: [0xfa, 0xe3, 0xa6, 0x29], preserve: true}
+  settings_banks:
+    first: {offset: 0x0c, size: 28}
+    mirror: {offset: 0x28, size: 28}
+  integrity:
+    checksum_offset_within_bank: 0
+    algorithm: sega_crc16_1021_add_init_debdeb
+    note: same 28-byte format as Dynamite Baseball, shifted four bytes to preserve the protection prefix
+  observation: the service menu changes only volatile work RAM and never commits the settings EEPROM, but a valid EEPROM patched before boot is read correctly
 
 menus:
   game_assignments:
@@ -47,9 +81,9 @@ menus:
     editable_option_count: 5
     persistence_sequence_tested: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game, reload_saved_sram]
     options:
-      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, value_count: 4, values: [NORMAL, HARD, HARDEST, EASY]}
-      - {key: advertise_sound, label: ADVERTISE SOUND, position: 2, value_count: 2, values: ["ON", "OFF"]}
-      - {key: cabinet_type, label: CABINET TYPE, position: 3, value_count: 3, values: [US, CITY, MEGALO]}
-      - {key: favorite, label: FAVORITE, position: 4, value_count: 9, values: ["OFF", GIANTS, EAGLES, UNICORNS, LIONS, RAIDERS, BEARS, TWINS, TIGERS]}
-      - {key: innings, label: INNINGS, position: 5, value_count: 3, values: ["1CREDIT 2INNINGS", "1CREDIT 3INNINGS", "1CREDIT 1INNING"]}
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, value_count: 4, values: [NORMAL, HARD, HARDEST, EASY], nvram: {storage: eeprom, offset: 0x1c, mirror_offset: 0x38, values: [1, 2, 3, 0]}}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 2, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x1d, mirror_offset: 0x39, values: [1, 0]}}
+      - {key: cabinet_type, label: CABINET TYPE, position: 3, value_count: 3, values: [US, CITY, MEGALO], nvram: {storage: eeprom, offset: 0x1f, mirror_offset: 0x3b, values: [2, 0, 1]}}
+      - {key: favorite, label: FAVORITE, position: 4, value_count: 9, values: ["OFF", GIANTS, EAGLES, UNICORNS, LIONS, RAIDERS, BEARS, TWINS, TIGERS], nvram: {storage: eeprom, offset: 0x1e, mirror_offset: 0x3a, values: [8, 0, 1, 2, 3, 4, 5, 6, 7], direct_patch_verified: true}}
+      - {key: innings, label: INNINGS, position: 5, value_count: 3, values: ["1CREDIT 2INNINGS", "1CREDIT 3INNINGS", "1CREDIT 1INNING"], nvram: {storage: eeprom, offset: 0x21, mirror_offset: 0x3d, values: [1, 2, 0]}}
     commands: [{label: EXIT, position: 0}]

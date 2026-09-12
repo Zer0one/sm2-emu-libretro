@@ -3416,6 +3416,134 @@ static constexpr Value kValues185[] = {
     {"sd", "SD", kDesired185 + 1},
 };
 
+static constexpr Patch kPatches186[] = {
+    {0x15, 0xff, MemoryKind::Eeprom},
+    {0x55, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired186[] = {0x01, 0x01, 0x02, 0x02, 0x00, 0x00};
+static constexpr Value kValues186[] = {
+    {"usa", "U.S.", kDesired186 + 0},
+    {"export", "EXPORT", kDesired186 + 2},
+    {"japan", "JAPAN", kDesired186 + 4},
+};
+
+static constexpr Patch kPatches187[] = {
+    {0x13, 0xff, MemoryKind::Eeprom},
+    {0x53, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired187[] = {0x01, 0x01, 0x00, 0x00};
+static constexpr Value kValues187[] = {
+    {"on", "ON", kDesired187 + 0},
+    {"off", "OFF", kDesired187 + 2},
+};
+
+static constexpr Patch kPatches188[] = {
+    {0x22, 0xff, MemoryKind::Eeprom},
+    {0x62, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired188[] = {
+    0x05, 0x05, 0x06, 0x06, 0x07, 0x07, 0x08, 0x08, 0x09, 0x09,
+    0x00, 0x00, 0x01, 0x01, 0x02, 0x02, 0x03, 0x03, 0x04, 0x04,
+};
+static constexpr Value kValues188[] = {
+    {"6", "6", kDesired188 + 0},
+    {"7", "7", kDesired188 + 2},
+    {"8", "8", kDesired188 + 4},
+    {"9", "9", kDesired188 + 6},
+    {"10", "10", kDesired188 + 8},
+    {"1", "1", kDesired188 + 10},
+    {"2", "2", kDesired188 + 12},
+    {"3", "3", kDesired188 + 14},
+    {"4", "4", kDesired188 + 16},
+    {"5", "5", kDesired188 + 18},
+};
+
+
+static constexpr Patch kPatches189[] = {
+    {0x1c, 0xff, MemoryKind::Eeprom},
+    {0x38, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired189[] = {0x01, 0x01, 0x02, 0x02, 0x03, 0x03, 0x00, 0x00};
+static constexpr Value kValues189[] = {
+    {"normal", "NORMAL", kDesired189 + 0},
+    {"hard", "HARD", kDesired189 + 2},
+    {"hardest", "HARDEST", kDesired189 + 4},
+    {"easy", "EASY", kDesired189 + 6},
+};
+
+static constexpr Patch kPatches190[] = {
+    {0x1d, 0xff, MemoryKind::Eeprom},
+    {0x39, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired190[] = {0x01, 0x01, 0x00, 0x00};
+static constexpr Value kValues190[] = {
+    {"on", "ON", kDesired190 + 0},
+    {"off", "OFF", kDesired190 + 2},
+};
+
+static constexpr Patch kPatches191[] = {
+    {0x1f, 0xff, MemoryKind::Eeprom},
+    {0x3b, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired191[] = {0x02, 0x02, 0x00, 0x00, 0x01, 0x01};
+static constexpr Value kValues191[] = {
+    {"us", "US", kDesired191 + 0},
+    {"city", "CITY", kDesired191 + 2},
+    {"megalo", "MEGALO", kDesired191 + 4},
+};
+
+static constexpr Patch kPatches192[] = {
+    {0x1e, 0xff, MemoryKind::Eeprom},
+    {0x3a, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired192[] = {
+    0x08, 0x08, 0x00, 0x00, 0x01, 0x01, 0x02, 0x02, 0x03, 0x03,
+    0x04, 0x04, 0x05, 0x05, 0x06, 0x06, 0x07, 0x07,
+};
+static constexpr Value kValues192[] = {
+    {"off", "OFF", kDesired192 + 0},
+    {"giants", "GIANTS", kDesired192 + 2},
+    {"eagles", "EAGLES", kDesired192 + 4},
+    {"unicorns", "UNICORNS", kDesired192 + 6},
+    {"lions", "LIONS", kDesired192 + 8},
+    {"raiders", "RAIDERS", kDesired192 + 10},
+    {"bears", "BEARS", kDesired192 + 12},
+    {"twins", "TWINS", kDesired192 + 14},
+    {"tigers", "TIGERS", kDesired192 + 16},
+};
+
+static constexpr Patch kPatches193[] = {
+    {0x11, 0xff, MemoryKind::Eeprom},
+    {0x2d, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired193[] = {0x01, 0x01, 0x02, 0x02, 0x03, 0x03, 0x00, 0x00};
+static constexpr Value kValues193[] = {
+    {"normal", "Normal", kDesired193 + 0},
+    {"difficult", "Difficult", kDesired193 + 2},
+    {"more_difficult", "More Difficult", kDesired193 + 4},
+    {"easy", "Easy", kDesired193 + 6},
+};
+
+static constexpr Patch kPatches194[] = {
+    {0x12, 0xff, MemoryKind::Eeprom},
+    {0x2e, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired194[] = {0x00, 0x00, 0x01, 0x01};
+static constexpr Value kValues194[] = {
+    {"off", "Off", kDesired194 + 0},
+    {"on", "On", kDesired194 + 2},
+};
+
+static constexpr Patch kPatches195[] = {
+    {0x17, 0xff, MemoryKind::Eeprom},
+    {0x33, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired195[] = {0x00, 0x00, 0x01, 0x01};
+static constexpr Value kValues195[] = {
+    {"on", "On", kDesired195 + 0},
+    {"off", "Off", kDesired195 + 2},
+};
+
 static constexpr Option kOptions[] = {
     {"daytona", "link_id", "LINK ID", "Set LINK ID in daytona's operator NVRAM. The standalone value is the safe default when no peer cabinet is connected.", "single", kValues0, std::size(kValues0), kPatches0, std::size(kPatches0)},
     {"daytona", "car_number", "CAR NUMBER", "Set CAR NUMBER in daytona's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues1, std::size(kValues1), kPatches1, std::size(kPatches1)},
@@ -3571,6 +3699,16 @@ static constexpr Option kOptions[] = {
     {"gunblade", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in gunblade's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "4_8", kValues183, std::size(kValues183), kPatches183, std::size(kPatches183)},
     {"gunblade", "shifting_difficulty", "SHIFTING DIFFICULTY", "Set SHIFTING DIFFICULTY in gunblade's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "4_8", kValues184, std::size(kValues184), kPatches184, std::size(kPatches184)},
     {"gunblade", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in gunblade's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "dx", kValues185, std::size(kValues185), kPatches185, std::size(kPatches185)},
+    {"bel", "country", "COUNTRY", "Set COUNTRY in bel's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues186, std::size(kValues186), kPatches186, std::size(kPatches186)},
+    {"bel", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in bel's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues187, std::size(kValues187), kPatches187, std::size(kPatches187)},
+    {"bel", "difficulty", "DIFFICULTY", "Set DIFFICULTY in bel's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "6", kValues188, std::size(kValues188), kPatches188, std::size(kPatches188)},
+    {"hpyagu98", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in hpyagu98's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues189, std::size(kValues189), kPatches189, std::size(kPatches189)},
+    {"hpyagu98", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in hpyagu98's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues190, std::size(kValues190), kPatches190, std::size(kPatches190)},
+    {"hpyagu98", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in hpyagu98's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "us", kValues191, std::size(kValues191), kPatches191, std::size(kPatches191)},
+    {"hpyagu98", "favorite", "FAVORITE", "Set FAVORITE in hpyagu98's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues192, std::size(kValues192), kPatches192, std::size(kPatches192)},
+    {"pltkids", "difficulty", "Difficult", "Set Difficult in pltkids's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues193, std::size(kValues193), kPatches193, std::size(kPatches193)},
+    {"pltkids", "demo_sound", "Demo Sound", "Set Demo Sound in pltkids's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues194, std::size(kValues194), kPatches194, std::size(kPatches194)},
+    {"pltkids", "continue", "Continue", "Set Continue in pltkids's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues195, std::size(kValues195), kPatches195, std::size(kPatches195)},
     {"stcc", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in stcc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues141, std::size(kValues141), kPatches141, std::size(kPatches141)},
     {"stcc", "url_address", "URL ADDRESS", "Set URL ADDRESS in stcc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues142, std::size(kValues142), kPatches142, std::size(kPatches142)},
     {"stcc", "country", "COUNTRY", "Set COUNTRY in stcc's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues143, std::size(kValues143), kPatches143, std::size(kPatches143)},

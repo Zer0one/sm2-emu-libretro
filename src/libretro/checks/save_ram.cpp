@@ -47,7 +47,7 @@ int main()
     {
         const auto options = libretro::nvram::all_options();
         std::set<std::string> keys;
-        expect(options.size() == 186, "reviewed NVRAM option catalog has 186 entries");
+        expect(options.size() == 196, "reviewed NVRAM option catalog has 196 entries");
         for (const auto& option : options) {
             const std::string key = std::string(option.game) + ":" + option.suffix;
             expect(keys.insert(key).second, "NVRAM option keys are unique");
@@ -64,8 +64,12 @@ int main()
                "Super GT 24h exposes the reviewed option set");
         expect(libretro::nvram::options_for_game("gunblade").size() == 5,
                "Gunblade NY exposes the reviewed option set");
-        expect(libretro::nvram::options_for_game("bel").empty(),
-               "unresolved layouts are excluded from Core Options");
+        expect(libretro::nvram::options_for_game("bel").size() == 3,
+               "Behind Enemy Lines exposes the reviewed option set");
+        expect(libretro::nvram::options_for_game("hpyagu98").size() == 4,
+               "Hanguk Pro Yagu 98 exposes the reviewed option set");
+        expect(libretro::nvram::options_for_game("pltkids").size() == 3,
+               "Pilot Kids exposes the reviewed option set");
     }
 
     std::array<u8, libretro::kBackupRamSize> backup{};
@@ -270,6 +274,178 @@ int main()
         expect(libretro::nvram::apply("gunblade", settings_backup, settings_eeprom,
                                      selections) == libretro::nvram::ApplyResult::Unchanged,
                "reapplying Gunblade NY values is idempotent");
+    }
+
+    {
+        std::array<u8, libretro::kBackupRamSize> settings_backup{};
+        std::array<u8, libretro::kEepromSize> settings_eeprom{};
+        settings_eeprom.fill(0xff);
+        std::copy_n("LMC!", 4, settings_eeprom.begin() + 4);
+        settings_eeprom[0x13] = 0;
+        settings_eeprom[0x15] = 2;
+        settings_eeprom[0x22] = 9;
+        const auto bel_checksum = [](std::span<const u8> bank) {
+            u32 sum = 0x000c;
+            for (size_t offset = 2; offset < bank.size(); offset += 2)
+                sum += static_cast<u16>(bank[offset] |
+                    (static_cast<u16>(bank[offset + 1]) << 8));
+            return static_cast<u16>(sum);
+        };
+        auto first = std::span<u8>(settings_eeprom).first(0x40);
+        const u16 initial_checksum = bel_checksum(first);
+        first[0] = static_cast<u8>(initial_checksum);
+        first[1] = static_cast<u8>(initial_checksum >> 8);
+        std::copy_n(first.begin(), first.size(), settings_eeprom.begin() + 0x40);
+        std::vector<std::string> selections;
+        for (const auto& option : libretro::nvram::options_for_game("bel"))
+            selections.emplace_back(option.default_value);
+        expect(selections.size() == 3, "Behind Enemy Lines has three approved selections");
+        expect(libretro::nvram::apply("bel", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Changed,
+               "Behind Enemy Lines defaults apply to a valid native layout");
+        expect(settings_eeprom[0x15] == 1 && settings_eeprom[0x13] == 1 &&
+               settings_eeprom[0x22] == 5,
+               "Behind Enemy Lines approved defaults are stored");
+        expect(std::equal(settings_eeprom.begin(), settings_eeprom.begin() + 0x40,
+                          settings_eeprom.begin() + 0x40),
+               "Behind Enemy Lines EEPROM mirror is synchronized");
+        expect(static_cast<u16>(settings_eeprom[0] | (settings_eeprom[1] << 8)) ==
+                   bel_checksum(std::span<const u8>(settings_eeprom).first(0x40)),
+               "Behind Enemy Lines additive checksum is regenerated");
+        expect(libretro::nvram::apply("bel", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Unchanged,
+               "reapplying Behind Enemy Lines values is idempotent");
+    }
+
+    {
+        std::array<u8, libretro::kBackupRamSize> settings_backup{};
+        std::array<u8, libretro::kEepromSize> settings_eeprom{};
+        settings_eeprom.fill(0xff);
+        const std::array<u8, 4> protection = {0xfa, 0xe3, 0xa6, 0x29};
+        std::copy(protection.begin(), protection.end(), settings_eeprom.begin() + 0x08);
+        settings_eeprom[0x1c] = 1;
+        settings_eeprom[0x1d] = 1;
+        settings_eeprom[0x1e] = 8;
+        settings_eeprom[0x1f] = 2;
+        const auto sega_crc = [](std::span<const u8> bytes) {
+            u32 crc = 0xdebdeb00u;
+            for (u8 value : bytes) {
+                crc = (crc & 0xffffff00u) + value;
+                for (unsigned bit = 0; bit < 8; ++bit)
+                    crc = (crc & 0x80000000u) ?
+                        (crc << 1) + 0x10210000u : crc << 1;
+            }
+            return static_cast<u16>(crc >> 16);
+        };
+        const u16 initial_crc = sega_crc(
+            std::span<const u8>(settings_eeprom).subspan(0x0e, 26));
+        settings_eeprom[0x0c] = static_cast<u8>(initial_crc);
+        settings_eeprom[0x0d] = static_cast<u8>(initial_crc >> 8);
+        std::copy_n(settings_eeprom.begin() + 0x0c, 28,
+                    settings_eeprom.begin() + 0x28);
+
+        const auto options = libretro::nvram::options_for_game("hpyagu98");
+        std::vector<std::string> selections;
+        for (const auto& option : options) selections.emplace_back(option.default_value);
+        auto select = [&](std::string_view suffix, std::string value) {
+            const auto option = std::find_if(options.begin(), options.end(),
+                [suffix](const auto& candidate) { return suffix == candidate.suffix; });
+            expect(option != options.end(), "requested Hanguk Pro Yagu 98 option exists");
+            if (option != options.end())
+                selections[static_cast<size_t>(option - options.begin())] = std::move(value);
+        };
+        select("game_difficulty", "hardest");
+        select("advertise_sound", "off");
+        select("cabinet_type", "megalo");
+        select("favorite", "tigers");
+        expect(libretro::nvram::apply("hpyagu98", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Changed,
+               "Hanguk Pro Yagu 98 values apply to a valid EEPROM layout");
+        expect(settings_eeprom[0x1c] == 3 && settings_eeprom[0x1d] == 0 &&
+               settings_eeprom[0x1e] == 7 && settings_eeprom[0x1f] == 1,
+               "Hanguk Pro Yagu 98 approved values are stored");
+        expect(std::equal(protection.begin(), protection.end(), settings_eeprom.begin() + 0x08),
+               "Hanguk Pro Yagu 98 protection prefix is preserved");
+        expect(std::equal(settings_eeprom.begin() + 0x0c,
+                          settings_eeprom.begin() + 0x28,
+                          settings_eeprom.begin() + 0x28),
+               "Hanguk Pro Yagu 98 EEPROM mirror is synchronized");
+        expect(static_cast<u16>(settings_eeprom[0x0c] |
+                                (settings_eeprom[0x0d] << 8)) ==
+                   sega_crc(std::span<const u8>(settings_eeprom).subspan(0x0e, 26)),
+               "Hanguk Pro Yagu 98 CRC is regenerated");
+        expect(libretro::nvram::apply("hpyagu98", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Unchanged,
+               "reapplying Hanguk Pro Yagu 98 values is idempotent");
+        auto invalid_hpyagu98 = settings_eeprom;
+        invalid_hpyagu98[0x08] ^= 1;
+        expect(libretro::nvram::apply("hpyagu98", settings_backup, invalid_hpyagu98, selections) ==
+                   libretro::nvram::ApplyResult::LayoutNotReady,
+               "invalid Hanguk Pro Yagu 98 protection prefix is not modified");
+    }
+
+    {
+        std::array<u8, libretro::kBackupRamSize> settings_backup{};
+        std::array<u8, libretro::kEepromSize> settings_eeprom{};
+        settings_eeprom.fill(0xff);
+        std::copy_n("S32A", 4, settings_eeprom.begin());
+        settings_eeprom[0x11] = 1;
+        settings_eeprom[0x12] = 0;
+        settings_eeprom[0x17] = 0;
+        const auto sega_crc = [](std::span<const u8> bytes) {
+            u32 crc = 0xdebdeb00u;
+            for (u8 value : bytes) {
+                crc = (crc & 0xffffff00u) + value;
+                for (unsigned bit = 0; bit < 8; ++bit)
+                    crc = (crc & 0x80000000u) ?
+                        (crc << 1) + 0x10210000u : crc << 1;
+            }
+            return static_cast<u16>(crc >> 16);
+        };
+        const u16 initial_crc = sega_crc(
+            std::span<const u8>(settings_eeprom).subspan(0x0a, 26));
+        settings_eeprom[0x08] = static_cast<u8>(initial_crc);
+        settings_eeprom[0x09] = static_cast<u8>(initial_crc >> 8);
+        std::copy_n(settings_eeprom.begin() + 0x08, 28,
+                    settings_eeprom.begin() + 0x24);
+
+        const auto options = libretro::nvram::options_for_game("pltkids");
+        std::vector<std::string> selections;
+        for (const auto& option : options) selections.emplace_back(option.default_value);
+        auto select = [&](std::string_view suffix, std::string value) {
+            const auto option = std::find_if(options.begin(), options.end(),
+                [suffix](const auto& candidate) { return suffix == candidate.suffix; });
+            expect(option != options.end(), "requested Pilot Kids option exists");
+            if (option != options.end())
+                selections[static_cast<size_t>(option - options.begin())] = std::move(value);
+        };
+        select("difficulty", "more_difficult");
+        select("demo_sound", "on");
+        select("continue", "off");
+        expect(libretro::nvram::apply("pltkids", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Changed,
+               "Pilot Kids values apply to a valid EEPROM layout");
+        expect(settings_eeprom[0x11] == 3 && settings_eeprom[0x12] == 1 &&
+               settings_eeprom[0x17] == 1,
+               "Pilot Kids approved values are stored");
+        expect(std::equal(settings_eeprom.begin(), settings_eeprom.begin() + 4, "S32A"),
+               "Pilot Kids EEPROM signature is preserved");
+        expect(std::equal(settings_eeprom.begin() + 0x08,
+                          settings_eeprom.begin() + 0x24,
+                          settings_eeprom.begin() + 0x24),
+               "Pilot Kids EEPROM mirror is synchronized");
+        expect(static_cast<u16>(settings_eeprom[0x08] |
+                                (settings_eeprom[0x09] << 8)) ==
+                   sega_crc(std::span<const u8>(settings_eeprom).subspan(0x0a, 26)),
+               "Pilot Kids CRC is regenerated");
+        expect(libretro::nvram::apply("pltkids", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Unchanged,
+               "reapplying Pilot Kids values is idempotent");
+        auto invalid_pltkids = settings_eeprom;
+        invalid_pltkids[0] = 0;
+        expect(libretro::nvram::apply("pltkids", settings_backup, invalid_pltkids, selections) ==
+                   libretro::nvram::ApplyResult::LayoutNotReady,
+               "invalid Pilot Kids signature is not modified");
     }
 
     if (failures) return 1;

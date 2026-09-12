@@ -24,7 +24,10 @@ nvram_layout:
     mirror: {offset: 0x40, size: 64}
   integrity:
     checksum_offsets_within_bank: [0x00, 0x01]
-    algorithm: unresolved
+    algorithm: additive_u16_le
+    formula:
+      stored_u16_le: "(0x000c + sum(u16le(bank[0x02:0x40]))) & 0xffff"
+    verification: 53_samples_106_banks_plus_fresh_factory_state
   note: backup RAM also changes during boot but the operator settings are in EEPROM
 
 controls:

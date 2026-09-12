@@ -13,6 +13,8 @@
 #include <vector>
 
 namespace sm2::libretro {
+enum class AVTimingMode { Native, Compatibility60Hz };
+
 inline retro_environment_t option_environment = nullptr;
 inline std::string option_game;
 inline bool nvram_master_visible = false;
@@ -27,7 +29,7 @@ inline void build_option_definitions()
 {
     if (!registered_definitions.empty()) return;
     const auto all = nvram::all_options();
-    registered_definitions.reserve(all.size() + 5);
+    registered_definitions.reserve(all.size() + 7);
 
     retro_core_option_v2_definition master{};
     master.key = "sm2_nvram_settings";
@@ -58,22 +60,28 @@ inline void build_option_definitions()
         definition.default_value = option.default_value;
         registered_definitions.push_back(definition);
     }
-#ifdef SM2_LIBRETRO_VULKAN
+#if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
     retro_core_option_v2_definition renderer{};
     renderer.key = "sm2_renderer";
     renderer.desc = "Renderer (Restart Required)";
-    renderer.info = "Auto uses Vulkan when preferred by the frontend; otherwise software. Vulkan requires Vulkan 1.3. Reload content after changing this option.";
+    renderer.info = "Auto follows a supported hardware context preferred by the frontend, otherwise software. Vulkan requires Vulkan 1.3; OpenGL requires OpenGL 4.3 core or OpenGL ES 3.1. Reload content after changing this option.";
     renderer.category_key = "video";
-    renderer.values[0] = {"auto", "Auto"};
-    renderer.values[1] = {"vulkan", "Vulkan"};
-    renderer.values[2] = {"software", "Software"};
+    size_t renderer_value = 0;
+    renderer.values[renderer_value++] = {"auto", "Auto"};
+#ifdef SM2_LIBRETRO_VULKAN
+    renderer.values[renderer_value++] = {"vulkan", "Vulkan"};
+#endif
+#ifdef SM2_LIBRETRO_OPENGL
+    renderer.values[renderer_value++] = {"opengl", "OpenGL"};
+#endif
+    renderer.values[renderer_value++] = {"software", "Software"};
     renderer.default_value = "auto";
     registered_definitions.push_back(renderer);
 
     retro_core_option_v2_definition resolution{};
     resolution.key = "sm2_internal_resolution";
     resolution.desc = "Internal Resolution (Restart Required)";
-    resolution.info = "Vulkan rendering resolution. Tilemaps keep their native detail. Software always uses 496 x 384. Reload content after changing this option.";
+    resolution.info = "Hardware rendering resolution for Vulkan and OpenGL. Tilemaps keep their native detail. Software always uses 496 x 384. Reload content after changing this option.";
     resolution.category_key = "video";
     resolution.values[0] = {"1", "1x (496 x 384)"};
     resolution.values[1] = {"2", "2x (992 x 768)"};
@@ -82,7 +90,44 @@ inline void build_option_definitions()
     resolution.default_value = "1";
     registered_definitions.push_back(resolution);
 #endif
+
+    retro_core_option_v2_definition timing{};
+    timing.key = "sm2_av_timing";
+    timing.desc = "A/V Timing (Restart Required)";
+    timing.info = "Native reports the Model 2 hardware cadence of 57.524160 Hz. 60 Hz Compatibility preserves machine speed while fitting output to a 60 Hz frontend cadence, occasionally duplicating a video frame and packetizing audio at 60 Hz. Reload content after changing this option.";
+    timing.category_key = "video";
+    timing.values[0] = {"native", "Native (57.524160 Hz)"};
+    timing.values[1] = {"60hz", "60 Hz Compatibility"};
+    timing.default_value = "native";
+    registered_definitions.push_back(timing);
+
+    retro_core_option_v2_definition overlay{};
+    overlay.key = "sm2_timing_overlay";
+    overlay.desc = "Timing / FPS Overlay";
+    overlay.info = "Show 61-frame averages for machine, video and audio work, total retro_run time, worst frame, actual frontend cadence and estimated processing capacity. The frontend renders the status overlay. Takes effect immediately.";
+    overlay.category_key = "video";
+    overlay.values[0] = {"disabled", "Disabled"};
+    overlay.values[1] = {"enabled", "Enabled"};
+    overlay.default_value = "disabled";
+    registered_definitions.push_back(overlay);
+
     registered_definitions.push_back({});
+}
+
+inline AVTimingMode av_timing_mode()
+{
+    retro_variable option{"sm2_av_timing", nullptr};
+    return option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) &&
+                   option.value && std::strcmp(option.value, "60hz") == 0
+               ? AVTimingMode::Compatibility60Hz
+               : AVTimingMode::Native;
+}
+
+inline bool timing_overlay_enabled()
+{
+    retro_variable option{"sm2_timing_overlay", nullptr};
+    return option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) &&
+           option.value && std::strcmp(option.value, "enabled") == 0;
 }
 
 inline bool update_option_visibility()
@@ -143,9 +188,7 @@ inline void register_core_options(retro_environment_t env)
     build_option_definitions();
     static retro_core_option_v2_category categories[] = {
         {"system", "System", "Machine settings stored in battery-backed memory."},
-#ifdef SM2_LIBRETRO_VULKAN
-        {"video", "Video", "Renderer and internal resolution."},
-#endif
+        {"video", "Video", "Renderer, resolution, A/V cadence and diagnostics."},
         {nullptr, nullptr, nullptr}};
     unsigned version = 0;
     if (env(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version) && version >= 2) {

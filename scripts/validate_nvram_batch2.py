@@ -116,6 +116,12 @@ def main() -> None:
             assert struct.unpack(">II", shots[0].read_bytes()[16:24]) == (1024, 768), stem
             if game == "bel":
                 assert ep[:0x40] == ep[0x40:0x80], f"{stem}: EEPROM mirror mismatch"
+                for start in (0, 0x40):
+                    bank = ep[start:start + 0x40]
+                    checksum = (0x000C + sum(int.from_bytes(bank[offset:offset + 2], "little")
+                                             for offset in range(2, 0x40, 2))) & 0xFFFF
+                    assert int.from_bytes(bank[:2], "little") == checksum, \
+                        f"{stem}: 16-bit additive checksum mismatch"
             elif game == "daytona":
                 assert nv[:0x80] == nv[0x80:0x100], f"{stem}: backup-RAM mirror mismatch"
                 for start in (0, 0x80):

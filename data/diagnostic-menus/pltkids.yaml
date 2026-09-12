@@ -8,7 +8,7 @@ classification:
   developer: not_declared_in_current_metadata
   evidence: [game_metadata, root_menu_layout, option_cycle, persistence_campaign]
 verification:
-  status: menu_verified_persistence_unavailable
+  status: menu_nonpersistent_direct_eeprom_patch_verified
   date: "2026-09-11"
   base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
   core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
@@ -19,22 +19,47 @@ verification:
     persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/pltkids/generated
     validated: [srm_container, extracted_nvram, extracted_eeprom, screenshots, option_values]
   persistence_note: all menu changes were visible before Exit, but the current core produced EEPROM data identical to the baseline after every restart
+  mame_confirmation:
+    date: "2026-09-12"
+    revision: 39dc789dcd5ed184061ef53122132339df402286
+    version: "0.289 (mame0289-767-g39dc789dcd5)"
+    method: two_scripted_runs_with_isolated_mame_nvram
+    changed_value_observed_in_menu: "Demo Sound=On"
+    reopened_value_observed_in_menu: "Demo Sound=Off"
+    persistent_files_after_reopen:
+      eeprom_sha256: d364c155952599518dee10d741c93336108042d113b4a9bd59ebd7137db00177
+      backup1_sha256: 65cde5174c6a12eb7a627cfa0275a0556eb0598667106f8e62fc16ff5dd3e4b6
+    positive_control: the same harness preserved VF2 ADVERTISE SOUND=OFF
+    result: mame_does_not_restore_menu_change
+  direct_eeprom_patch:
+    method: patch EEPROM before boot, update CRC and mirror, then inspect service menu
+    tested_option: {key: demo_sound, requested: "On", observed: "On"}
+    tested_value: {offset: 0x12, mirror_offset: 0x2e, encoded: 1}
+    checksum_after_patch: 0x44d7
+    result: startup_patch_bypasses_missing_game_commit
 controls: {enter_test_menu: L3, next_item: DOWN, previous_item: UP, decrease: LEFT, increase: RIGHT, activate: B}
 nvram_layout:
   storage: eeprom_93c46
-  settings_mapping: unresolved_because_changes_do_not_persist
+  signature: {offset: 0x00, value: S32A}
+  settings_banks:
+    first: {offset: 0x08, size: 28}
+    mirror: {offset: 0x24, size: 28}
+  integrity:
+    checksum_offset_within_bank: 0
+    algorithm: sega_crc16_1021_add_init_debdeb
+  observation: the menu changes a temporary value in Model 2B RAM but performs no EEPROM or backup-RAM write; a valid EEPROM patched before boot is read correctly
 menus:
   game_configuring:
     root_position: {initial_item: Display Check, down_presses: 3, activate: B}
     editable_option_count: 8
     persistence_sequence_attempted: [select_Exit, select_test_mode_Exit, wait_for_game]
     options:
-      - {key: fighters, label: Fighters, position: 1, value_count: 5, values: [3, 4, 5, 1, 2]}
-      - {key: difficulty, label: Difficult, position: 2, value_count: 4, values: [Normal, Difficult, More Difficult, Easy]}
-      - {key: demo_sound, label: Demo Sound, position: 3, value_count: 2, values: ["Off", "On"]}
-      - {key: coin_slot, label: Coin Slot, position: 4, value_count: 2, values: [Same, Individual]}
-      - {key: coin_mode, label: Coin Mode, position: 5, value_count: 3, values: [Normal, Continue Start = 2Coins, Free Play]}
-      - {key: coin_1, label: Coin-1, position: 6, value_count: 9, values: [1Coin = 1Credit, 2Coins = 1Credit, 3Coins = 1Credit, 4Coins = 1Credit, 5Coins = 1Credit, 6Coins = 1Credit, 1Coin = 2Credits, 1Coin = 3Credits, 1Coin = 4Credits]}
-      - {key: coin_2, label: Coin-2, position: 7, value_count: 9, values: [1Coin = 1Credit, 2Coins = 1Credit, 3Coins = 1Credit, 4Coins = 1Credit, 5Coins = 1Credit, 6Coins = 1Credit, 1Coin = 2Credits, 1Coin = 3Credits, 1Coin = 4Credits]}
-      - {key: continue, label: Continue, position: 8, value_count: 2, values: ["On", "Off"]}
+      - {key: fighters, label: Fighters, position: 1, value_count: 5, values: [3, 4, 5, 1, 2], nvram: {storage: eeprom, offset: 0x10, mirror_offset: 0x2c, values: [2, 3, 4, 0, 1]}}
+      - {key: difficulty, label: Difficult, position: 2, value_count: 4, values: [Normal, Difficult, More Difficult, Easy], nvram: {storage: eeprom, offset: 0x11, mirror_offset: 0x2d, values: [1, 2, 3, 0]}}
+      - {key: demo_sound, label: Demo Sound, position: 3, value_count: 2, values: ["Off", "On"], nvram: {storage: eeprom, offset: 0x12, mirror_offset: 0x2e, values: [0, 1], direct_patch_verified: true}}
+      - {key: coin_slot, label: Coin Slot, position: 4, value_count: 2, values: [Same, Individual], nvram: {storage: eeprom, offset: 0x13, mirror_offset: 0x2f, values: [0, 1]}}
+      - {key: coin_mode, label: Coin Mode, position: 5, value_count: 3, values: [Normal, Continue Start = 2Coins, Free Play], nvram: {storage: eeprom, offset: 0x14, mirror_offset: 0x30, values: [0, 1, 2]}}
+      - {key: coin_1, label: Coin-1, position: 6, value_count: 9, values: [1Coin = 1Credit, 2Coins = 1Credit, 3Coins = 1Credit, 4Coins = 1Credit, 5Coins = 1Credit, 6Coins = 1Credit, 1Coin = 2Credits, 1Coin = 3Credits, 1Coin = 4Credits], nvram: {storage: eeprom, offset: 0x15, mirror_offset: 0x31, values: [0, 1, 2, 3, 4, 5, 6, 7, 8]}}
+      - {key: coin_2, label: Coin-2, position: 7, value_count: 9, values: [1Coin = 1Credit, 2Coins = 1Credit, 3Coins = 1Credit, 4Coins = 1Credit, 5Coins = 1Credit, 6Coins = 1Credit, 1Coin = 2Credits, 1Coin = 3Credits, 1Coin = 4Credits], nvram: {storage: eeprom, offset: 0x16, mirror_offset: 0x32, values: [0, 1, 2, 3, 4, 5, 6, 7, 8]}}
+      - {key: continue, label: Continue, position: 8, value_count: 2, values: ["On", "Off"], nvram: {storage: eeprom, offset: 0x17, mirror_offset: 0x33, values: [0, 1]}}
     commands: [{label: Factory Setting, position: 9}, {label: Exit, position: 10}]

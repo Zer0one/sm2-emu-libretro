@@ -24,6 +24,11 @@ class Timing(C.Structure):
     _fields_ = [('fps', C.c_double), ('rate', C.c_double)]
 class AV(C.Structure):
     _fields_ = [('geometry', Geometry), ('timing', Timing)]
+class Variable(C.Structure):
+    _fields_ = [('key', C.c_char_p), ('value', C.c_char_p)]
+class MessageExt(C.Structure):
+    _fields_ = [('msg', C.c_char_p), ('duration', C.c_uint), ('priority', C.c_uint),
+                ('level', C.c_int), ('target', C.c_int), ('type', C.c_int), ('progress', C.c_int8)]
 ENV = C.CFUNCTYPE(C.c_bool, C.c_uint, C.c_void_p)
 VIDEO = C.CFUNCTYPE(None, C.c_void_p, C.c_uint, C.c_uint, C.c_size_t)
 AUDIO = C.CFUNCTYPE(None, C.c_int16, C.c_int16)
@@ -47,11 +52,15 @@ def main():
     parser.add_argument('--exercise', action='store_true')
     parser.add_argument('--switch-rom', type=Path, help='Exercise a second board/rate in the same library instance')
     parser.add_argument('--press', action='store_true', help='Coin then Start then action buttons (not an idle comparison)')
+    parser.add_argument('--av-timing', choices=['native','60hz'], default='native')
+    parser.add_argument('--timing-overlay', choices=['disabled','enabled'], default='disabled')
     args = parser.parse_args()
     if args.frames <= 0: parser.error('--frames must be positive')
     out = args.output.resolve(); out.mkdir(parents=True, exist_ok=False)
     saves = out/'saves'; saves.mkdir()
     directories = {9: str(args.system.resolve()).encode(), 31: str(saves).encode()}
+    option_values = {b'sm2_av_timing': args.av_timing.encode(),
+                     b'sm2_timing_overlay': args.timing_overlay.encode()}
     lib = C.CDLL(str(args.core.resolve()))
     for name, arg in [('environment', ENV), ('video_refresh', VIDEO), ('audio_sample', AUDIO),
                       ('audio_sample_batch', BATCH), ('input_poll', POLL), ('input_state', STATE)]:
@@ -66,6 +75,7 @@ def main():
     lib.retro_get_memory_data.argtypes = [C.c_uint]; lib.retro_get_memory_data.restype = C.c_void_p
     lib.retro_set_controller_port_device.argtypes = [C.c_uint, C.c_uint]
     pixels = b''; pcm = bytearray(); frame = 0; videos = 0; polls = 0; batches = 0
+    duplicates = 0; statuses = []
     errors = []; reject_pixel = False; shutdown = False
     @ENV
     def env(cmd, data):
@@ -73,15 +83,25 @@ def main():
         if cmd in directories:
             C.cast(data, C.POINTER(C.c_char_p))[0] = directories[cmd]; return True
         if cmd == 10: return not reject_pixel and C.cast(data, C.POINTER(C.c_int))[0] == 1
+        if cmd == 3: C.cast(data, C.POINTER(C.c_bool))[0] = True; return True
+        if cmd == 15:
+            var=C.cast(data,C.POINTER(Variable)).contents
+            var.value=option_values.get(var.key); return var.value is not None
+        if cmd == 17: C.cast(data, C.POINTER(C.c_bool))[0] = False; return True
+        if cmd == 60:
+            statuses.append(C.cast(data,C.POINTER(MessageExt)).contents.msg.decode()); return True
         if cmd == 7: shutdown = True; return True
         if cmd in (11, 18): return True
         return False
     @VIDEO
     def video(data, w, h, pitch):
-        nonlocal pixels, videos
-        if (w,h,pitch) != (496,384,1984) or not data:
+        nonlocal pixels, videos, duplicates
+        videos += 1
+        if not data:
+            duplicates += 1; return
+        if (w,h,pitch) != (496,384,1984):
             errors.append('Invalid geometry/pitch/frame'); return
-        videos += 1; pixels = C.string_at(data, pitch*h)
+        pixels = C.string_at(data, pitch*h)
     @BATCH
     def batch(data, count):
         nonlocal batches
@@ -117,7 +137,7 @@ def main():
     assert info.extensions == b'zip|7z'
     assert lib.retro_serialize_size() == 0
     assert not lib.retro_serialize(None,0) and not lib.retro_unserialize(None,0)
-    assert lib.retro_get_memory_size(0) == 0 and not lib.retro_get_memory_data(0)
+    assert lib.retro_get_memory_size(0) == 16576 and lib.retro_get_memory_data(0)
     lib.retro_run(); lib.retro_reset()  # no content: safe no-op
     assert not lib.retro_load_game(None)
     game = Game(str(args.rom.resolve()).encode(),None,0,None)
@@ -130,13 +150,22 @@ def main():
     assert not lib.retro_load_game(C.byref(missing))
     assert lib.retro_load_game(C.byref(game))
     av = AV(); lib.retro_get_system_av_info(C.byref(av))
-    assert abs(av.timing.fps - 25000000/434600) < 1e-9
+    native_fps=25000000/434600
+    assert abs(av.timing.fps-(60.0 if args.av_timing=='60hz' else native_fps)) < 1e-9
     assert av.timing.rate in (44100,44642)
     assert abs(av.geometry.aspect-4/3) < 1e-6
     for frame in range(args.frames):
         lib.retro_run()
         assert not shutdown, 'Core requested shutdown'
     assert videos == polls == args.frames and not errors
+    if args.av_timing=='60hz':
+        expected=args.frames*(1-native_fps/60)
+        assert abs(duplicates-expected)<=1,(duplicates,expected)
+        assert abs(len(pcm)//4-args.frames*av.timing.rate/60)<av.timing.rate/native_fps+2
+    else: assert duplicates==0
+    overlays=[entry for entry in statuses if entry]
+    if args.timing_overlay=='enabled':
+        assert overlays and 'Engine cap:' in overlays[-1] and 'Actual:' in overlays[-1]
     # XRGB8888 little-endian B,G,R,X -> PPM top-to-bottom R,G,B.
     rgb = bytearray(len(pixels)//4*3)
     rgb[0::3] = pixels[2::4]; rgb[1::3] = pixels[1::4]; rgb[2::3] = pixels[0::4]
@@ -146,10 +175,13 @@ def main():
         w.setparams((2,2,int(av.timing.rate),0,'NONE','not compressed')); w.writeframes(pcm)
     lib.retro_unload_game()
     nvram_dirs=list(saves.glob('*/*')); assert len(nvram_dirs)==1
-    report = {'frames':videos,'fps':av.timing.fps,'audio_rate':av.timing.rate,
+    report = {'frames':videos,'duplicated_frames':duplicates,'fps':av.timing.fps,
+              'av_timing':args.av_timing,'timing_overlay':args.timing_overlay,
+              'overlay_updates':len(overlays),'audio_rate':av.timing.rate,
               'audio_frames':len(pcm)//4,'video_sha256':sha(ppm),'audio_sha256':sha(pcm),
               'nvram':files(nvram_dirs[0]),'abi_checks':True,'backpressure':args.backpressure}
     if args.reference:
+        assert args.av_timing=='native','Headless byte comparison requires native timing'
         reference=args.reference
         with wave.open(str(reference/'audio.wav'),'rb') as w:
             assert (w.getnchannels(),w.getsampwidth(),w.getframerate()) == (2,2,int(av.timing.rate))
@@ -179,7 +211,8 @@ def main():
             start_pcm=len(pcm)
             for frame in range(120): lib.retro_run()
             delivered=(len(pcm)-start_pcm)//4
-            assert abs(delivered-120*current.timing.rate/current.timing.fps) < 2
+            tolerance=2 if args.av_timing=='native' else current.timing.rate/native_fps+2
+            assert abs(delivered-120*current.timing.rate/current.timing.fps) < tolerance
             lib.retro_unload_game()
         lib.retro_set_audio_sample_batch(batch)
         report['sample_callback_and_rate_transitions']=True
