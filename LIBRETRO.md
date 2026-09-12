@@ -57,9 +57,9 @@ o firmware separati, valgono le regole del database upstream.
   Supermodel. Quando è Enabled mostra soltanto le opzioni del parent caricato e
   applica tutti i valori scelti all'avvio. Non usa `Keep Current`: disabilitando
   l'opzione generale il core lascia invariati i campi NVRAM.
-- 181 impostazioni operatore verificate per 31 parent. Oltre ai primi nove,
+- 186 impostazioni operatore verificate per 32 parent. Oltre ai primi nove,
   sono coperti `airwlkrs`, `dynabb`, `dynabb97`, `dynamcop`, `hotd`, `indy500`,
-  `lastbrnx`, `manxtt`, `motoraid`, `overrev`, `rchase2`, `segawski`,
+  `gunblade`, `lastbrnx`, `manxtt`, `motoraid`, `overrev`, `rchase2`, `segawski`,
   `sgt24h`, `skisuprg`, `skytargt`, `srallyc`, `stcc`, `topskatr`, `von`, `waverunr`,
   `zerogun` e `zeroguna`. I valori e le patch specifiche restano in una
   tabella separata dal motore generico, così gli aggiornamenti upstream non
@@ -186,6 +186,15 @@ ricaricato lo stesso `.srm` e mantenuto invariati tutti i campi selezionati.
 Questa verifica copre avvio e persistenza NVRAM: non attribuisce a ogni opzione
 un effetto di gameplay, audio o rete.
 
+La prova di Gunblade NY ha eseguito la ROM reale fino all’attract mode con le
+cinque Core Options approvate: Advertise Sound, Country, Game Difficulty,
+Shifting Difficulty e Cabinet Type. Il primo avvio ha applicato valori non
+predefiniti, rigenerato la word d’integrità EEPROM e salvato un contenitore
+valido. Un secondo avvio con `NVRAM Settings=Disabled` ha importato lo stesso
+`.srm` e conservato i cinque campi. Entrambe le sessioni sono terminate con
+exit code 0. La verifica copre avvio e persistenza; non attribuisce a ciascuna
+opzione un effetto specifico durante il gioco.
+
 ## Limiti
 
 Nel percorso software: nessun profilo completo volante/lightgun/twin-stick,
@@ -197,9 +206,8 @@ sono da completare nella milestone 3, seguendo [LIBRETRO_DESIGN.md](LIBRETRO_DES
 
 Le opzioni selezionate per gli altri parent restano rinviate finché il relativo
 formato non è scrivibile con controllo d'integrità dimostrato. `hpyagu98` e
-`pltkids` non ripristinano ancora le modifiche dopo il riavvio. `bel` e
-`gunblade` usano formati per cui manca ancora una prova conclusiva
-dell'algoritmo d'integrità; questi due giochi non espongono Core Options NVRAM.
+`pltkids` non ripristinano ancora le modifiche dopo il riavvio. `bel` usa un
+formato per cui manca ancora una prova conclusiva dell'algoritmo d'integrità e non espone Core Options NVRAM.
 `rascot2` resta fuori dalla campagna corrente.
 
 La prova di gameplay usa input sintetici attraverso RetroArch: non convalida
