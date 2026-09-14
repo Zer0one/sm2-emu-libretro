@@ -569,7 +569,11 @@ void Model2C::run_frame()
     // Those power on at 0xff (off-screen center) and the interactive calibration
     // is impractical, so while the bytes are still 0xff we manufacture a working
     // calibration for both guns, writing both the bytes and the derived floats.
-    // yscale is negative because the Y targets run top->bottom in raw analog.
+    // Initial NVRAM may already contain this manufactured calibration.  In that
+    // case the missing gun-board handshake still leaves the transient floats
+    // unusable, so keep the matching derived values seeded as well.  A different
+    // calibration is left untouched.  yscale is negative because the Y targets
+    // run top->bottom in raw analog.
     if (m_game.gun_missile) {
         auto rb = [this](u32 a) -> u8 {
             const u32 o = a - 0x00500000;
@@ -578,7 +582,11 @@ void Model2C::run_frame()
         };
         const bool uncalibrated = rb(0x5a8607) == 0xff && rb(0x5a8609) == 0xff
                                   && rb(0x5a860b) == 0xff && rb(0x5a860d) == 0xff;
-        if (uncalibrated) {
+        const bool manufactured = rb(0x5a8607) == 0x76 && rb(0x5a8608) == 0x0d
+                                  && rb(0x5a8609) == 0x95 && rb(0x5a860a) == 0x95
+                                  && rb(0x5a860b) == 0x7e && rb(0x5a860c) == 0x7e
+                                  && rb(0x5a860d) == 0x86 && rb(0x5a860e) == 0x86;
+        if (uncalibrated || manufactured) {
             auto wb = [this](u32 addr, u8 v) {
                 const u32 o = addr - 0x00500000;
                 if (o < m_work_ram.size())
@@ -591,10 +599,12 @@ void Model2C::run_frame()
                 u8* p = reinterpret_cast<u8*>(m_work_ram.data()) + o;
                 p[0] = bits; p[1] = bits >> 8; p[2] = bits >> 16; p[3] = bits >> 24;
             };
-            wb(0x5a8607, 0x76); wb(0x5a860b, 0x7e);  // P1 X center 118, dX 126
-            wb(0x5a8609, 0x95); wb(0x5a860d, 0x86);  // P1 Y center 149, dY 134
-            wb(0x5a8608, 0x0d); wb(0x5a860c, 0x7e);  // P2 X center 13,  dX 126
-            wb(0x5a860a, 0x95); wb(0x5a860e, 0x86);  // P2 Y center 149, dY 134
+            if (uncalibrated) {
+                wb(0x5a8607, 0x76); wb(0x5a860b, 0x7e);  // P1 X center 118, dX 126
+                wb(0x5a8609, 0x95); wb(0x5a860d, 0x86);  // P1 Y center 149, dY 134
+                wb(0x5a8608, 0x0d); wb(0x5a860c, 0x7e);  // P2 X center 13,  dX 126
+                wb(0x5a860a, 0x95); wb(0x5a860e, 0x86);  // P2 Y center 149, dY 134
+            }
             const float ycenter = 175.0f, yscale = -75.0f;
             wf(0x5a17d4 + 0, 118.0f);     wf(0x5a021c + 0, 63.0f);     // P1 X
             wf(0x5a2230 + 0, ycenter);    wf(0x5a0224 + 0, yscale);    // P1 Y
