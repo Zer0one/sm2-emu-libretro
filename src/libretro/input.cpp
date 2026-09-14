@@ -252,7 +252,7 @@ bool expected_desert_tank_signature(const rom::GameSpec& game)
         case rom::AnalogControl::None: break;
         case rom::AnalogControl::Steer: ++steer; break;
         case rom::AnalogControl::Accel: ++accel; break;
-        case rom::AnalogControl::Elevation: ++elevation; break;
+        case rom::AnalogControl::StickY: ++elevation; break;
         default: ++other; break;
         }
     }
@@ -702,8 +702,8 @@ std::vector<retro_input_descriptor> descriptors(
         if (profile == InputProfile::SpecialTopSkater) {
             add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Select Left");
             add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Select Right");
-            add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Jump Front");
-            add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Jump Tail");
+            add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Jump Tail");
+            add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Jump Front");
             add(RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
                 RETRO_DEVICE_ID_ANALOG_X, "Curving");
             add(RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
@@ -817,10 +817,7 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 bool h_gate_shifter, retro_input_state_t state,
                 GunInputMode gun_mode, bool offscreen_reload_shortcut,
                 DrivingAnalogOptions driving_options,
-                DesertElevationOptions desert_elevation_options,
-                bool water_ski_slide_inverted,
-                bool ski_super_g_swing_inverted,
-                bool top_skater_curving_inverted)
+                DesertElevationOptions desert_elevation_options)
 {
     inputs.in0 = inputs.in1 = inputs.in2 = 0xff;
     const auto profile = recognize_profile(game);
@@ -998,7 +995,6 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
             int slide = static_cast<int>(state(
                 0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
                 RETRO_DEVICE_ID_ANALOG_X));
-            if (water_ski_slide_inverted) slide = -slide;
             set_analog_control(inputs, game, rom::AnalogControl::Slide,
                 static_cast<s16>(std::clamp(slide, -32768, 32767)), false);
             if (pressed(RETRO_DEVICE_ID_JOYPAD_UP)) clear(inputs.in1, 0x02);
@@ -1012,12 +1008,10 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
         }
         if (profile == InputProfile::SpecialSkiSuperG) {
             if (p != 0) continue;
-            int swing = static_cast<int>(state(
+            const auto swing = state(
                 0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
-                RETRO_DEVICE_ID_ANALOG_X));
-            if (ski_super_g_swing_inverted) swing = -swing;
-            set_analog_control(inputs, game, rom::AnalogControl::Swing,
-                static_cast<s16>(std::clamp(swing, -32768, 32767)), false);
+                RETRO_DEVICE_ID_ANALOG_X);
+            set_analog_control(inputs, game, rom::AnalogControl::Swing, swing, false);
             set_analog_control(inputs, game, rom::AnalogControl::Inclining,
                 state(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
                       RETRO_DEVICE_ID_ANALOG_X), false);
@@ -1032,19 +1026,17 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
         }
         if (profile == InputProfile::SpecialTopSkater) {
             if (p != 0) continue;
-            int curving = static_cast<int>(state(
+            const auto curving = state(
                 0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
-                RETRO_DEVICE_ID_ANALOG_X));
-            if (top_skater_curving_inverted) curving = -curving;
-            set_analog_control(inputs, game, rom::AnalogControl::Curving,
-                static_cast<s16>(std::clamp(curving, -32768, 32767)), false);
+                RETRO_DEVICE_ID_ANALOG_X);
+            set_analog_control(inputs, game, rom::AnalogControl::Curving, curving, false);
             set_analog_control(inputs, game, rom::AnalogControl::Slide,
                 state(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
                       RETRO_DEVICE_ID_ANALOG_X), false);
             if (pressed(RETRO_DEVICE_ID_JOYPAD_LEFT)) clear(inputs.in0, 0x80);
             if (pressed(RETRO_DEVICE_ID_JOYPAD_RIGHT)) clear(inputs.in0, 0x10);
-            if (pressed(RETRO_DEVICE_ID_JOYPAD_B)) clear(inputs.in0, 0x20);
-            if (pressed(RETRO_DEVICE_ID_JOYPAD_A)) clear(inputs.in1, 0x01);
+            if (pressed(RETRO_DEVICE_ID_JOYPAD_A)) clear(inputs.in0, 0x20);
+            if (pressed(RETRO_DEVICE_ID_JOYPAD_B)) clear(inputs.in1, 0x01);
             continue;
         }
         if (profile == InputProfile::SpecialWaveRunner) {
@@ -1085,10 +1077,10 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
             if (desert_elevation_options.inverted) elevation_axis = -elevation_axis;
             elevation_axis = std::clamp(elevation_axis, -32768, 32767);
             if (desert_elevation_options.control == DesertElevationControl::Absolute) {
-                set_analog_control(inputs, game, rom::AnalogControl::Elevation,
+                set_analog_control(inputs, game, rom::AnalogControl::StickY,
                                    static_cast<s16>(elevation_axis), false);
                 for (size_t channel = 0; channel < game.analog.size(); ++channel)
-                    if (game.analog[channel].control == rom::AnalogControl::Elevation)
+                    if (game.analog[channel].control == rom::AnalogControl::StickY)
                         runtime.desert_elevation = static_cast<float>(inputs.analog[channel]);
             } else {
                 constexpr int dead_zone = 6000;
@@ -1104,7 +1096,7 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                         runtime.desert_elevation + (elevation_axis < 0 ? -speed : speed),
                         0.0f, 255.0f);
                 }
-                set_analog_fraction(inputs, game, rom::AnalogControl::Elevation,
+                set_analog_fraction(inputs, game, rom::AnalogControl::StickY,
                                     runtime.desert_elevation / 255.0f);
             }
             if (pressed(RETRO_DEVICE_ID_JOYPAD_DOWN)) clear(inputs.in0, 0x20);

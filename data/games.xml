@@ -259,7 +259,7 @@
        data region (collision/height map). Most likely next game to run
        after VF2.
        =================================================================== -->
-  <game name="skytargt" board="model2a" start1="0x40" preliminary="true">
+  <game name="skytargt" board="model2a" start1="0x40" vr_buttons="in0:0x20">
     <title>Sky Target</title>
     <manufacturer>Sega</manufacturer>
     <year>1995</year>
@@ -361,7 +361,7 @@
        lightgun coordinates arrive through the analog mux). No protection
        chip. Empty copro data region.
        =================================================================== -->
-  <game name="vcop2" board="model2a" preliminary="true">
+  <game name="vcop2" board="model2a">
     <title>Virtua Cop 2</title>
     <manufacturer>Sega</manufacturer>
     <year>1995</year>
@@ -452,7 +452,7 @@
        Vertical scrolling shooter. Digital joystick and two buttons.
        Requires 315-5881 encryption chip (key 042c0d13).
        =================================================================== -->
-  <game name="zeroguna" board="model2a" protection="315-5881" key="0x042c0d13" preliminary="true">
+  <game name="zeroguna" board="model2a" protection="315-5881" key="0x042c0d13">
     <title>Zero Gunner</title>
     <version>Export</version>
     <manufacturer>Psikyo</manufacturer>
@@ -708,7 +708,7 @@
 
 
 
-  <game name="airwlkrs" board="model2a" preliminary="true">
+  <game name="airwlkrs" board="model2a">
     <title>Air Walkers</title>
     <manufacturer>Data East Corporation</manufacturer>
     <year>1997</year>
@@ -771,7 +771,7 @@
   </game>
 
 
-  <game name="bel" board="model2c" preliminary="true" gun_missile="true">
+  <game name="bel" board="model2c" gun_missile="true">
     <title>Behind Enemy Lines</title>
     <manufacturer>Sega / EPL Productions</manufacturer>
     <year>1997</year>
@@ -840,7 +840,7 @@
   </game>
 
 
-  <game name="daytona" gearbox="true" drive_board="true" vr_buttons="in0:0x20,in0:0x40,in0:0x80,in1:0x01" board="model2" preliminary="true">
+  <game name="daytona" gearbox="true" drive_board="true" vr_buttons="in0:0x20,in0:0x40,in0:0x80,in1:0x01" board="model2">
     <title>Daytona USA</title>
     <manufacturer>Sega</manufacturer>
     <year>1994</year>
@@ -1164,7 +1164,101 @@
   </game>
 
 
-  <game name="desert" board="model2" preliminary="true">
+  <game name="daytonam" gearbox="true" drive_board="true" parent="daytona" board="model2" protection="daytona-maxx" vr_buttons="in0:0x20,in0:0x40,in0:0x80,in1:0x01">
+    <title>Daytona USA (To The MAXX)</title>
+    <manufacturer>hack (Kyle Hodgetts)</manufacturer>
+    <year>2001</year>
+
+    <inputs>
+      <input type="common"/>
+      <input type="vehicle"/>
+    </inputs>
+
+    <!-- Analogue mux wiring, from MAME's model2o_state::daytona. -->
+    <analog>
+      <channel index="0" control="steer" rest="0x80"/>
+      <channel index="1" control="accel" rest="0x00"/>
+      <channel index="2" control="brake" rest="0x00"/>
+    </analog>
+
+    <roms>
+      <region name="ioboard" size="0x10000">
+        <file name="epr-14869c.25" offset="0x000000" crc="0x24b68e64"/>
+      </region>
+      <region name="maincpu" size="0x200000" stride="4" chunk="2">
+        <file name="maxx.12" offset="0x000000" crc="0x604ef2d9"/>
+        <file name="maxx.13" offset="0x000002" crc="0x7d319970"/>
+        <file name="maxx.14" offset="0x040000" crc="0x2debfce0"/>
+      </region>
+      <region name="main_data" size="0x2000000" stride="4" chunk="2">
+        <file name="mpr-16528.10" offset="0x000000" crc="0x9ce591f6"/>
+        <file name="mpr-16529.11" offset="0x000002" crc="0xf7095eaf"/>
+        <file name="mpr-16808.8" offset="0x400000" crc="0x44f1f5a0"/>
+        <file name="mpr-16809.9" offset="0x400002" crc="0x37a2dd12"/>
+        <file name="epr-16724a.6" offset="0x800000" crc="0x469f10fd"/>
+        <file name="epr-16725a.7" offset="0x800002" crc="0xba0df8db"/>
+        <!-- ROM_COPY: the board aliases this bank across the rest of the window. -->
+        <copy from="0x800000" to="0x900000" size="0x100000"/>
+        <copy from="0x800000" to="0xa00000" size="0x100000"/>
+        <copy from="0x800000" to="0xb00000" size="0x100000"/>
+        <copy from="0x800000" to="0xc00000" size="0x100000"/>
+        <copy from="0x800000" to="0xd00000" size="0x100000"/>
+        <copy from="0x800000" to="0xe00000" size="0x100000"/>
+        <copy from="0x800000" to="0xf00000" size="0x100000"/>
+      </region>
+      <region name="copro_data" size="0x800000" stride="4" chunk="2">
+        <file name="mpr-16537.ic28" offset="0x000000" crc="0x36b7c35a"/>
+        <file name="mpr-16536.ic29" offset="0x000002" crc="0x6d6afed9"/>
+      </region>
+      <region name="polygons" size="0x1000000" stride="4" chunk="2">
+        <file name="mpr-16523.ic16" offset="0x000000" crc="0x2f484d42"/>
+        <file name="mpr-16518.ic20" offset="0x000002" crc="0xdf683bf7"/>
+        <file name="mpr-16524.ic17" offset="0x400000" crc="0x34658bd7"/>
+        <file name="mpr-16519.ic21" offset="0x400002" crc="0xfacd1c81"/>
+        <file name="mpr-16525.ic18" offset="0x800000" crc="0xfb517521"/>
+        <file name="mpr-16520.ic22" offset="0x800002" crc="0xd66bd9bd"/>
+        <file name="mpr-16772.ic19" offset="0xc00000" crc="0x770ed912"/>
+        <file name="mpr-16771.ic23" offset="0xc00002" crc="0xa2205124"/>
+      </region>
+      <region name="textures" size="0x1000000" stride="4" chunk="2">
+        <file name="mpr-16522.25" offset="0x000000" crc="0x55d39a57"/>
+        <file name="mpr-16521.24" offset="0x000002" crc="0xaf1934fb"/>
+        <file name="mpr-16770.27" offset="0x800000" crc="0xf9fa7bfb"/>
+        <file name="mpr-16769.26" offset="0x800002" crc="0xe57429e9"/>
+      </region>
+      <region name="cpu3" size="0x20000">
+        <file name="epr-16726.bin" offset="0x000000" crc="0xc179b8c7"/>
+      </region>
+      <region name="m1audio:sndcpu" size="0xc0000" stride="2" chunk="2" byte_swap="true">
+        <file name="epr-16720.7" offset="0x000000" crc="0x8e73cffd"/>
+        <file name="epr-16721.8" offset="0x020000" crc="0x1bb3b7b7"/>
+      </region>
+      <region name="m1audio:pcm1" size="0x400000">
+        <file name="mpr-16491.32" offset="0x000000" crc="0x89920903"/>
+        <file name="mpr-16492.33" offset="0x200000" crc="0x459e701b"/>
+      </region>
+      <region name="m1audio:pcm2" size="0x400000">
+        <file name="mpr-16493.4" offset="0x000000" crc="0x9990db15"/>
+        <file name="mpr-16494.5" offset="0x200000" crc="0x600e1d6c"/>
+      </region>
+      <region name="drivecpu" size="0x10000" required="false">
+        <file name="epr-16488a.ic12" offset="0x000000" crc="0x546c5d1a"/>
+        <file name="epr-16488.ic12"  offset="0x000000" crc="0x4f0b8114"/>
+      </region>
+      <region name="copro_tgp_tables" size="0x40000" stride="4" chunk="2">
+        <file name="opr-14742a.45" offset="0x000000" crc="0x90c6b117"/>
+        <file name="opr-14743a.46" offset="0x000002" crc="0xae7f446b"/>
+      </region>
+      <region name="other_data" size="0x80000" stride="4" chunk="2">
+        <file name="opr-14744.58" offset="0x000000" crc="0x730ea9e0"/>
+        <file name="opr-14745.59" offset="0x000002" crc="0x4c934d96"/>
+        <file name="opr-14746.62" offset="0x040000" crc="0x2a266cbd"/>
+        <file name="opr-14747.63" offset="0x040002" crc="0xa4ad5e19"/>
+      </region>
+    </roms>
+  </game>
+
+  <game name="desert" board="model2" vr_buttons="in0:0x20,in0:0x40,in0:0x80">
     <title>Desert Tank</title>
     <manufacturer>Sega / Martin Marietta</manufacturer>
     <year>1994</year>
@@ -1179,7 +1273,7 @@
     <analog>
       <channel index="0" control="steer" rest="0x80"/>
       <channel index="1" control="accel" rest="0x00"/>
-      <channel index="2" control="elevation" rest="0x80"/>
+      <channel index="2" control="sticky" rest="0x80"/>
     </analog>
 
     <!-- Model 1 I/O board Z80 firmware. Bundled into this archive (the
@@ -1545,7 +1639,7 @@
   </game>
 
 
-  <game name="dynamcop" board="model2a" protection="315-5881" key="0x2c2a4a93" preliminary="true">
+  <game name="dynamcop" board="model2a" protection="315-5881" key="0x2c2a4a93">
     <title>Dynamite Cop</title>
     <manufacturer>Sega</manufacturer>
     <year>1998</year>
@@ -1618,7 +1712,7 @@
     </roms>
   </game>
 
-  <game name="dynamcopb" parent="dynamcop" board="model2b" protection="315-5881" key="0x2c2a4a93" preliminary="true">
+  <game name="dynamcopb" parent="dynamcop" board="model2b" protection="315-5881" key="0x2c2a4a93">
     <title>Dynamite Cop</title>
     <version>Export, Model 2B</version>
     <manufacturer>Sega</manufacturer>
@@ -1677,7 +1771,7 @@
     </roms>
   </game>
 
-  <game name="dynamcopc" parent="dynamcop" board="model2c" protection="315-5881" key="0x2c2a4a93" preliminary="true">
+  <game name="dynamcopc" parent="dynamcop" board="model2c" protection="315-5881" key="0x2c2a4a93">
     <title>Dynamite Cop</title>
     <version>USA, Model 2C</version>
     <manufacturer>Sega</manufacturer>
@@ -1736,7 +1830,7 @@
     </roms>
   </game>
 
-  <game name="dyndeka2" parent="dynamcop" board="model2a" protection="315-5881" key="0x2c2a4a93" preliminary="true">
+  <game name="dyndeka2" parent="dynamcop" board="model2a" protection="315-5881" key="0x2c2a4a93">
     <title>Dynamite Deka 2</title>
     <version>Japan, Model 2A</version>
     <manufacturer>Sega</manufacturer>
@@ -1805,7 +1899,7 @@
     </roms>
   </game>
 
-  <game name="dyndeka2b" parent="dynamcop" board="model2b" protection="315-5881" key="0x2c2a4a93" preliminary="true">
+  <game name="dyndeka2b" parent="dynamcop" board="model2b" protection="315-5881" key="0x2c2a4a93">
     <title>Dynamite Deka 2</title>
     <version>Japan, Model 2B</version>
     <manufacturer>Sega</manufacturer>
@@ -1865,7 +1959,7 @@
   </game>
 
 
-  <game name="fvipers" board="model2b" preliminary="true">
+  <game name="fvipers" board="model2b">
     <title>Fighting Vipers</title>
     <manufacturer>Sega</manufacturer>
     <year>1995</year>
@@ -1939,7 +2033,7 @@
     </roms>
   </game>
 
-  <game name="fvipersa" parent="fvipers" board="model2b" preliminary="true">
+  <game name="fvipersa" parent="fvipers" board="model2b">
     <title>Fighting Vipers</title>
     <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
@@ -2014,7 +2108,7 @@
     </roms>
   </game>
 
-  <game name="fvipersb" parent="fvipers" board="model2b" preliminary="true">
+  <game name="fvipersb" parent="fvipers" board="model2b">
     <title>Fighting Vipers</title>
     <version>Revision B</version>
     <manufacturer>Sega</manufacturer>
@@ -2090,7 +2184,7 @@
   </game>
 
 
-  <game name="gunblade" board="model2b" preliminary="true">
+  <game name="gunblade" board="model2b">
     <title>Gunblade NY</title>
     <manufacturer>Sega</manufacturer>
     <year>1995</year>
@@ -2145,7 +2239,7 @@
   </game>
 
 
-  <game name="hotd" board="model2c" preliminary="true">
+  <game name="hotd" board="model2c">
     <title>The House of the Dead</title>
     <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
@@ -2222,7 +2316,7 @@
     </roms>
   </game>
 
-  <game name="hotdo" parent="hotd" board="model2c" preliminary="true">
+  <game name="hotdo" parent="hotd" board="model2c">
     <title>The House of the Dead</title>
     <manufacturer>Sega</manufacturer>
     <year>1997</year>
@@ -2297,7 +2391,7 @@
     </roms>
   </game>
 
-  <game name="hotdp" parent="hotd" board="model2c" preliminary="true">
+  <game name="hotdp" parent="hotd" board="model2c">
     <title>The House of the Dead</title>
     <version>prototype</version>
     <manufacturer>Sega</manufacturer>
@@ -2370,7 +2464,7 @@
   </game>
 
 
-  <game name="hpyagu98" board="model2a" preliminary="true">
+  <game name="hpyagu98" board="model2a">
     <title>Hanguk Pro Yagu 98</title>
     <manufacturer>Deniam</manufacturer>
     <year>1998</year>
@@ -2444,7 +2538,7 @@
   </game>
 
 
-  <game name="indy500" drive_board="true" shift_buttons="true" board="model2b" start1="0x40" preliminary="true">
+  <game name="indy500" drive_board="true" shift_buttons="true" board="model2b" start1="0x40" vr_buttons="in1:0x01,in1:0x02">
     <title>INDY 500 Twin</title>
     <manufacturer>Sega</manufacturer>
     <year>1995</year>
@@ -2516,7 +2610,7 @@
     </roms>
   </game>
 
-  <game name="indy500d" drive_board="true" parent="indy500" board="model2b" preliminary="true">
+  <game name="indy500d" drive_board="true" parent="indy500" board="model2b">
     <title>INDY 500 Deluxe</title>
     <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
@@ -2589,7 +2683,7 @@
     </roms>
   </game>
 
-  <game name="indy500to" drive_board="true" parent="indy500" board="model2b" preliminary="true">
+  <game name="indy500to" drive_board="true" parent="indy500" board="model2b">
     <title>INDY 500 Twin</title>
     <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
@@ -3063,7 +3157,7 @@
        shift_buttons drives, so the wheel's shift paddles become punch and kick.
        The synthesised centring/rumble follows from having a steering (Bank)
        control; the bike used a motion base, not a force-feedback drive board. -->
-  <game name="motoraid" board="model2a" start1="0x40" shift_buttons="true" preliminary="true">
+  <game name="motoraid" board="model2a" start1="0x40" shift_buttons="true">
     <title>Motor Raid - Twin</title>
     <manufacturer>Sega</manufacturer>
     <year>1997</year>
@@ -3146,7 +3240,7 @@
     </roms>
   </game>
 
-  <game name="motoraiddx" parent="motoraid" board="model2a" preliminary="true">
+  <game name="motoraiddx" parent="motoraid" board="model2a">
     <title>Motor Raid - Twin/DX</title>
     <manufacturer>Sega</manufacturer>
     <year>1997</year>
@@ -3228,7 +3322,7 @@
   </game>
 
 
-  <game name="overrev" board="model2c" start1="0x40" shift_buttons="true" preliminary="true">
+  <game name="overrev" board="model2c" start1="0x40" shift_buttons="true" vr_buttons="in1:0x01,in1:0x02">
     <title>Over Rev</title>
     <manufacturer>Jaleco</manufacturer>
     <year>1997</year>
@@ -3278,7 +3372,7 @@
     </roms>
   </game>
 
-  <game name="overrevb" drive_board="true" parent="overrev" board="model2b" preliminary="true">
+  <game name="overrevb" drive_board="true" parent="overrev" board="model2b">
     <title>Over Rev</title>
     <version>Model 2B, Revision B</version>
     <manufacturer>Jaleco</manufacturer>
@@ -3329,7 +3423,7 @@
     </roms>
   </game>
 
-  <game name="overrevba" drive_board="true" parent="overrev" board="model2b" preliminary="true">
+  <game name="overrevba" drive_board="true" parent="overrev" board="model2b">
     <title>Over Rev</title>
     <version>Model 2B, Revision A</version>
     <manufacturer>Jaleco</manufacturer>
@@ -3381,7 +3475,7 @@
   </game>
 
 
-  <game name="pltkids" board="model2b" protection="315-5881" key="0x042e2dc1" preliminary="true">
+  <game name="pltkids" board="model2b" protection="315-5881" key="0x042e2dc1">
     <title>Pilot Kids</title>
     <manufacturer>Psikyo</manufacturer>
     <year>1998</year>
@@ -3434,7 +3528,7 @@
     </roms>
   </game>
 
-  <game name="pltkidsa" parent="pltkids" board="model2a" protection="315-5881" key="0x042e2dc1" preliminary="true">
+  <game name="pltkidsa" parent="pltkids" board="model2a" protection="315-5881" key="0x042e2dc1">
     <title>Pilot Kids</title>
     <version>Model 2A</version>
     <manufacturer>Psikyo</manufacturer>
@@ -3555,7 +3649,7 @@
   </game>
 
 
-  <game name="rchase2" board="model2b" motion_base="true" preliminary="true">
+  <game name="rchase2" board="model2b" motion_base="true">
     <title>Rail Chase 2</title>
     <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
@@ -3616,7 +3710,7 @@
     </roms>
   </game>
 
-  <game name="rchase2a" parent="rchase2" board="model2b" preliminary="true">
+  <game name="rchase2a" parent="rchase2" board="model2b">
     <title>Rail Chase 2</title>
     <manufacturer>Sega</manufacturer>
     <year>1994</year>
@@ -3817,7 +3911,7 @@
   </game>
 
 
-  <game name="segawski" board="model2c" preliminary="true">
+  <game name="segawski" board="model2c">
     <title>Sega Water Ski</title>
     <manufacturer>Sega</manufacturer>
     <year>1997</year>
@@ -3829,7 +3923,7 @@
 
     <!-- Analogue mux wiring, from MAME's model2c_state::segawski. -->
     <analog>
-      <channel index="0" control="slide" rest="0x80"/>
+      <channel index="0" control="slide" rest="0x80" reverse="true"/>
     </analog>
 
     <roms>
@@ -3886,7 +3980,7 @@
   </game>
 
 
-  <game name="sgt24h" drive_board="true" shift_buttons="true" board="model2b" start1="0x40" preliminary="true">
+  <game name="sgt24h" drive_board="true" shift_buttons="true" board="model2b" start1="0x40" vr_buttons="in1:0x01">
     <title>Super GT 24h</title>
     <manufacturer>Jaleco</manufacturer>
     <year>1996</year>
@@ -3936,7 +4030,7 @@
   </game>
 
 
-  <game name="skisuprg" board="model2c" preliminary="true">
+  <game name="skisuprg" board="model2c" vr_buttons="in0:0x20,in1:0x01">
     <title>Sega Ski Super G</title>
     <manufacturer>Sega</manufacturer>
     <year>1996</year>
@@ -3950,7 +4044,7 @@
     <!-- Analogue mux wiring, from MAME's model2c_state::skisuprg. -->
     <analog>
       <channel index="0" control="inclining" rest="0x80"/>
-      <channel index="1" control="swing" rest="0x80"/>
+      <channel index="1" control="swing" rest="0x80" reverse="true"/>
     </analog>
 
     <roms>
@@ -3991,7 +4085,7 @@
   </game>
 
 
-  <game name="srallyc" gearbox="true" drive_board="true" vr_buttons="in0:0x20,in1:0x02,in1:0x04,in1:0x08" board="model2a" start1="0x40" preliminary="true">
+  <game name="srallyc" gearbox="true" drive_board="true" vr_buttons="in0:0x20" board="model2a" start1="0x40">
     <title>Sega Rally Championship - Twin/DX</title>
     <manufacturer>Sega</manufacturer>
     <year>1995</year>
@@ -4068,7 +4162,7 @@
     </roms>
   </game>
 
-  <game name="srallycb" gearbox="true" drive_board="true" parent="srallyc" board="model2a" preliminary="true">
+  <game name="srallycb" gearbox="true" drive_board="true" parent="srallyc" board="model2a">
     <title>Sega Rally Championship - Twin/DX</title>
     <version>Revision B</version>
     <manufacturer>Sega</manufacturer>
@@ -4141,7 +4235,7 @@
     </roms>
   </game>
 
-  <game name="srallycc" gearbox="true" drive_board="true" parent="srallyc" board="model2a" preliminary="true">
+  <game name="srallycc" gearbox="true" drive_board="true" parent="srallyc" board="model2a">
     <title>Sega Rally Championship - Twin/DX</title>
     <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
@@ -4214,7 +4308,7 @@
     </roms>
   </game>
 
-  <game name="srallycdx" gearbox="true" drive_board="true" parent="srallyc" board="model2a" preliminary="true">
+  <game name="srallycdx" gearbox="true" drive_board="true" parent="srallyc" board="model2a">
     <title>Sega Rally Championship - DX</title>
     <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
@@ -4286,7 +4380,7 @@
     </roms>
   </game>
 
-  <game name="srallycdxa" gearbox="true" drive_board="true" parent="srallyc" board="model2a" preliminary="true">
+  <game name="srallycdxa" gearbox="true" drive_board="true" parent="srallyc" board="model2a">
     <title>Sega Rally Championship - DX</title>
     <manufacturer>Sega</manufacturer>
     <year>1995</year>
@@ -4358,7 +4452,7 @@
   </game>
 
 
-  <game name="stcc" board="model2c" start1="0x40" shift_buttons="true" preliminary="true">
+  <game name="stcc" board="model2c" start1="0x40" shift_buttons="true">
     <title>Sega Touring Car Championship</title>
     <manufacturer>Sega</manufacturer>
     <year>1996</year>
@@ -4448,7 +4542,7 @@
     </roms>
   </game>
 
-  <game name="stcca" parent="stcc" board="model2c" preliminary="true">
+  <game name="stcca" parent="stcc" board="model2c">
     <title>Sega Touring Car Championship</title>
     <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
@@ -4539,7 +4633,7 @@
     </roms>
   </game>
 
-  <game name="stccb" parent="stcc" board="model2c" preliminary="true">
+  <game name="stccb" parent="stcc" board="model2c">
     <title>Sega Touring Car Championship</title>
     <version>Revision B</version>
     <manufacturer>Sega</manufacturer>
@@ -4630,7 +4724,7 @@
     </roms>
   </game>
 
-  <game name="stcco" parent="stcc" board="model2c" preliminary="true">
+  <game name="stcco" parent="stcc" board="model2c">
     <title>Sega Touring Car Championship</title>
     <manufacturer>Sega</manufacturer>
     <year>1996</year>
@@ -4734,7 +4828,7 @@
 
     <!-- Analogue mux wiring, from MAME's model2c_state::topskatr. -->
     <analog>
-      <channel index="0" control="curving" rest="0x80"/>
+      <channel index="0" control="curving" rest="0x80" reverse="true"/>
       <channel index="1" control="slide" rest="0x80"/>
     </analog>
 
@@ -4794,7 +4888,7 @@
 
     <!-- Analogue mux wiring, from MAME's model2c_state::topskatr. -->
     <analog>
-      <channel index="0" control="curving" rest="0x80"/>
+      <channel index="0" control="curving" rest="0x80" reverse="true"/>
       <channel index="1" control="slide" rest="0x80"/>
     </analog>
 
@@ -4854,7 +4948,7 @@
 
     <!-- Analogue mux wiring, from MAME's model2c_state::topskatr. -->
     <analog>
-      <channel index="0" control="curving" rest="0x80"/>
+      <channel index="0" control="curving" rest="0x80" reverse="true"/>
       <channel index="1" control="slide" rest="0x80"/>
     </analog>
 
@@ -4914,7 +5008,7 @@
 
     <!-- Analogue mux wiring, from MAME's model2c_state::topskatr. -->
     <analog>
-      <channel index="0" control="curving" rest="0x80"/>
+      <channel index="0" control="curving" rest="0x80" reverse="true"/>
       <channel index="1" control="slide" rest="0x80"/>
     </analog>
 
@@ -5098,7 +5192,7 @@
   </game>
 
 
-  <game name="von" board="model2b" preliminary="true">
+  <game name="von" board="model2b">
     <title>Cyber Troopers Virtual-On - Twin</title>
     <manufacturer>Sega</manufacturer>
     <year>1995</year>
@@ -5152,7 +5246,7 @@
     </roms>
   </game>
 
-  <game name="vonj" parent="von" board="model2b" preliminary="true">
+  <game name="vonj" parent="von" board="model2b">
     <title>Cyber Troopers Virtual-On - Twin</title>
     <version>Japan, Revision B</version>
     <manufacturer>Sega</manufacturer>
@@ -5207,7 +5301,7 @@
     </roms>
   </game>
 
-  <game name="vonr" parent="von" board="model2b" preliminary="true">
+  <game name="vonr" parent="von" board="model2b">
     <title>Cyber Troopers Virtual-On - Relay</title>
     <version>Japan</version>
     <manufacturer>Sega</manufacturer>
@@ -5262,7 +5356,7 @@
     </roms>
   </game>
 
-  <game name="vonu" parent="von" board="model2b" preliminary="true">
+  <game name="vonu" parent="von" board="model2b">
     <title>Cyber Troopers Virtual-On - Twin</title>
     <version>USA, Revision B</version>
     <manufacturer>Sega</manufacturer>
@@ -5318,7 +5412,7 @@
   </game>
 
 
-  <game name="vstriker" board="model2b" preliminary="true">
+  <game name="vstriker" board="model2b">
     <title>Virtua Striker</title>
     <manufacturer>Sega</manufacturer>
     <year>1994</year>
@@ -5367,7 +5461,7 @@
     </roms>
   </game>
 
-  <game name="vstrikero" parent="vstriker" board="model2b" preliminary="true">
+  <game name="vstrikero" parent="vstriker" board="model2b">
     <title>Virtua Striker</title>
     <manufacturer>Sega</manufacturer>
     <year>1994</year>
@@ -5417,7 +5511,7 @@
   </game>
 
 
-  <game name="waverunr" board="model2c" start1="0x40" preliminary="true">
+  <game name="waverunr" board="model2c" start1="0x40" preliminary="true" vr_buttons="in1:0x01">
     <title>Wave Runner</title>
     <manufacturer>Sega</manufacturer>
     <year>1996</year>
@@ -5516,7 +5610,7 @@
   </game>
 
 
-  <game name="zerogun" board="model2b" protection="315-5881" key="0x042c0d13" preliminary="true">
+  <game name="zerogun" board="model2b" protection="315-5881" key="0x042c0d13">
     <title>Zero Gunner</title>
     <manufacturer>Psikyo</manufacturer>
     <year>1997</year>
@@ -5561,7 +5655,7 @@
     </roms>
   </game>
 
-  <game name="zerogunj" parent="zerogun" board="model2b" protection="315-5881" key="0x042c0d13" preliminary="true">
+  <game name="zerogunj" parent="zerogun" board="model2b" protection="315-5881" key="0x042c0d13">
     <title>Zero Gunner</title>
     <version>Japan, Model 2B</version>
     <manufacturer>Psikyo</manufacturer>

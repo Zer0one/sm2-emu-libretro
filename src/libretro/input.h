@@ -109,8 +109,5 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 GunInputMode gun_mode = GunInputMode::Hybrid,
                 bool offscreen_reload_shortcut = true,
                 DrivingAnalogOptions driving_options = {},
-                DesertElevationOptions desert_elevation_options = {},
-                bool water_ski_slide_inverted = true,
-                bool ski_super_g_swing_inverted = true,
-                bool top_skater_curving_inverted = true);
+                DesertElevationOptions desert_elevation_options = {});
 }

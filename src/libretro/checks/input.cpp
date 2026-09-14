@@ -147,6 +147,7 @@ int main()
         {"daytona93", libretro::InputProfile::Driving4SpeedVR4},
         {"daytonas", libretro::InputProfile::Driving4SpeedVR4},
         {"daytonase", libretro::InputProfile::Driving4SpeedVR4},
+        {"daytonam", libretro::InputProfile::Driving4SpeedVR4},
         {"srallyc", libretro::InputProfile::Driving4SpeedVR1Handbrake},
         {"srallycb", libretro::InputProfile::Driving4SpeedVR1Handbrake},
         {"srallycc", libretro::InputProfile::Driving4SpeedVR1Handbrake},
@@ -958,12 +959,6 @@ int main()
           "Sega Water Ski writes every reviewed action to the MAME hardware bits");
     check(inputs.analog[0] == 0x00,
           "Sega Water Ski maps Left X+ to the inverted Slide endpoint");
-    libretro::poll_input(inputs, *segawski, devices, runtime, true, state,
-                         libretro::GunInputMode::Hybrid, true,
-                         libretro::DrivingAnalogOptions{},
-                         libretro::DesertElevationOptions{}, false);
-    check(inputs.analog[0] == 0xff,
-          "Sega Water Ski Normal Slide mode preserves Left X polarity");
     pressed = {(1u << RETRO_DEVICE_ID_JOYPAD_Y)
                    | (1u << RETRO_DEVICE_ID_JOYPAD_A), 0};
     axes = {};
@@ -1049,12 +1044,6 @@ int main()
     libretro::poll_input(inputs, *skisuprg, devices, runtime, true, state);
     check(inputs.analog[0] == 0x80 && inputs.analog[1] == 0x00,
           "Sega Ski Super G maps Left X+ to the inverted Swing endpoint");
-    libretro::poll_input(inputs, *skisuprg, devices, runtime, true, state,
-                         libretro::GunInputMode::Hybrid, true,
-                         libretro::DrivingAnalogOptions{},
-                         libretro::DesertElevationOptions{}, true, false);
-    check(inputs.analog[0] == 0x80 && inputs.analog[1] == 0xff,
-          "Sega Ski Super G Normal Swing mode preserves Left X polarity");
     axes[0][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_X] = -32768;
     libretro::poll_input(inputs, *skisuprg, devices, runtime, true, state);
     check(inputs.analog[0] == 0x80 && inputs.analog[1] == 0xff,
@@ -1083,9 +1072,9 @@ int main()
               && has_descriptor(top_skater_desc, 0, RETRO_DEVICE_JOYPAD, 0,
                                 RETRO_DEVICE_ID_JOYPAD_RIGHT, "Select Right")
               && has_descriptor(top_skater_desc, 0, RETRO_DEVICE_JOYPAD, 0,
-                                RETRO_DEVICE_ID_JOYPAD_B, "Jump Front")
+                                RETRO_DEVICE_ID_JOYPAD_B, "Jump Tail")
               && has_descriptor(top_skater_desc, 0, RETRO_DEVICE_JOYPAD, 0,
-                                RETRO_DEVICE_ID_JOYPAD_A, "Jump Tail")
+                                RETRO_DEVICE_ID_JOYPAD_A, "Jump Front")
               && has_descriptor(top_skater_desc, 0, RETRO_DEVICE_ANALOG,
                                 RETRO_DEVICE_INDEX_ANALOG_LEFT,
                                 RETRO_DEVICE_ID_ANALOG_X, "Curving")
@@ -1111,14 +1100,17 @@ int main()
     libretro::poll_input(inputs, *topskatr, devices, runtime, true, state);
     check(inputs.in0 == 0x0f && inputs.in1 == 0xfe,
           "Top Skater writes selections, jumps and Start to the MAME hardware bits");
+    pressed = {1u << RETRO_DEVICE_ID_JOYPAD_B, 0};
+    libretro::poll_input(inputs, *topskatr, devices, runtime, true, state);
+    check(inputs.in0 == 0xff && inputs.in1 == 0xfe,
+          "Top Skater maps South to Jump Tail");
+    pressed = {1u << RETRO_DEVICE_ID_JOYPAD_A, 0};
+    libretro::poll_input(inputs, *topskatr, devices, runtime, true, state);
+    check(inputs.in0 == 0xdf && inputs.in1 == 0xff,
+          "Top Skater maps East to Jump Front");
+    pressed = {};
     check(inputs.analog[0] == 0x00 && inputs.analog[1] == 0x00,
           "Top Skater maps Left X+ to the inverted Curving endpoint");
-    libretro::poll_input(inputs, *topskatr, devices, runtime, true, state,
-                         libretro::GunInputMode::Hybrid, true,
-                         libretro::DrivingAnalogOptions{},
-                         libretro::DesertElevationOptions{}, true, true, false);
-    check(inputs.analog[0] == 0xff && inputs.analog[1] == 0x00,
-          "Top Skater Normal Curving mode preserves Left X polarity and Slide");
     axes[0][RETRO_DEVICE_INDEX_ANALOG_LEFT][RETRO_DEVICE_ID_ANALOG_X] = -32768;
     libretro::poll_input(inputs, *topskatr, devices, runtime, true, state);
     check(inputs.analog[0] == 0xff,
