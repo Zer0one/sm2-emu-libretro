@@ -8,15 +8,17 @@ for attribution, comparison and future upstream updates.
 **Status: first software Libretro core implemented and tested on macOS arm64.**
 The isolated adapter uses the upstream machine and software renderer, with
 native timing/audio by default, an optional speed-preserving 60 Hz cadence,
-a Libretro timing/FPS overlay, basic digital inputs and frontend-managed save RAM.
+a Libretro timing/FPS overlay, reviewed control profiles and frontend-managed save RAM.
 1800-frame video/audio/NVRAM comparisons pass on all four board variants.
 The data-driven NVRAM Core Options currently cover 196 reviewed operator
 settings across 35 parent sets. Each supported title validates its native
 layout and updates the corresponding integrity field and settings mirror.
+Experimental linked-cabinet networking uses Libretro Netpacket; Daytona USA
+has completed a two-car race in two local RetroArch instances.
 
 See [Libretro build and validation](LIBRETRO.md) for the artifact, commands
-and limits. Full control profiles remain planned. Physical controllers and
-audible quality need manual checks.
+and limits. Physical controllers, linked play across two hosts and audible
+quality need manual checks.
 The standalone and [headless validation runner](HEADLESS.md) remain available.
 
 ## Get the project

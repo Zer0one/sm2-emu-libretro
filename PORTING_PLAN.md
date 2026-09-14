@@ -384,7 +384,6 @@ Altre opzioni da valutare separatamente:
 
 - abilitazione dell'emulazione audio, solo se produce un risparmio reale;
 - volume separato della musica DSB/MPEG, se il mixer conserva flussi distinti;
-- network board e numero di cabinet dopo un trasporto Libretro Netpacket;
 - widescreen reale, con modifica di viewport 3D e composizione 2D;
 - filtri di upscaling 2D e supersampling;
 - adattamento colore CRT specifico Model 2, solo con una necessità misurata.
@@ -442,7 +441,33 @@ OpenGL e Vulkan, scale 1×/4×, lifecycle e persistenza SRAM, conservando log e
 screenshot. L'accesso remoto può usare SSH per trasferimenti e comandi, con il
 test grafico avviato nella sessione desktop dell'utente.
 
-## 6. Save state e funzioni avanzate
+## 6. Networking, save state e funzioni avanzate
+
+### 6.1 Collegamento tra cabinet — Daytona a due cabinet implementato
+
+- Riutilizzare il protocollo della communication board Model 2 già portato da
+  MAME in `M2Comm`, sostituendo il solo anello locale con un trasporto neutrale.
+- Usare l'interfaccia ufficiale Libretro Netpacket: nessun socket, discovery o
+  configurazione di rete appartiene al core.
+- Conservare il comportamento standalone a cabinet singolo quando la Core
+  Option `Linked Cabinets` è lasciata al valore predefinito.
+
+Prima versione completata per la famiglia Daytona USA e due cabinet. Host e
+client usano lo stesso ROM set e core; `NVRAM Settings` imposta rispettivamente
+`Link ID=Master`/`Car Number=1` e `Link ID=Slave`/`Car Number=2`. Un test reale
+con due istanze RetroArch 1.22.2 su macOS ha formato l'anello con ID `01/02` e
+`02/02`, eseguito 3600 frame per istanza e avviato una gara condivisa. Le
+catture finali mostrano l'host rosso `2nd/2`, con l'auto blu `2P` davanti, e il
+client blu `1st/2`, entrambi in movimento nella stessa sessione.
+I test senza ROM verificano inoltre assegnazione degli ID, conteggio dei nodi,
+trasporto integro dei frame, rifiuto di un terzo client e disconnessione.
+
+Limiti attuali: due cabinet soltanto, famiglia Daytona soltanto e prova locale
+sullo stesso Mac con input registrati. Restano la prova manuale con due
+controller, una prova tra due host fisici e l'estensione agli altri giochi
+Model 2 con communication board.
+
+### 6.2 Save state — da implementare
 
 - Inventariare tutto lo stato di CPU, coprocessori, RAM, FIFO, video, audio,
   timer e I/O; definire un formato versionato e controlli sui dati in ingresso.

@@ -361,6 +361,52 @@ Quando un gioco non offre gameplay sulla porta 2, quella porta conserva lo stess
 nome del profilo del gioco: i descrittori RetroArch espongono soltanto Coin e
 Start, senza creare un profilo generico separato.
 
+## Collegamento tra cabinet Daytona USA
+
+La Core Option System `Linked Cabinets (Restart Required)` offre `Single
+Cabinet`, predefinito, e `2 Cabinets (Experimental)`. La seconda usa
+esclusivamente l'interfaccia ufficiale Libretro Netpacket e per ora si applica
+alla famiglia Daytona USA. Il core non apre socket: RetroArch gestisce host,
+client e rete, mentre `M2Comm` conserva il protocollo della communication board
+Model 2 portato da MAME.
+
+Entrambi i partecipanti devono usare lo stesso ROM set, la stessa build del
+core, lo stesso timing e `Linked Cabinets=2`. Con `NVRAM Settings=Enabled`,
+configurare e riavviare il contenuto così:
+
+| RetroArch | Link ID | Car Number |
+| --- | --- | --- |
+| Host | Master | 1 |
+| Client | Slave | 2 |
+
+Avviare prima l'host RetroArch e poi collegare il client. Le due istanze devono
+usare directory di salvataggio separate, come accade naturalmente su due
+macchine. `Automatic Initial NVRAM Setup` può restare abilitato: le opzioni
+NVRAM selezionate vengono applicate prima del primo frame.
+
+La verifica macOS ha usato due istanze isolate di RetroArch Nightly 1.22.2 e
+la ROM parent `daytona`, 3600 frame per istanza. RetroArch ha collegato il
+secondo partecipante; le communication board hanno completato l'anello come
+`01/02` e `02/02`. Gli input registrati hanno portato entrambi i cabinet nella
+stessa gara: l'host rosso mostra `2nd/2` e l'auto blu `2P` davanti; il client
+blu mostra `1st/2`. Entrambi avanzano a circa 143–145 mph. I rispettivi `.srm`
+conservano Master/Car 1 e Slave/Car 2 e i processi terminano correttamente.
+
+Questa prova dimostra il collegamento tra le due macchine emulate, lo scambio
+dei frame della communication board e una gara a due auto con input automatici.
+Restano una prova manuale con due controller, una prova tra due host fisici e
+l'estensione oltre due cabinet o ad altri giochi.
+
+Controllo dedicato senza ROM:
+
+```sh
+build-libretro-gpu/bin/sm2-libretro-netpacket-checks
+```
+
+Verifica formazione dell'anello, ID e conteggio cabinet, consegna del payload,
+registrazione Netpacket, ruoli host/client, affidabilità e rifiuto del terzo
+partecipante.
+
 ## Prove ripetibili
 
 Controlli ABI e confronto con un risultato headless per lo stesso ROM set,
@@ -515,12 +561,13 @@ riavvio del contenuto perché modifica le informazioni A/V dichiarate al fronten
 
 ## Limiti
 
-Nel percorso software: nessun profilo completo volante/lightgun/twin-stick,
-cheat o save state. Renderer Vulkan/OpenGL e Core Options
-Video sono disponibili nella build descritta in [GPU.md](GPU.md). La geometria
-nativa software è fissa. Rewind, run-ahead e netplay non sono dichiarati supportati.
-Le etichette delle azioni specifiche dei giochi e le varianti dei dispositivi
-sono da completare nella milestone 3, seguendo [LIBRETRO_DESIGN.md](LIBRETRO_DESIGN.md).
+Cheat e save state non sono implementati; di conseguenza rewind e run-ahead
+non sono supportati. Renderer Vulkan/OpenGL e Core Options Video sono
+disponibili nella build descritta in [GPU.md](GPU.md); la geometria nativa
+software resta fissa. Il collegamento Netpacket è attualmente limitato a due
+cabinet della famiglia Daytona USA ed è stato provato localmente sullo stesso
+Mac con input registrati, senza una prova manuale con due controller o tra due
+host fisici.
 
 Le opzioni selezionate per gli altri parent restano rinviate finché il relativo
 formato non è scrivibile con controllo d'integrità dimostrato. `hpyagu98` e

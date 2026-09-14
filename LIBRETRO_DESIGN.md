@@ -40,6 +40,12 @@ CMake abilita gli shader anche per Libretro Vulkan/OpenGL e compila i passaggi
 con entry point risolti dal frontend. Nessun nuovo accesso alla macchina/CPU.
 OpenGL riusa i passaggi upstream GL e riceve dal frontend funzioni e framebuffer;
 non introduce una finestra SDL né una copia dei renderer nell'adattatore.
+Il collegamento tra cabinet aggiunge alla macchina la sola interfaccia neutrale
+`M2CommTransport`. `M2Comm` continua a possedere il protocollo ad anello derivato
+da MAME; `src/libretro/netpacket.*` trasporta i frame completi mediante
+l'interfaccia ufficiale Libretro Netpacket. Il motore non include header
+Libretro e non apre socket. Senza trasporto esterno conserva il loopback a
+cabinet singolo dello standalone.
 
 Eccezione hardware condivisa con lo standalone: il workaround BEL in
 `src/hw/model2c.cpp` mantiene i parametri temporanei della calibrazione anche
