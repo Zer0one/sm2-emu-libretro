@@ -2,9 +2,9 @@
 
 Linee guida per le milestone 2 e successive di [PORTING_PLAN.md](PORTING_PLAN.md).
 Il primo core software della milestone 2 è implementato: vedere [LIBRETRO.md](LIBRETRO.md).
-Sono implementate anche le Core Options Video dei renderer Vulkan/OpenGL, la SRAM
-gestita dal frontend e le prime opzioni System per VF2. Profili completi, opzioni Input
-e altre funzioni descritte qui restano proposte per i passaggi successivi.
+Sono implementate anche le Core Options Video dei renderer Vulkan/OpenGL, SRAM,
+NVRAM, profili di controllo, Netpacket sperimentale, rumble e bilanciamento
+audio. Le funzioni ancora aperte sono indicate nella roadmap.
 
 ## Struttura per gli aggiornamenti upstream
 
@@ -40,12 +40,20 @@ CMake abilita gli shader anche per Libretro Vulkan/OpenGL e compila i passaggi
 con entry point risolti dal frontend. Nessun nuovo accesso alla macchina/CPU.
 OpenGL riusa i passaggi upstream GL e riceve dal frontend funzioni e framebuffer;
 non introduce una finestra SDL né una copia dei renderer nell'adattatore.
-Il collegamento tra cabinet aggiunge alla macchina la sola interfaccia neutrale
-`M2CommTransport`. `M2Comm` continua a possedere il protocollo ad anello derivato
-da MAME; `src/libretro/netpacket.*` trasporta i frame completi mediante
-l'interfaccia ufficiale Libretro Netpacket. Il motore non include header
-Libretro e non apre socket. Senza trasporto esterno conserva il loopback a
-cabinet singolo dello standalone.
+Gli enhancement GPU del commit upstream `ce59cf5` restano nei passaggi e negli
+shader condivisi: l'adattatore espone le scelte tramite Core Options e passa
+solo gli identificatori ai renderer. xBR/ScaleFX opera sulle tilemap 2D prima
+della composizione col 3D; aspect, scaling finale e shader dell'immagine
+completa restano responsabilità del frontend.
+Il collegamento tra cabinet usa l'interfaccia neutrale upstream `CommTransport`.
+`M2Comm` possiede sia il trasporto sia il protocollo ad anello; la macchina
+espone soltanto la communication board comune alle quattro varianti hardware.
+`src/libretro/netpacket.*` adatta i frame completi all'interfaccia ufficiale
+Libretro Netpacket. L'unica estensione al contratto upstream è `ready()`, che
+impedisce al timer di collegamento di partire prima dell'arrivo dell'altro
+cabinet. Per i trasporti standalone coincide con `connected()`. Il motore non
+include header Libretro e il core non apre socket. Senza trasporto esterno resta
+attivo il `LoopbackTransport` dello standalone per un solo cabinet.
 
 Eccezione hardware condivisa con lo standalone: il workaround BEL in
 `src/hw/model2c.cpp` mantiene i parametri temporanei della calibrazione anche
@@ -54,6 +62,21 @@ questo riconoscimento, `Automatic Initial NVRAM Setup` rende i byte persistenti
 validi ma impedisce al percorso precedente, limitato ai byte `0xff`, di
 inizializzare la trasformazione usata dal mirino durante la partita. Valori di
 calibrazione differenti dal preset non vengono sostituiti.
+
+Correzioni hardware selettive riprese dall'upstream 0.9.7 senza aggiornare la
+baseline completa: `b93e73c` lascia scollegati i canali analogici non dichiarati
+su Model 2A/2B/2C, affinché restituiscano il valore aperto `0xff`; il solo hunk
+Model 2B di `f415009` completa in ordine le scritture INTENA differite usate da
+`overrevb` e `overrevba`. Il bilanciamento dello stesso commit resta nel motore
+audio condiviso: `Model2Sound` conserva i coefficienti upstream e l'accessore
+neutrale `SoundBoard::set_audio_balance_enabled()` consente all'adattatore di
+ripristinare unity gain senza introdurre dipendenze Libretro nell'hardware.
+L'opzione globale non duplica la tabella e si applica a tutte le schede SCSP.
+
+Il clone `daytonam` mantiene il metadato upstream `protection="daytona-maxx"`.
+Il parser lo traduce in un tipo di protezione neutrale e `Model2Original`
+decodifica la sola finestra PIC/ROM a `0x00240000`, seguendo la macchina a stati
+documentata da MAME. Il frontend non contiene condizioni specifiche per MAXX.
 
 Per ogni aggiornamento, registrare il commit upstream integrato e i riferimenti
 dei submodule, rivedere API e metadati modificati e risolvere i conflitti nel
@@ -104,7 +127,7 @@ frontend target quando categorie o visibilità dinamica non sono disponibili.
 | Categoria | Direzione per SM2 | Quando |
 | --- | --- | --- |
 | System | Persistenza per gioco; eventuale inizializzazione della sola NVRAM nuova e override espliciti dei campi verificati | Milestone 3; nessun preset prima della validazione |
-| Video | Risoluzione nativa 496 × 384 e aspect 4:3; selezione dei mirini per giocatore; scala interna 1×–4× solo con GPU integrata | Mirini nella 3; scala nella 5 |
+| Video | Risoluzione nativa 496 × 384 e aspect 4:3; selezione dei mirini; scala interna 1×–4×, filtro texture 3D e xBR/ScaleFX sulle tilemap solo con GPU integrata | Implementato |
 | Audio | Riproduzione fedele al rate della scheda; eventuali regolazioni specifiche solo se il mixer le supporta e sono utili | Nessuna opzione obbligatoria nel primo core |
 | Input | Profili per gioco, modalità delle sorgenti di puntamento, cambio e regolazioni separate di sterzo/acceleratore/freno | Milestone 3 |
 | CPU | Soltanto scelte di esecuzione effettivamente disponibili e verificate | Rinviata; nessun overclock o JIT presunto |
@@ -206,6 +229,20 @@ Anche il supporto standalone SM2 a Vulkan, periferiche SDL/evdev, bordi Sinden
 e feedback richiede un adattamento alle API e ai driver del frontend.
 Rumble e forza direzionale del volante sono capacità distinte: non promettere
 force feedback completo da una sola interfaccia di vibrazione.
+
+Il gamepad rumble usa un adattatore isolato in `src/libretro/rumble.*`. Legge
+il comando della drive board tramite l'accessore neutrale della macchina e lo
+sterzo già acquisito dal frontend, quindi invia strong/weak tramite
+`RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE`. La macchina non include header
+Libretro e non conosce il dispositivo del frontend. Il modello delle intensità
+relative e della durata replica upstream 0.9.7 sulla scala normalizzata
+Libretro; il guadagno complessivo resta di RetroArch. La gestione SDL degli effetti temporanei non è
+necessaria perché il frontend riceve direttamente lo stato persistente dei due
+motori. Reset, unload, errore e disattivazione azzerano sempre entrambi.
+
+Il recoil delle lightgun `evdev` resta una funzione futura specifica della
+piattaforma. Non viene mescolato con il gamepad rumble né con i descrittori di
+input, perché Libretro non espone un comando recoil lightgun equivalente.
 
 ## Verifica prima di dichiarare il supporto
 

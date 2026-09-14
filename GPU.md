@@ -12,11 +12,21 @@ software resta disponibile per confronti e frontend privi dei contesti richiesti
 - Immagine Vulkan o OpenGL consegnata direttamente al frontend: il percorso normale
   non legge i pixel sulla CPU e non usa il renderer software per disegnare il 3D.
 - Risoluzione interna 1×, 2×, 3× o 4×: da 496 × 384 a 1984 × 1536. Le tilemap
-  mantengono il dettaglio nativo, come nell'upstream; aspect sempre 4:3.
+  partono dal dettaglio nativo; aspect sempre 4:3.
 - Core Options v2, categoria Video: `sm2_renderer`
   (Auto/Vulkan/OpenGL/Software) e
   `sm2_internal_resolution` (1–4). Entrambe si applicano al successivo
-  caricamento del contenuto. Per frontend precedenti è presente il menu legacy.
+  caricamento del contenuto. `3D Texture Filtering` offre Faithful e
+  Anisotropic 2x/4x/8x/16x; `2D Layer Upscaling Filter` offre Faithful, xBR e
+  ScaleFX. Queste ultime due opzioni cambiano immediatamente. Per frontend
+  precedenti è presente il menu legacy.
+- `3D Texture Filtering` agisce soltanto sulle texture dei poligoni. I livelli
+  anisotropici eseguono campioni aggiuntivi lungo le superfici oblique; Faithful
+  conserva il percorso originale a campione singolo.
+- xBR e ScaleFX agiscono sulle sole tilemap 2D native mentre vengono composte
+  nel target ad alta risoluzione. Il 3D non viene filtrato da questa opzione e
+  lo shader generale eventualmente scelto nel frontend resta un passaggio
+  successivo sull'immagine già composta.
 - Auto segue un'API hardware supportata preferita dal frontend, con fallback
   software. Le scelte esplicite Vulkan e OpenGL falliscono se mancano i requisiti, senza
   dichiarare falsamente attivo un percorso GPU.
@@ -39,8 +49,10 @@ la libreria del core non collega loader Vulkan/MoltenVK, OpenGL, EGL o SDL.
 `src/render/vk/pass_context.h` contiene l'interfaccia minima condivisa dai
 passaggi 2D/3D. Il contesto standalone la implementa con le risorse originali;
 `src/libretro/vulkan_renderer.cpp` la implementa con quelle del frontend.
-Le modifiche ai passaggi upstream sono limitate al tipo del contesto e ai suoi
-include: algoritmi, shader, formati e regole di composizione restano originali.
+Le modifiche ai passaggi upstream comprendono il tipo del contesto, i relativi
+include e gli enhancement GPU selettivamente importati dall'upstream 0.9.7 al
+commit `ce59cf5`. L'adattatore passa ai renderer soltanto i valori scelti dal
+frontend; gli algoritmi restano condivisi tra standalone e Libretro.
 
 Il backend OpenGL riusa direttamente `TilemapPass`, `Poly3DPass` e
 `PresentPass` upstream. L'adattatore in `src/libretro/opengl_renderer.cpp`
@@ -148,6 +160,7 @@ in `GPU_REPORT.json`.
 | OpenGL, scala 4× e tre cicli load/reset/unload | Acquisizione 1984 × 1536 e tutti i cicli superati |
 | RetroArch 1.18 Linux arm64, driver `gl`, Mesa llvmpipe | Fallback GLES3 legacy negoziato, contesto ES 3.2 pronto, 2300 frame, screenshot e SRAM salvati; il controllo finale del runner non accetta la registrazione Matroska di questa vecchia versione |
 | Virtua Cop 2, crosshair P1 in RetroArch macOS | Software e Vulkan hanno completato 2300 callback, gameplay, acquisizione GPU, audio e Save RAM; la crosshair vettoriale segue il cursore e il pass Vulkan resta stabile durante gli shortcut off-screen. Il percorso OpenGL è compilato nello stesso artefatto e resta da osservare in un frontend OpenGL 4.3/ES 3.1 reale. |
+| VF2, RetroArch Nightly macOS, Vulkan 2×, Faithful / xBR / ScaleFX / Anisotropic 16x | Quattro esecuzioni concluse regolarmente con screenshot, audio e Save RAM da 16576 byte. Le quattro immagini hanno hash distinti; xBR e ScaleFX differiscono sia da Faithful sia tra loro. |
 
 Per ripetere una prova GPU con immagini native:
 
@@ -172,6 +185,8 @@ i salvataggi di lavoro vengono poi usati dai cicli successivi.
 
 Per la prova RetroArch, usare `scripts/smoke-retroarch.py` con gli argomenti
 abituali e `--renderer vulkan --scale 4 --moltenvk /opt/homebrew/lib/libMoltenVK.dylib`.
+Le opzioni `--texture-filter faithful|2|4|8|16` e
+`--upscale-2d faithful|xbr|scalefx` selezionano gli enhancement da verificare.
 Il test crea configurazione, opzioni, replay, salvataggi e loader temporaneo
 nel proprio output; non utilizza i salvataggi personali.
 

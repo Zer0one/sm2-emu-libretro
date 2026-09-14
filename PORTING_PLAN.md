@@ -3,7 +3,11 @@
 Il progetto indipendente `Zer0one/sm2-emu-libretro` sviluppa su `main` e usa
 `dmanlfc/sm2-emu` come remote `upstream`. La base iniziale è SM2-Emu 0.9.4,
 commit `8b3a468c5b51387093811cb16b076e6fd9289d66`. Il clone mainstream rimane
-separato, per build e confronti con il codice originale.
+separato, per build e confronti con il codice originale. Le modifiche upstream
+applicabili al core fino alla release 0.9.7 sono state integrate selettivamente;
+quelle rimanenti riguardano il frontend standalone e sono escluse dal porting
+corrente. La versione pubblica del core è quindi allineata a 0.9.7 senza
+sostituire la provenienza della base iniziale.
 
 Obiettivo: un core per RetroArch e Batocera, preservando emulazione, timing,
 audio e controlli. Ogni traguardo richiede una prova eseguibile; una build
@@ -227,22 +231,21 @@ Test/Service; entrambi i parent hanno raggiunto una partita in RetroArch macOS.
 Secondo gruppo completato: `segawski` espone `Special: Water Ski` con Set su
 South, Pitch Left/Right su L1/R1 e sui binding secondari West/East, Slide su
 Left Analog X e l'alias hardware
-`Start / Select Down`. La polarità di Slide è selezionabile tramite Core Option,
-con `Inverted` come default. `skisuprg` espone `Special: Ski Super G`
+`Start / Select Down`. Slide applica la polarità invertita dichiarata nei
+metadata. `skisuprg` espone `Special: Ski Super G`
 con Inclining su Right Analog X/canale 0 e Swing su Left Analog X/canale 1.
-La polarità di Swing è selezionabile tramite Core Option, con `Inverted` come
-default, e
+Swing applica la polarità invertita dichiarata nei metadata e
 Foot Sensor attivi alti su L1/R1. I controlli ROM-free verificano
 firme, descrittori, bit, assi e varianti Test/Service. Water Ski ha raggiunto
 una gara reale. Ski Super G carica profilo, audio e Save RAM, ma resta bloccato
-su `DRIVE BOARD TROUBLE CODE: FF`: il set è preliminary e il database SM2 non
-include la ROM drive-board definita da MAME. La relativa emulazione resta un
+su `DRIVE BOARD TROUBLE CODE: FF`: il database SM2 non include la ROM
+drive-board definita da MAME. La relativa emulazione resta un
 sottopunto futuro separato dai profili.
 
 Terzo gruppo completato: `topskatr`, `topskatrj`, `topskatru` e `topskatruo`
 espongono `Special: Top Skater`. Curving e Slide restano assi distinti su Left
-Analog X e Right Analog X. La polarità di Curving è selezionabile tramite Core
-Option, con `Inverted` come default; Slide resta invariato. Select Left/Right e
+Analog X e Right Analog X. Curving applica la polarità invertita dichiarata nei
+metadata; Slide resta invariato. Select Left/Right e
 Jump Front/Tail raggiungono i bit
 documentati da MAME. I controlli ROM-free coprono tutte le revisioni, firme,
 descrittori, assi e varianti Test/Service. Il parent ha raggiunto una sessione
@@ -329,6 +332,12 @@ dati di calibrazione e i casi di errore del frontend sulle piattaforme target.
   `indy500`/`indy500to` usano 36 byte. Gli offset parent successivi a Country,
   Cabinet Type e Difficulty possono sovrapporsi ai dati specifici della Deluxe;
   per ora non introdurre una correzione non validata.
+- `daytonam` conserva l'identificatore upstream `protection="daytona-maxx"` e
+  la relativa PIC è emulata nel solo percorso Model 2 Original. Con ROM reale
+  il clone supera la schermata operatore e raggiunge Circuit Select con lo
+  stesso test Coin/Start del parent; il gameplay è stato poi confermato
+  manualmente in RetroArch macOS. Resta da verificare separatamente il
+  networking della variante MAXX.
 
 Criterio: persistenza e import provati con casi positivi e negativi; eventuali
 campi NVRAM esposti devono avere valori e precedenza espliciti.
@@ -371,14 +380,31 @@ Opzioni legate ai controlli introdotte direttamente dal core Supermodel:
 
 Le quattro regolazioni precedenti sono implementate, restano sempre visibili,
 agiscono soltanto sui profili Driving e sono verificate con curve, saturazione,
-pedali normali/invertiti e Throttle motociclistico. Restano da introdurre:
+pedali normali/invertiti e Throttle motociclistico.
 
-- recoil della pistola e intensità;
-- rumble e force feedback, distinguendo le capacità realmente offerte da
-  Libretro da quelle direzionali dello standalone.
+`Gamepad Rumble` è implementata seguendo il modello upstream 0.9.7.
+L'interfaccia rumble Libretro pilota i motori strong e
+weak del gamepad P1: i comandi della drive board producono colpi brevi e lo
+scostamento dello sterzo una vibrazione più leggera. Il default è Enabled al
+massimo della scala normalizzata; RetroArch applica il proprio `Input Rumble
+Gain` come unico controllo dell'intensità complessiva. I giochi senza controllo
+di guida restano silenziosi. Restano da
+introdurre o valutare separatamente:
+
+- force feedback direzionale per volanti, che non può essere rappresentato
+  integralmente dai due motori della normale interfaccia rumble Libretro;
+- recoil lightgun tramite `evdev`, da conservare in roadmap per un'eventuale
+  implementazione futura. Richiederà un percorso specifico della piattaforma,
+  separato dai binding e dalla vibrazione gamepad.
 
 Come in Supermodel, le quattro regolazioni di guida devono restare sempre
 visibili e non produrre effetti fuori dai profili Driving.
+
+`Enhanced Audio Balance` è implementata come unico interruttore globale nella
+categoria Audio. Enabled applica automaticamente i profili SCSP upstream 0.9.7
+a tutti i set supportati; Disabled ripristina unity gain in tempo reale. Il fix
+INTENA di `overrevb`/`overrevba` resta sempre attivo perché corregge il timer
+audio della macchina e non appartiene al mastering opzionale.
 
 Altre opzioni da valutare separatamente:
 
@@ -423,7 +449,11 @@ Criterio: rendering hardware in RetroArch con recupero del contesto e
 confronti visivi documentati, mantenendo il percorso software funzionante.
 
 Stato: adattatori Vulkan e OpenGL implementati con passaggi/shader upstream condivisi,
-contesto del frontend, Core Options Video e risoluzioni 1×–4×. VF2 provato in
+contesto del frontend, Core Options Video e risoluzioni 1×–4×. Sono inoltre
+integrati `3D Texture Filtering` (Faithful, Anisotropic 2x–16x) e
+`2D Layer Upscaling Filter` (Faithful, xBR, ScaleFX): i filtri 2D operano sulle
+tilemap prima della composizione col 3D e restano distinti dagli shader del
+frontend. VF2 provato in
 RetroArch macOS; quattro schede provate nel frontend GPU di verifica; confronto
 pixel esatto con lo standalone Vulkan a 1×/4× e prove di ricreazione del dispositivo.
 OpenGL 4.3/OpenGL ES 3.1 riusa i pass upstream ed è stato verificato tramite
@@ -443,16 +473,19 @@ test grafico avviato nella sessione desktop dell'utente.
 
 ## 6. Networking, save state e funzioni avanzate
 
-### 6.1 Collegamento tra cabinet — Daytona a due cabinet implementato
+### 6.1 Collegamento tra cabinet — prototipo Daytona conservato
 
-- Riutilizzare il protocollo della communication board Model 2 già portato da
-  MAME in `M2Comm`, sostituendo il solo anello locale con un trasporto neutrale.
+- Usare direttamente la struttura upstream 0.9.7: `M2Comm` possiede il
+  `CommTransport` e conserva il protocollo della communication board Model 2.
+- Adattare a RetroArch il solo trasporto, sostituendo UDP con Netpacket; la
+  piccola estensione `ready()` attende il peer prima di avviare il timer del link.
 - Usare l'interfaccia ufficiale Libretro Netpacket: nessun socket, discovery o
   configurazione di rete appartiene al core.
 - Conservare il comportamento standalone a cabinet singolo quando la Core
   Option `Linked Cabinets` è lasciata al valore predefinito.
 
-Prima versione completata per la famiglia Daytona USA e due cabinet. Host e
+Il prototipo attuale resta circoscritto alla famiglia Daytona USA e a due
+cabinet. Host e
 client usano lo stesso ROM set e core; `NVRAM Settings` imposta rispettivamente
 `Link ID=Master`/`Car Number=1` e `Link ID=Slave`/`Car Number=2`. Un test reale
 con due istanze RetroArch 1.22.2 su macOS ha formato l'anello con ID `01/02` e
@@ -465,7 +498,8 @@ trasporto integro dei frame, rifiuto di un terzo client e disconnessione.
 Limiti attuali: due cabinet soltanto, famiglia Daytona soltanto e prova locale
 sullo stesso Mac con input registrati. Restano la prova manuale con due
 controller, una prova tra due host fisici e l'estensione agli altri giochi
-Model 2 con communication board.
+Model 2 con communication board. L'estensione del networking resta sospesa
+finché il porting generale non rende opportuno riprendere questa attività.
 
 ### 6.2 Save state — da implementare
 

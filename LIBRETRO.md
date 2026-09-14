@@ -77,31 +77,27 @@ RetroArch macOS con audio e Save RAM validi.
 Sega Water Ski espone `Special: Water Ski`: D-Pad Up/Down selezionano
 `Select Up`/`Select Down`, L1/R1 controllano `Pitch Left`/`Pitch Right`, South è
 `Set` e Left Analog X è `Slide`. West/East sono binding secondari rispettivamente
-per `Pitch Left`/`Pitch Right`. `Sega Water Ski Slide Axis Mode` usa
-`Inverted` come default (`X+` produce `00`, `X-` produce `FF`); `Normal`
-conserva la polarità del frontend. L'opzione è sempre visibile e si applica
-immediatamente. Start condivide la linea hardware di `Select Down`, come indica
-il descrittore `Start / Select Down`. La ROM parent ha raggiunto una gara in
-RetroArch macOS con audio e Save RAM validi.
+per `Pitch Left`/`Pitch Right`. Slide applica direttamente la polarità invertita
+dichiarata nei metadata (`X+` produce `00`, `X-` produce `FF`). Start condivide
+la linea hardware di `Select Down`, come indica il descrittore `Start / Select
+Down`. La ROM parent ha raggiunto una gara in RetroArch macOS con audio e Save
+RAM validi.
 
 Sega Ski Super G espone `Special: Ski Super G`. D-Pad Up/Down sono `Zoom In` e
 `Zoom Out`, L1/R1 sono i due Foot Sensor attivi alti e South/East/West sono
 `Select 2`/`Select 3`/`Select 1`. Right Analog X controlla `Inclining` sul
-canale Model 2 0 e Left Analog X controlla `Swing` sul canale Model 2 1 con
-`Sega Ski Super G Swing Axis Mode` impostato di default su `Inverted`: X+
-produce `00`, X- produce `FF`. `Normal` conserva invece la polarità del
-frontend. L'opzione è sempre visibile e si applica immediatamente. Il
-profilo e la Save RAM sono validi, ma la partita si
-ferma su `DRIVE BOARD TROUBLE CODE: FF`: il set è già marcato preliminary e il
-database SM2 non contiene la ROM drive-board presente nella definizione MAME.
+canale Model 2 0 e Left Analog X controlla `Swing` sul canale Model 2 1. Swing
+applica la polarità invertita dichiarata nei metadata: X+ produce `00` e X-
+produce `FF`. Il profilo e la Save RAM sono validi, ma la partita si
+ferma su `DRIVE BOARD TROUBLE CODE: FF`: il database SM2 non contiene la ROM
+drive-board presente nella definizione MAME.
 Questo limite appartiene all'emulazione comune, non all'adattatore di input.
 
 Le quattro revisioni Top Skater condividono `Special: Top Skater`. D-Pad
 Left/Right corrispondono a `Select Left`/`Select Right`, South/East a `Jump
-Front`/`Jump Tail`, Left Analog X a `Curving` e Right Analog X a `Slide`.
-`Top Skater Curving Axis Mode` usa `Inverted` come default (`X+` produce `00`,
-`X-` produce `FF`); `Normal` conserva la polarità del frontend. L'opzione è
-sempre visibile, si applica immediatamente e non modifica Slide.
+Tail`/`Jump Front`, Left Analog X a `Curving` e Right Analog X a `Slide`.
+Curving applica direttamente la polarità invertita dichiarata nei metadata
+(`X+` produce `00`, `X-` produce `FF`); Slide resta invariato.
 Direzioni e pulsanti non assegnati nel foglio non vengono esposti. Il parent ha
 raggiunto una sessione di gioco in RetroArch macOS con audio e Save RAM validi;
 le tre revisioni ereditano la stessa firma verificata dal catalogo.
@@ -368,7 +364,9 @@ Cabinet`, predefinito, e `2 Cabinets (Experimental)`. La seconda usa
 esclusivamente l'interfaccia ufficiale Libretro Netpacket e per ora si applica
 alla famiglia Daytona USA. Il core non apre socket: RetroArch gestisce host,
 client e rete, mentre `M2Comm` conserva il protocollo della communication board
-Model 2 portato da MAME.
+Model 2. La struttura di `M2Comm`, il possesso del trasporto e il loopback sono
+quelli dello standalone upstream 0.9.7; il core sostituisce il trasporto UDP con
+l'adattatore Netpacket e attende l'effettiva presenza del secondo cabinet.
 
 Entrambi i partecipanti devono usare lo stesso ROM set, la stessa build del
 core, lo stesso timing e `Linked Cabinets=2`. Con `NVRAM Settings=Enabled`,
@@ -404,8 +402,8 @@ build-libretro-gpu/bin/sm2-libretro-netpacket-checks
 ```
 
 Verifica formazione dell'anello, ID e conteggio cabinet, consegna del payload,
-registrazione Netpacket, ruoli host/client, affidabilità e rifiuto del terzo
-partecipante.
+registrazione Netpacket, ruoli host/client, affidabilità, rifiuto del terzo
+partecipante e reset della board senza perdita della sessione frontend.
 
 ## Prove ripetibili
 
@@ -558,6 +556,55 @@ di `retro_run`, FPS effettivi e capacità stimate di engine e callback. Funziona
 con output software, Vulkan e OpenGL senza introdurre ImGui o un secondo overlay nel
 renderer. L'opzione si aggiorna immediatamente; il cambio di timing richiede il
 riavvio del contenuto perché modifica le informazioni A/V dichiarate al frontend.
+
+## Enhancement dei renderer GPU
+
+La categoria Video espone `3D Texture Filtering` con Faithful come default e
+Anisotropic 2x, 4x, 8x o 16x, oltre a `2D Layer Upscaling Filter` con Faithful,
+xBR e ScaleFX. Entrambe le opzioni si applicano immediatamente ai renderer
+Vulkan e OpenGL; il percorso Software conserva la resa nativa.
+
+Il filtro 3D campiona in modo aggiuntivo le texture sulle superfici oblique.
+xBR e ScaleFX lavorano invece sulle tilemap 2D prima che siano composte con i
+poligoni 3D. Sono quindi distinti dagli shader RetroArch, che ricevono e
+filtrano il frame finale già composto. Faithful conserva il comportamento
+precedente ed è il valore iniziale di entrambe le opzioni.
+
+## Enhanced Audio Balance
+
+La categoria Audio espone un unico interruttore globale `Enhanced Audio
+Balance`, Enabled per default. Quando è attivo, il core applica automaticamente
+a ogni gioco supportato i coefficienti SCSP di SM2-Emu 0.9.7; VF2 classifica
+inoltre gli slot attivi come musica, effetti, annunciatore o voci. Disabled
+ripristina immediatamente unity gain per tutti gli slot e conserva l'output
+emulato senza il mastering aggiuntivo.
+
+Il fix hardware dello stesso aggiornamento upstream è indipendente dall'opzione:
+`overrevb` e `overrevba` completano la precedente scrittura INTENA differita
+prima del successivo acknowledge del timer audio, evitando che il suono si
+blocchi. Il parent `overrev`, basato su Model 2C, non usa questa eccezione.
+
+Con input identici, 1800 frame di VF2 hanno prodotto video e NVRAM identici ma
+PCM differenti tra Enabled e Disabled. La traccia Enhanced ha raggiunto il
+limite su 16 campioni di circa 2,76 milioni; Disabled ha raggiunto 23332 senza
+saturazione. Le tre versioni di Over Rev hanno mantenuto audio non silenzioso
+fino agli ultimi dieci secondi di 2300 frame, senza campioni saturati.
+
+## Gamepad Rumble
+
+La categoria Input espone `Gamepad Rumble`, Enabled per default.
+L'implementazione adatta il modello upstream 0.9.7 all'interfaccia rumble
+Libretro: nei giochi di guida i comandi della drive board producono brevi colpi
+sul motore strong, accompagnati a metà intensità dal motore weak; lo
+scostamento dello sterzo produce una vibrazione più leggera. Gli altri giochi
+restano silenziosi. Il core genera questi rapporti sulla scala normalizzata;
+`Input Rumble Gain` di RetroArch è l'unico controllo dell'intensità complessiva.
+
+La variazione delle opzioni è immediata. Disattivazione, reset, unload ed errori
+azzerano entrambi i motori, evitando vibrazioni bloccate. L'interfaccia rumble
+non rappresenta la forza direzionale di un volante e non gestisce il recoil
+fisico delle lightgun; il recoil `evdev` è annotato nella roadmap come possibile
+integrazione futura.
 
 ## Limiti
 

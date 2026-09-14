@@ -1,11 +1,11 @@
 # SM2-Emu Libretro
 
-Independent development repository for a planned Libretro adaptation of
+Independent development repository for a Libretro adaptation of
 [SM2-Emu](https://github.com/dmanlfc/sm2-emu), the Sega Model 2 emulator.
 Development takes place on `main`; the original source history is retained
 for attribution, comparison and future upstream updates.
 
-**Status: first software Libretro core implemented and tested on macOS arm64.**
+**Status: SM2-Emu 0.9.7 Libretro core implemented and tested on macOS arm64.**
 The isolated adapter uses the upstream machine and software renderer, with
 native timing/audio by default, an optional speed-preserving 60 Hz cadence,
 a Libretro timing/FPS overlay, reviewed control profiles and frontend-managed save RAM.
@@ -15,6 +15,10 @@ settings across 35 parent sets. Each supported title validates its native
 layout and updates the corresponding integrity field and settings mirror.
 Experimental linked-cabinet networking uses Libretro Netpacket; Daytona USA
 has completed a two-car race in two local RetroArch instances.
+The core also provides Vulkan/OpenGL rendering, upstream 3D/2D enhancement
+filters, gamepad rumble and optional Enhanced Audio Balance. Changes from
+upstream 0.9.7 relevant to Libretro are integrated selectively; standalone GUI,
+packaging and SDL-only changes remain in the adjacent upstream reference.
 
 See [Libretro build and validation](LIBRETRO.md) for the artifact, commands
 and limits. Physical controllers, linked play across two hosts and audible
