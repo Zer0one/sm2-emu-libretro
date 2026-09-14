@@ -222,6 +222,7 @@ bool Model2::init(const rom::GameSpec& game, rom::RomSet roms)
     // UART's transmitter feeds the SCSP's MIDI port and the SCSP's MIDI output
     // comes back into the UART's receiver.
     m_sound.attach(m_roms.region("audiocpu"), m_roms.region("samples"));
+    m_sound.configure_balance(m_game.name);
     m_uart.set_tx_handler([this](u8 value) { m_sound.midi_in(value); });
     m_sound.set_midi_out_handler([this](u8 value) { m_uart.write_rxd(value); });
     m_uart.set_ready_handler([this] { sound_ready_w(); });
@@ -326,7 +327,9 @@ void Model2::reset()
     m_io.set_output(5, [this](u8 value) { lamp_output_w(value); });
     m_io.set_input(6, [this] { return m_inputs.dipswitches; });
     for (u32 channel = 0; channel < Io315_5649::kAnalogCount; ++channel) {
-        m_io.set_analog(channel, [this, channel] { return m_inputs.analog[channel]; });
+        if (m_game.analog[channel].control != rom::AnalogControl::None) {
+            m_io.set_analog(channel, [this, channel] { return m_inputs.analog[channel]; });
+        }
     }
 
     // Port E latches force-feedback commands. MAME binds it for Sega Rally,

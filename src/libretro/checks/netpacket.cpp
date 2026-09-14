@@ -6,6 +6,8 @@
 #include <array>
 #include <cstdio>
 #include <deque>
+#include <memory>
+#include <optional>
 #include <span>
 #include <stdexcept>
 #include <vector>
@@ -19,25 +21,26 @@ void check(bool okay, const char* message)
     if (!okay) throw std::runtime_error(message);
 }
 
-class PairTransport final : public hw::M2CommTransport {
+class PairTransport final : public hw::CommTransport {
 public:
     PairTransport* peer = nullptr;
     std::deque<std::vector<u8>> incoming;
 
     [[nodiscard]] bool ready() const override { return peer != nullptr; }
-    [[nodiscard]] bool send(std::span<const u8> frame) override
+    void send(std::span<const u8> frame) override
     {
-        if (!peer) return false;
+        if (!peer) return;
         peer->incoming.emplace_back(frame.begin(), frame.end());
-        return true;
     }
-    [[nodiscard]] bool receive(std::vector<u8>& frame) override
+    [[nodiscard]] std::optional<std::vector<u8>> recv() override
     {
-        if (incoming.empty()) return false;
-        frame = std::move(incoming.front());
+        if (incoming.empty()) return std::nullopt;
+        std::vector<u8> frame = std::move(incoming.front());
         incoming.pop_front();
-        return true;
+        return frame;
     }
+    [[nodiscard]] bool connected() const override { return peer != nullptr; }
+    void reset() override { incoming.clear(); }
 };
 
 retro_netpacket_callback* captured_callbacks = nullptr;
@@ -65,17 +68,19 @@ void check_model2_ring()
 {
     std::array<u8, hw::M2Comm::kSharedSize> master_ram{};
     std::array<u8, hw::M2Comm::kSharedSize> slave_ram{};
-    PairTransport master_wire;
-    PairTransport slave_wire;
-    master_wire.peer = &slave_wire;
-    slave_wire.peer = &master_wire;
+    auto master_wire = std::make_unique<PairTransport>();
+    auto slave_wire = std::make_unique<PairTransport>();
+    PairTransport* const master_wire_ptr = master_wire.get();
+    PairTransport* const slave_wire_ptr = slave_wire.get();
+    master_wire_ptr->peer = slave_wire_ptr;
+    slave_wire_ptr->peer = master_wire_ptr;
 
     hw::M2Comm master;
     hw::M2Comm slave;
     master.attach_shared(master_ram);
     slave.attach_shared(slave_ram);
-    master.set_transport(&master_wire);
-    slave.set_transport(&slave_wire);
+    master.set_transport(std::move(master_wire));
+    slave.set_transport(std::move(slave_wire));
     master.reset();
     slave.reset();
     master.fg_write(1);
@@ -119,29 +124,33 @@ void check_netpacket_adapter()
     check(transport.ready(), "Host did not become ready with two cabinets");
 
     const std::array<u8, 4> payload{0xff, 2, 0, 0};
-    check(transport.send(payload), "Host could not send a board frame");
+    transport.send(payload);
     check(sent_peer == 1, "Host packet was not addressed to the slave");
     check((sent_flags & RETRO_NETPACKET_RELIABLE) != 0,
           "Communication board frame was not reliable");
 
     captured_callbacks->receive(sent_packet.data(), sent_packet.size(), 1);
-    std::vector<u8> received;
-    check(transport.receive(received), "Received Netpacket frame was not queued");
-    check(received == std::vector<u8>(payload.begin(), payload.end()),
+    std::optional<std::vector<u8>> received = transport.recv();
+    check(received.has_value(), "Received Netpacket frame was not queued");
+    check(*received == std::vector<u8>(payload.begin(), payload.end()),
           "Netpacket changed the communication board frame");
+    captured_callbacks->receive(sent_packet.data(), sent_packet.size(), 1);
+    transport.reset();
+    check(transport.ready(), "Communication-board reset disconnected Netpacket");
+    check(!transport.recv(), "Communication-board reset retained a stale frame");
     captured_callbacks->receive(sent_packet.data(), sent_packet.size(), 2);
-    check(!transport.receive(received), "Host accepted a packet from a rejected client");
+    check(!transport.recv(), "Host accepted a packet from a rejected client");
 
     captured_callbacks->stop();
     check(!transport.ready(), "Stopped Netpacket session remained ready");
     captured_callbacks->start(1, send_packet, nullptr);
     transport.configure("daytona", 2);
     check(transport.ready(), "Connected slave did not recognize its host");
-    check(transport.send(payload) && sent_peer == 0,
-          "Slave packet was not addressed to the host");
+    transport.send(payload);
+    check(sent_peer == 0, "Slave packet was not addressed to the host");
     captured_callbacks->receive(sent_packet.data(), sent_packet.size(), 0);
-    received.clear();
-    check(transport.receive(received) && received == std::vector<u8>(payload.begin(), payload.end()),
+    received = transport.recv();
+    check(received && *received == std::vector<u8>(payload.begin(), payload.end()),
           "Slave did not receive the host's communication-board frame");
     captured_callbacks->stop();
     libretro::shutdown_netpacket_interface();

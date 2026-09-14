@@ -36,6 +36,7 @@
 #include "hw/sound_board.h"
 
 #include <span>
+#include <string>
 #include <vector>
 
 namespace sm2::hw {
@@ -66,6 +67,10 @@ public:
     void attach_dsb2(std::span<const u8> dsb_program, std::span<const u8> dsb_mpeg);
 
     void reset();
+
+    /// Select the upstream 0.9.7 balance profile for this ROM set.
+    void configure_balance(const std::string& game_name);
+    void set_audio_balance_enabled(bool enabled) override;
 
     /// Advance the board by the sound-clock equivalent of `host_cycles` of the
     /// host i960's 25 MHz clock.
@@ -152,6 +157,17 @@ private:
 
     /// Generate the SCSP's share of `host_cycles` worth of samples.
     void generate_audio(u32 host_cycles);
+
+    void update_balance_gains();
+    void apply_flat_gain(u16 gain);
+
+    bool m_balance_profile_active = false;
+    bool m_audio_balance_enabled  = true;
+    u16  m_flat_gain              = 256;
+    u16  m_music_gain             = 256;
+    u16  m_sfx_gain               = 256;
+    u16  m_announcer_gain         = 256;
+    u16  m_voice_gain             = 256;
 
     cpu::m68000::M68000 m_cpu;
 

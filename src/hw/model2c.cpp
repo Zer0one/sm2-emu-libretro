@@ -396,6 +396,7 @@ bool Model2C::init(const rom::GameSpec& game, rom::RomSet roms)
 
     // Sound board.
     m_sound.attach(m_roms.region("audiocpu"), m_roms.region("samples"));
+    m_sound.configure_balance(m_game.name);
     // The DSB music board, for the sets that ship one (Sega Touring Car and
     // other DSB titles). Empty regions for the rest leave it inert.
     m_sound.attach_dsb(m_roms.region("dsbz80:mpegcpu"), m_roms.region("dsbz80:mpeg"));
@@ -488,7 +489,9 @@ void Model2C::reset()
     m_io.set_output(5, [this](u8 value) { lamp_output_w(value); });
     m_io.set_input(6, [this] { return m_inputs.dipswitches; });
     for (u32 channel = 0; channel < Io315_5649::kAnalogCount; ++channel) {
-        m_io.set_analog(channel, [this, channel] { return m_inputs.analog[channel]; });
+        if (m_game.analog[channel].control != rom::AnalogControl::None) {
+            m_io.set_analog(channel, [this, channel] { return m_inputs.analog[channel]; });
+        }
     }
 
     if (m_game.drive_board) {

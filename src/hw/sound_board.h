@@ -55,6 +55,10 @@ public:
     /// Boards count different things -- SCSP slots, MultiPCM channels -- so this
     /// is only ever a rough indication that audio is happening.
     [[nodiscard]] virtual u32 active_voices() const = 0;
+
+    /// Enable the optional upstream per-game balance profile. Sound boards
+    /// without such a profile keep their native output unchanged.
+    virtual void set_audio_balance_enabled(bool) {}
 };
 
 }  // namespace sm2::hw

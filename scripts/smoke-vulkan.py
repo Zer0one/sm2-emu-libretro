@@ -25,6 +25,8 @@ def main():
     for key in ['core','host','system','rom','output']:p.add_argument('--'+key,type=Path,required=True)
     p.add_argument('--frames',type=int,default=1800)
     p.add_argument('--scale',type=int,choices=range(1,5),default=1)
+    p.add_argument('--texture-filter',choices=['faithful','2','4','8','16'],default='faithful')
+    p.add_argument('--upscale-2d',choices=['faithful','xbr','scalefx'],default='faithful')
     p.add_argument('--context-cycle',type=int,default=0,help='Destroy/recreate the real device before this frame')
     p.add_argument('--av-timing',choices=['native','60hz'],default='native')
     p.add_argument('--timing-overlay',choices=['disabled','enabled'],default='disabled')
@@ -41,6 +43,7 @@ def main():
     core.retro_get_system_av_info.argtypes=[C.POINTER(AV)]
     paths={9:str(a.system.resolve()).encode(),31:str(out/'saves').encode()}
     options={b'sm2_renderer':b'vulkan',b'sm2_internal_resolution':str(a.scale).encode(),
+             b'sm2_texture_filter':a.texture_filter.encode(),b'sm2_upscale_2d':a.upscale_2d.encode(),
              b'sm2_av_timing':a.av_timing.encode(),b'sm2_timing_overlay':a.timing_overlay.encode()}
     shutdown=False;errors=[];pcm=bytearray();last=b'';frame=0;videos=0;gpu_frames=0;duplicates=0
     statuses=[];context_cycle_hardware_frame=None
@@ -127,7 +130,8 @@ def main():
     host.sm2_gpu_stop();core.retro_unload_game()
     shutil.copytree(out/'saves',out/'baseline-nvram')
     report={'frames':a.frames,'gpu_frames':gpu_frames,'duplicated_frames':duplicates,
-        'scale':a.scale,'av_timing':a.av_timing,'timing_overlay':a.timing_overlay,
+        'scale':a.scale,'texture_filter':a.texture_filter,'upscale_2d':a.upscale_2d,
+        'av_timing':a.av_timing,'timing_overlay':a.timing_overlay,
         'overlay_updates':len(overlays),'context_cycle':a.context_cycle,
         'context_cycle_hardware_frame':context_cycle_hardware_frame,'sync_masks':[7,15,7],
         'gpu_seconds':elapsed,'audio_frames':len(pcm)//4,

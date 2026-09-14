@@ -54,13 +54,15 @@ def main():
     parser.add_argument('--press', action='store_true', help='Coin then Start then action buttons (not an idle comparison)')
     parser.add_argument('--av-timing', choices=['native','60hz'], default='native')
     parser.add_argument('--timing-overlay', choices=['disabled','enabled'], default='disabled')
+    parser.add_argument('--audio-balance', choices=['enabled','disabled'], default='enabled')
     args = parser.parse_args()
     if args.frames <= 0: parser.error('--frames must be positive')
     out = args.output.resolve(); out.mkdir(parents=True, exist_ok=False)
     saves = out/'saves'; saves.mkdir()
     directories = {9: str(args.system.resolve()).encode(), 31: str(saves).encode()}
     option_values = {b'sm2_av_timing': args.av_timing.encode(),
-                     b'sm2_timing_overlay': args.timing_overlay.encode()}
+                     b'sm2_timing_overlay': args.timing_overlay.encode(),
+                     b'sm2_audio_balance': args.audio_balance.encode()}
     lib = C.CDLL(str(args.core.resolve()))
     for name, arg in [('environment', ENV), ('video_refresh', VIDEO), ('audio_sample', AUDIO),
                       ('audio_sample_batch', BATCH), ('input_poll', POLL), ('input_state', STATE)]:
@@ -184,6 +186,7 @@ def main():
            f'{args.rom.stem}.eeprom':sha(payload[16384:])}
     report = {'frames':videos,'duplicated_frames':duplicates,'fps':av.timing.fps,
               'av_timing':args.av_timing,'timing_overlay':args.timing_overlay,
+              'audio_balance':args.audio_balance,
               'overlay_updates':len(overlays),'audio_rate':av.timing.rate,
               'audio_frames':len(pcm)//4,'video_sha256':sha(ppm),'audio_sha256':sha(pcm),
               'nvram':nvram,'save_layout':'frontend directory only',

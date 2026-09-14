@@ -119,9 +119,12 @@ struct OpenGlRenderer::Impl {
     }
 
     void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                const CrosshairState& crosshairs)
+                const CrosshairState& crosshairs, unsigned texture_quality,
+                unsigned upscale_2d)
     {
         auto& frame = machine.video();
+        polygons.set_texture_quality(texture_quality);
+        tilemaps.set_upscale_2d(upscale_2d);
         const bool render_test = machine.render_test_mode();
         if (render_test) {
             machine.compose_video();
@@ -175,8 +178,9 @@ void OpenGlRenderer::init(unsigned scale, bool es, retro_log_printf_t log)
 }
 void OpenGlRenderer::abandon_context() { impl->abandon_context(); }
 void OpenGlRenderer::render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                            const CrosshairState& crosshairs)
+                            const CrosshairState& crosshairs, unsigned texture_quality,
+                            unsigned upscale_2d)
 {
-    impl->render(machine, video, crosshairs);
+    impl->render(machine, video, crosshairs, texture_quality, upscale_2d);
 }
 }

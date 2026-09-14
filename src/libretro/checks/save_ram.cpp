@@ -128,9 +128,8 @@ int main()
     const auto* steering_range = find_definition("sm2_steering_output_range");
     const auto* accelerator_range = find_definition("sm2_accelerator_output_range");
     const auto* brake_range = find_definition("sm2_brake_output_range");
-    const auto* water_ski_slide_axis = find_definition("sm2_water_ski_slide_axis");
-    const auto* ski_swing_axis = find_definition("sm2_ski_super_g_swing_axis");
-    const auto* top_skater_curving_axis = find_definition("sm2_top_skater_curving_axis");
+    const auto* gamepad_rumble = find_definition("sm2_gamepad_rumble");
+    const auto* audio_balance = find_definition("sm2_audio_balance");
     expect(difficulty && std::string_view(difficulty->values[0].label) == "Normal (Default)"
                && std::string_view(difficulty->values[1].label) == "Hard",
            "registered NVRAM values use RetroArch title case without changing keys");
@@ -156,46 +155,36 @@ int main()
                && std::string_view(accelerator_range->values[3].label) == "75.3% (00-C0)"
                && std::string_view(brake_range->values[3].label) == "75.3% (00-C0)",
            "Driving analog ranges expose the Supermodel calibration presets");
-    expect(water_ski_slide_axis
-               && std::string_view(water_ski_slide_axis->default_value) == "inverted"
-               && std::string_view(water_ski_slide_axis->values[0].label) == "Inverted"
-               && std::string_view(water_ski_slide_axis->values[1].label) == "Normal",
-           "Sega Water Ski Slide Axis Mode defaults to Inverted");
-    option_values.clear();
-    expect(libretro::water_ski_slide_inverted(),
-           "Sega Water Ski Slide Axis Mode defaults to Inverted when unset");
-    option_values["sm2_water_ski_slide_axis"] = "normal";
-    expect(!libretro::water_ski_slide_inverted(),
-           "Sega Water Ski Slide Axis Mode reads Normal");
-    option_values.clear();
-    expect(ski_swing_axis
-               && std::string_view(ski_swing_axis->default_value) == "inverted"
-               && std::string_view(ski_swing_axis->values[0].label) == "Inverted"
-               && std::string_view(ski_swing_axis->values[1].label) == "Normal",
-           "Sega Ski Super G Swing Axis Mode defaults to Inverted");
-    option_values.clear();
-    expect(libretro::ski_super_g_swing_inverted(),
-           "Sega Ski Super G Swing Axis Mode defaults to Inverted when unset");
-    option_values["sm2_ski_super_g_swing_axis"] = "normal";
-    expect(!libretro::ski_super_g_swing_inverted(),
-           "Sega Ski Super G Swing Axis Mode reads Normal");
-    option_values.clear();
-    expect(top_skater_curving_axis
-               && std::string_view(top_skater_curving_axis->default_value) == "inverted"
-               && std::string_view(top_skater_curving_axis->values[0].label) == "Inverted"
-               && std::string_view(top_skater_curving_axis->values[1].label) == "Normal",
-           "Top Skater Curving Axis Mode defaults to Inverted");
-    expect(libretro::top_skater_curving_inverted(),
-           "Top Skater Curving Axis Mode defaults to Inverted when unset");
-    option_values["sm2_top_skater_curving_axis"] = "normal";
-    expect(!libretro::top_skater_curving_inverted(),
-           "Top Skater Curving Axis Mode reads Normal");
-    option_values.clear();
+    expect(gamepad_rumble
+               && std::string_view(gamepad_rumble->desc) == "Gamepad Rumble"
+               && std::string_view(gamepad_rumble->default_value) == "enabled",
+           "Gamepad rumble is enabled by default");
+    expect(audio_balance
+               && std::string_view(audio_balance->desc) == "Enhanced Audio Balance"
+               && std::string_view(audio_balance->default_value) == "enabled"
+               && std::string_view(audio_balance->category_key) == "audio",
+           "upstream audio balance is enabled globally by default in Audio");
+#if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
+    const auto* texture_filter = find_definition("sm2_texture_filter");
+    const auto* upscale_2d = find_definition("sm2_upscale_2d");
+    expect(texture_filter && std::string_view(texture_filter->desc) == "3D Texture Filtering"
+               && std::string_view(texture_filter->default_value) == "faithful"
+               && std::string_view(texture_filter->values[1].label) == "Anisotropic 2x"
+               && std::string_view(texture_filter->values[4].label) == "Anisotropic 16x",
+           "3D texture filter exposes the upstream quality levels with a faithful default");
+    expect(upscale_2d && std::string_view(upscale_2d->desc) == "2D Layer Upscaling Filter"
+               && std::string_view(upscale_2d->default_value) == "faithful"
+               && std::string_view(upscale_2d->values[1].label) == "xBR"
+               && std::string_view(upscale_2d->values[2].label) == "ScaleFX",
+           "2D layer upscaling exposes the upstream filters with a faithful default");
+#endif
     option_values = {
         {"sm2_steering_response", "fbneo"},
         {"sm2_steering_output_range", "140"},
         {"sm2_accelerator_output_range", "75.3"},
         {"sm2_brake_output_range", "80"},
+        {"sm2_gamepad_rumble", "disabled"},
+        {"sm2_audio_balance", "disabled"},
     };
     const auto driving_options = libretro::driving_analog_options();
     expect(driving_options.steering_response == libretro::SteeringResponse::FBNeoLogarithmic
@@ -203,6 +192,18 @@ int main()
                && driving_options.accelerator_output_range_per_mille == 753
                && driving_options.brake_output_range_per_mille == 800,
            "Driving analog options read the frontend values independently");
+    expect(!libretro::gamepad_rumble_enabled(),
+           "gamepad rumble switch reads the frontend value");
+    expect(!libretro::audio_balance_enabled(),
+           "per-game audio balance switch reads the frontend value");
+    option_values["sm2_texture_filter"] = "8";
+    option_values["sm2_upscale_2d"] = "scalefx";
+    expect(libretro::texture_filter_quality() == 8 && libretro::upscale_2d_mode() == 2,
+           "renderer enhancement options read the selected frontend values");
+    option_values["sm2_texture_filter"] = "invalid";
+    option_values["sm2_upscale_2d"] = "invalid";
+    expect(libretro::texture_filter_quality() == 0 && libretro::upscale_2d_mode() == 0,
+           "invalid renderer enhancement values fall back to faithful rendering");
     option_values.clear();
     expect(option_infos["sm2_nvram_daytona_link_id"].find("LINK ID") == std::string::npos
                && option_infos["sm2_nvram_daytona_link_id"].find("daytona's") == std::string::npos,

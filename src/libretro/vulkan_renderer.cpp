@@ -154,7 +154,8 @@ struct VulkanRenderer::Impl final : render::vk::PassContext {
         return out;
     }
     void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                const CrosshairState& crosshairs) {
+                const CrosshairState& crosshairs, unsigned texture_quality,
+                unsigned upscale_2d) {
         const uint32_t mask = vk->get_sync_index_mask(vk->handle);
         const unsigned index = vk->get_sync_index(vk->handle);
         if (index >= outputs.size() || !(mask & (1u << index)))
@@ -169,6 +170,8 @@ struct VulkanRenderer::Impl final : render::vk::PassContext {
         begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         check(vkBeginCommandBuffer(cmd(), &begin), "Begin GPU frame");
         auto& frame = machine.video();
+        polygons.set_texture_quality(texture_quality);
+        tilemaps.set_upscale_2d(upscale_2d);
         const bool render_test = machine.render_test_mode();
         if (render_test) {
             machine.compose_video();
@@ -243,8 +246,9 @@ VulkanRenderer::VulkanRenderer() : impl(std::make_unique<Impl>()) {}
 VulkanRenderer::~VulkanRenderer() = default;
 void VulkanRenderer::init(retro_environment_t env, unsigned scale, retro_log_printf_t log) { impl->init(env, scale, log); }
 void VulkanRenderer::render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                            const CrosshairState& crosshairs)
+                            const CrosshairState& crosshairs, unsigned texture_quality,
+                            unsigned upscale_2d)
 {
-    impl->render(machine, video, crosshairs);
+    impl->render(machine, video, crosshairs, texture_quality, upscale_2d);
 }
 }

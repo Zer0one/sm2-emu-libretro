@@ -14,7 +14,8 @@ public:
     ~VulkanRenderer();
     void init(retro_environment_t env, unsigned scale, retro_log_printf_t log);
     void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                const CrosshairState& crosshairs);
+                const CrosshairState& crosshairs, unsigned texture_quality,
+                unsigned upscale_2d);
 private:
     struct Impl;
     std::unique_ptr<Impl> impl;
@@ -30,7 +31,8 @@ public:
     void init(unsigned scale, bool es, retro_log_printf_t log);
     void abandon_context();
     void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                const CrosshairState& crosshairs);
+                const CrosshairState& crosshairs, unsigned texture_quality,
+                unsigned upscale_2d);
 private:
     struct Impl;
     std::unique_ptr<Impl> impl;

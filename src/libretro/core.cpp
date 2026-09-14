@@ -6,11 +6,13 @@
 #include "initial_nvram.h"
 #include "input.h"
 #include "netpacket.h"
+#include "rumble.h"
 #include "save_ram.h"
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
 #include "gpu.h"
 #endif
 #include "hw/machine_factory.h"
+#include "hw/m2comm.h"
 #include "hw/model2.h"
 #include "hw/model2_original.h"
 #include "hw/model2b.h"
@@ -50,12 +52,12 @@ struct Content {
     rom::GameSpec game;
     libretro::ControllerConfiguration controllers;
     libretro::InputRuntime input_runtime;
-    libretro::NetpacketTransport network;
     std::unique_ptr<hw::Model2MachineBase> machine;
     hw::SoftRenderer renderer;
     std::vector<u32> frame = std::vector<u32>(width * height);
     std::vector<s16> audio;
     std::vector<retro_input_descriptor> input_descriptors;
+    libretro::GamepadRumble rumble;
     double native_fps = 0;
     double fps = 0;
     u32 rate = 0;
@@ -258,7 +260,10 @@ void message(enum retro_log_level level, const char* text)
 void failure(const char* text)
 {
     message(RETRO_LOG_ERROR, text);
-    if (content) content->failed = true;
+    if (content) {
+        content->rumble.stop();
+        content->failed = true;
+    }
     if (environment) environment(RETRO_ENVIRONMENT_SHUTDOWN, nullptr);
 }
 std::filesystem::path directory(unsigned command)
@@ -405,6 +410,7 @@ void unload()
 {
     if (content) {
         clear_timing_overlay(*content);
+        content->rumble.stop();
         try {
             if (content->save_ram_initialized) export_frontend_save(*content);
         }
@@ -491,7 +497,7 @@ void retro_deinit()
 }
 void retro_get_system_info(retro_system_info* info)
 {
-    if (info) *info = {"SM2-Emu", "0.9.4-libretro-dev", "zip|7z", true, true};
+    if (info) *info = {"SM2-Emu", "0.9.7-libretro-dev", "zip|7z", true, true};
 }
 void retro_get_system_av_info(retro_system_av_info* info)
 {
@@ -504,6 +510,8 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 {
     if (port >= devices.size()) return;
     devices[port] = device;
+    if (port == 0 && device == RETRO_DEVICE_NONE && content)
+        content->rumble.stop();
     publish_controls();
 }
 bool retro_load_game(const retro_game_info* game)
@@ -534,6 +542,8 @@ bool retro_load_game(const retro_game_info* game)
         next->game = loaded->game;
         next->machine = hw::create_machine(next->game, std::move(loaded->roms));
         if (!next->machine) throw std::runtime_error("Machine initialization failed");
+        next->machine->sound_board().set_audio_balance_enabled(
+            libretro::audio_balance_enabled());
         const bool daytona_family = next->game.name == "daytona"
             || next->game.parent == "daytona";
         if (libretro::linked_cabinets() == 2) {
@@ -541,8 +551,9 @@ bool retro_load_game(const retro_game_info* game)
                 message(RETRO_LOG_WARN,
                         "Linked Cabinets currently applies only to the Daytona USA family");
             } else {
-                next->network.configure(next->game.name, 2);
-                next->machine->set_communication_transport(&next->network);
+                auto network = std::make_unique<libretro::NetpacketTransport>();
+                network->configure(next->game.name, 2);
+                next->machine->comm().set_transport(std::move(network));
                 if (!libretro::netpacket_interface_supported())
                     message(RETRO_LOG_WARN,
                             "2 Cabinets selected but the frontend has no Netpacket support");
@@ -569,6 +580,7 @@ bool retro_load_game(const retro_game_info* game)
         next->nvram_values = libretro::selected_nvram_values(next->nvram_game);
         next->option_pending = !next->nvram_values.empty() && libretro::nvram_settings_enabled();
         next->audio.reserve(static_cast<size_t>(next->rate) * 2);
+        const bool rumble_ready = next->rumble.init(environment);
         content = std::move(next);
         libretro::set_option_game(content->nvram_game);
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
@@ -576,6 +588,8 @@ bool retro_load_game(const retro_game_info* game)
 #endif
         devices.fill(RETRO_DEVICE_JOYPAD);
         publish_controls();
+        if (content->game.has_steering() && !rumble_ready)
+            message(RETRO_LOG_INFO, "Frontend gamepad rumble interface is unavailable");
         if (!libretro::digital_profile(content->game))
             message(RETRO_LOG_WARN, "This cabinet's gameplay controls are not implemented yet; Coin/Start/Test/Service only.");
         else {
@@ -608,6 +622,7 @@ void retro_reset()
 {
     if (!content) return;
     try {
+        content->rumble.stop();
         content->machine->reset();
         content->machine->sound_board().clear_pending_samples();
         content->audio.clear();
@@ -646,11 +661,18 @@ void retro_run()
             if (!overlay) clear_timing_overlay(*content);
             if (overlay && !content->timing_overlay) reset_timing_measurements(*content);
             content->timing_overlay = overlay;
+            if (!libretro::gamepad_rumble_enabled()) content->rumble.stop();
+            content->machine->sound_board().set_audio_balance_enabled(
+                libretro::audio_balance_enabled());
             publish_controls();
         }
         if (!content->save_ram_initialized) initialize_frontend_save(*content);
         apply_pending_option(*content);
         if (input_poll_cb) input_poll_cb();
+        s16 rumble_steering = 0;
+        if (input_state_cb && devices[0] != RETRO_DEVICE_NONE)
+            rumble_steering = input_state_cb(0, RETRO_DEVICE_ANALOG,
+                RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X);
         bool advance_machine = true;
         if (content->timing == libretro::AVTimingMode::Compatibility60Hz) {
             content->cadence_accumulator += content->native_fps;
@@ -663,12 +685,11 @@ void retro_run()
                                  input_state_cb, libretro::gun_input_mode(),
                                  libretro::offscreen_reload_shortcut_enabled(),
                                  libretro::driving_analog_options(),
-                                 libretro::desert_elevation_options(),
-                                 libretro::water_ski_slide_inverted(),
-                                 libretro::ski_super_g_swing_inverted(),
-                                 libretro::top_skater_curving_inverted());
+                                 libretro::desert_elevation_options());
             const auto machine_start = std::chrono::steady_clock::now();
             content->machine->run_frame();
+            content->rumble.update(content->game, content->machine->drive_board_force(),
+                                   rumble_steering, libretro::gamepad_rumble_enabled());
             const auto machine_end = std::chrono::steady_clock::now();
             content->timing_machine_ms += elapsed_ms(machine_start, machine_end);
             ++content->timing_machine_frames;
@@ -691,7 +712,8 @@ void retro_run()
                     if (!content->gpu) throw std::runtime_error("Frontend Vulkan context is not ready");
                     content->gpu->render(*content->machine, video_cb,
                         libretro::crosshair_state(content->game, content->input_runtime,
-                                                  libretro::crosshair_mask()));
+                                                  libretro::crosshair_mask()),
+                        libretro::texture_filter_quality(), libretro::upscale_2d_mode());
 #else
                     throw std::runtime_error("This core was built without Vulkan support");
 #endif
@@ -700,7 +722,8 @@ void retro_run()
                     if (!content->gl) throw std::runtime_error("Frontend OpenGL context is not ready");
                     content->gl->render(*content->machine, video_cb,
                         libretro::crosshair_state(content->game, content->input_runtime,
-                                                  libretro::crosshair_mask()));
+                                                  libretro::crosshair_mask()),
+                        libretro::texture_filter_quality(), libretro::upscale_2d_mode());
 #else
                     throw std::runtime_error("This core was built without OpenGL support");
 #endif

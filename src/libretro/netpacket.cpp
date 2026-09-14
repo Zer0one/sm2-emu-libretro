@@ -178,17 +178,17 @@ bool NetpacketTransport::ready() const
         && (session.local_id != 0 || session.clients.size() + 1 >= session.expected_cabinets);
 }
 
-bool NetpacketTransport::send(std::span<const u8> frame)
+void NetpacketTransport::send(std::span<const u8> frame)
 {
-    if (frame.empty() || frame.size() > kMaximumFrame) return false;
+    if (frame.empty() || frame.size() > kMaximumFrame) return;
     retro_netpacket_send_t send_callback = nullptr;
     u16 peer = 0;
     u32 game_hash = 0;
     {
         std::lock_guard lock(session.mutex);
-        if (!session.active || session.send == nullptr) return false;
+        if (!session.active || session.send == nullptr) return;
         if (session.local_id == 0) {
-            if (session.clients.empty()) return false;
+            if (session.clients.empty()) return;
             peer = *session.clients.begin();
         }
         send_callback = session.send;
@@ -204,10 +204,9 @@ bool NetpacketTransport::send(std::span<const u8> frame)
     packet.insert(packet.end(), frame.begin(), frame.end());
     send_callback(RETRO_NETPACKET_RELIABLE | RETRO_NETPACKET_FLUSH_HINT,
                   packet.data(), packet.size(), peer);
-    return true;
 }
 
-bool NetpacketTransport::receive(std::vector<u8>& frame)
+std::optional<std::vector<u8>> NetpacketTransport::recv()
 {
     retro_netpacket_poll_receive_t poll = nullptr;
     {
@@ -217,10 +216,21 @@ bool NetpacketTransport::receive(std::vector<u8>& frame)
     if (poll) poll();
 
     std::lock_guard lock(session.mutex);
-    if (session.packets.empty()) return false;
-    frame = std::move(session.packets.front().bytes);
+    if (session.packets.empty()) return std::nullopt;
+    std::vector<u8> frame = std::move(session.packets.front().bytes);
     session.packets.pop_front();
-    return true;
+    return frame;
+}
+
+bool NetpacketTransport::connected() const
+{
+    return ready();
+}
+
+void NetpacketTransport::reset()
+{
+    std::lock_guard lock(session.mutex);
+    session.packets.clear();
 }
 
 bool register_netpacket_interface(retro_environment_t environment,

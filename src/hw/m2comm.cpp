@@ -8,6 +8,11 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
+#include <optional>
+#include <span>
+#include <utility>
+#include <vector>
 
 namespace sm2::hw {
 
@@ -22,11 +27,24 @@ constexpr int kFrameStart = 0x2000;
 /// how much of a nonsense frame size would be honoured.
 constexpr int kMaxFrame = 0x1000;
 
-/// How many frames the loopback holds before a send fails, standing in for the
-/// socket buffer MAME relies on. Steady state is two.
-constexpr std::size_t kLoopbackDepth = 64;
-
 }  // namespace
+
+M2Comm::M2Comm()
+    : m_transport(std::make_unique<LoopbackTransport>())
+{
+}
+
+void M2Comm::set_transport(std::unique_ptr<CommTransport> transport)
+{
+    m_transport = transport ? std::move(transport)
+                            : std::make_unique<LoopbackTransport>();
+    m_transport->reset();
+}
+
+bool M2Comm::transport_connected() const
+{
+    return m_transport && m_transport->connected();
+}
 
 void M2Comm::reset()
 {
@@ -43,7 +61,7 @@ void M2Comm::reset()
     m_linkid     = 0;
     m_linkcount  = 0;
     m_zfg_delay  = 0;
-    m_loopback.clear();
+    m_transport->reset();
 }
 
 void M2Comm::cn_write(u8 value)
@@ -56,7 +74,7 @@ void M2Comm::cn_write(u8 value)
         m_zfg        = 0;
         m_cn         = 0;
         m_fg         = 0;
-        m_loopback.clear();
+        m_transport->reset();
         return;
     }
 
@@ -66,7 +84,7 @@ void M2Comm::cn_write(u8 value)
     m_linkalive  = 0x00;
     m_linkcount  = 0x00;
     m_linktimer  = 0x00e8;  // 58 fps for about four seconds
-    m_loopback.clear();
+    m_transport->reset();
 
     std::fill(m_shared.begin(), m_shared.end(), u8{0});
     set_shared(0x01, 0x02);
@@ -90,45 +108,26 @@ u8 M2Comm::fg_read()
 
 int M2Comm::read_frame(int data_size)
 {
-    std::vector<u8> frame;
-    if (m_transport != nullptr) {
-        if (!m_transport->receive(frame)) return 0;
-    } else {
-        if (m_loopback.empty()) return 0;
-        frame = std::move(m_loopback.front());
-        m_loopback.pop_front();
-    }
-    const int count = static_cast<int>(std::min<std::size_t>(frame.size(),
+    std::optional<std::vector<u8>> frame = m_transport->recv();
+    if (!frame) return 0;
+    const int count = static_cast<int>(std::min<std::size_t>(frame->size(),
                                                              std::size_t(data_size)));
-    std::copy_n(frame.begin(), count, m_buffer.begin());
+    std::copy_n(frame->begin(), count, m_buffer.begin());
     return count;
 }
 
 void M2Comm::send_frame(int data_size)
 {
     const int count = std::clamp(data_size, 0, kMaxFrame);
-    if (m_transport != nullptr) {
-        if (!m_transport->send(std::span<const u8>(m_buffer.data(), std::size_t(count)))
-            && m_linkalive == 0x01) {
-            SM2_WARN("m2comm: external transport unavailable, dropping the link");
-            m_linkalive = 0x02;
-            m_linktimer = 0x00;
-        }
-        return;
+    m_transport->send(std::span<const u8>(m_buffer.data(), std::size_t(count)));
+
+    // A dropped connected() is the transmit side going away; let the link die,
+    // as MAME does.
+    if (!m_transport->connected() && m_linkalive == 0x01) {
+        SM2_DEBUG("m2comm: transmit backed up, dropping the link");
+        m_linkalive = 0x02;
+        m_linktimer = 0x00;
     }
-    if (m_loopback.size() >= kLoopbackDepth) {
-        // A socket whose buffer has filled fails the write, and MAME treats that
-        // as the transmit side going away. Reachable only if the host reconfigures
-        // itself as a relay after the link came up, which makes it forward
-        // everything it receives back to itself.
-        if (m_linkalive == 0x01) {
-            SM2_DEBUG("m2comm: transmit backed up, dropping the link");
-            m_linkalive = 0x02;
-            m_linktimer = 0x00;
-        }
-        return;
-    }
-    m_loopback.emplace_back(m_buffer.begin(), m_buffer.begin() + count);
 }
 
 void M2Comm::send_data(u8 frame_type, int frame_start, int frame_size, int data_size)
@@ -164,11 +163,10 @@ void M2Comm::tick()
         set_shared(2, 0xff);
         set_shared(3, 0xff);
 
-        // A real socket pair is required before MAME starts assigning ring
-        // IDs. Netpacket sessions can be registered before their peer joins,
-        // so wait here rather than consuming the one-shot link timer and
-        // accidentally declaring a zero-cabinet ring.
-        if (m_transport != nullptr && !m_transport->ready()) return;
+        // A Libretro Netpacket session can exist before its peer joins. Do not
+        // consume the one-shot link timer until the requested ring is present.
+        // Standalone loopback and UDP transports use connected() as ready().
+        if (!m_transport->ready()) return;
 
         // MAME opens its two sockets here. The loopback needs no opening, and
         // MAME's guard on both being present is therefore always satisfied.
@@ -199,8 +197,8 @@ void M2Comm::tick()
                     m_linkcount = m_buffer[2];
                     send_frame(data_size);
                 }
-                SM2_INFO("m2comm: link established, id %02x of %02x", m_linkid,
-                         m_linkcount);
+                SM2_DEBUG("m2comm: link established, id %02x of %02x", m_linkid,
+                          m_linkcount);
                 m_linkalive = 0x01;
                 set_shared(0, 0x01);
                 set_shared(2, m_linkid);
@@ -220,8 +218,8 @@ void M2Comm::tick()
                 m_buffer[1] = m_linkcount;
                 m_buffer[2] = m_linkcount;
                 send_frame(data_size);
-                SM2_INFO("m2comm: link established, id %02x of %02x", m_linkid,
-                         m_linkcount);
+                SM2_DEBUG("m2comm: link established, id %02x of %02x", m_linkid,
+                          m_linkcount);
                 m_linkalive = 0x01;
                 set_shared(0, 0x01);
                 set_shared(2, m_linkid);

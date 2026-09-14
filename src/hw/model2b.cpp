@@ -378,6 +378,7 @@ bool Model2B::init(const rom::GameSpec& game, rom::RomSet roms)
 
     // Sound board.
     m_sound.attach(m_roms.region("audiocpu"), m_roms.region("samples"));
+    m_sound.configure_balance(m_game.name);
     m_uart.set_tx_handler([this](u8 value) { m_sound.midi_in(value); });
     m_sound.set_midi_out_handler([this](u8 value) { m_uart.write_rxd(value); });
     m_uart.set_ready_handler([this] { sound_ready_w(); });
@@ -462,7 +463,9 @@ void Model2B::reset()
     m_io.set_output(5, [this](u8 value) { lamp_output_w(value); });
     m_io.set_input(6, [this] { return m_inputs.dipswitches; });
     for (u32 channel = 0; channel < Io315_5649::kAnalogCount; ++channel) {
-        m_io.set_analog(channel, [this, channel] { return m_inputs.analog[channel]; });
+        if (m_game.analog[channel].control != rom::AnalogControl::None) {
+            m_io.set_analog(channel, [this, channel] { return m_inputs.analog[channel]; });
+        }
     }
 
     if (m_game.drive_board) {
@@ -1098,6 +1101,17 @@ void Model2B::register_write(u32 address, u32 value, u32 width)
             m_intreq &= value;
             irq_update();
         } else {
+            // The Model 2B Over Rev sound driver acknowledges one timer IRQ with
+            // three writes. It needs the preceding delayed write serviced before
+            // the next one replaces it, otherwise sound eventually stalls.
+            if ((m_game.name == "overrevb" || m_game.name == "overrevba")
+                && m_pending_intena_valid) {
+                m_intena = m_pending_intena;
+                m_pending_intena_valid = false;
+                sound_ready_w();
+                irq_update();
+                service_timers();
+            }
             m_pending_intena       = value;
             m_pending_intena_cycle = m_cycles + 2;
             m_pending_intena_valid = true;

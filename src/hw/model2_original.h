@@ -162,10 +162,8 @@ public:
     [[nodiscard]] M1Audio& sound() { return m_m1audio; }
     [[nodiscard]] const M1Audio& sound() const { return m_m1audio; }
     [[nodiscard]] SoundBoard& sound_board() override { return m_m1audio; }
-    void set_communication_transport(M2CommTransport* transport) override
-    {
-        m_comm.set_transport(transport);
-    }
+    [[nodiscard]] M2Comm& comm() override { return m_comm; }
+    [[nodiscard]] const M2Comm& comm() const override { return m_comm; }
 
     [[nodiscard]] const RenderList& render_list() const override { return m_render_list; }
 
@@ -271,6 +269,8 @@ private:
     [[nodiscard]] static u16 register_flags(u32 address);
     [[nodiscard]] u32 register_read(u32 address, u32 width);
     void register_write(u32 address, u32 value, u32 width);
+    [[nodiscard]] bool has_maxx_pic() const;
+    [[nodiscard]] u32 maxx_read(u32 address, u32 width);
 
     [[nodiscard]] u32 timers_r(u32 index);
     void timers_w(u32 index, u32 value);
@@ -365,6 +365,10 @@ private:
     std::vector<u8>  m_nvram;         ///< 16 KB battery-backed SRAM at 0x01d00000
     std::vector<u8>  m_cpu_control;
     std::vector<u8>  m_comm_ram;      ///< 16 KB link board shared RAM
+
+    /// State of the PIC fitted by the Daytona USA To The MAXX upgrade. The
+    /// device overlays a small program-ROM mirror only for that set.
+    u8 m_maxx_state = 0;
 
     // -- interrupt latch ---------------------------------------------------
     u32 m_intreq = 0;

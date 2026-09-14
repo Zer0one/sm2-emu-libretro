@@ -84,7 +84,7 @@ inline void build_option_definitions()
 {
     if (!registered_definitions.empty()) return;
     const auto all = nvram::all_options();
-    registered_definitions.reserve(all.size() + 19);
+    registered_definitions.reserve(all.size() + 20);
 
     retro_core_option_v2_definition initial_nvram{};
     initial_nvram.key = "sm2_initial_nvram_setup";
@@ -168,6 +168,30 @@ inline void build_option_definitions()
     resolution.values[3] = {"4", "4x (1984 x 1536)"};
     resolution.default_value = "1";
     registered_definitions.push_back(resolution);
+
+    retro_core_option_v2_definition texture_filter{};
+    texture_filter.key = "sm2_texture_filter";
+    texture_filter.desc = "3D Texture Filtering";
+    texture_filter.info = "Select the native SM2-Emu texture filter used by the 3D renderer. Faithful preserves the original single-sample path. Anisotropic levels add progressively more samples along oblique surfaces. Applies only to Vulkan and OpenGL and takes effect immediately.";
+    texture_filter.category_key = "video";
+    texture_filter.values[0] = {"faithful", "Faithful"};
+    texture_filter.values[1] = {"2", "Anisotropic 2x"};
+    texture_filter.values[2] = {"4", "Anisotropic 4x"};
+    texture_filter.values[3] = {"8", "Anisotropic 8x"};
+    texture_filter.values[4] = {"16", "Anisotropic 16x"};
+    texture_filter.default_value = "faithful";
+    registered_definitions.push_back(texture_filter);
+
+    retro_core_option_v2_definition upscale_2d{};
+    upscale_2d.key = "sm2_upscale_2d";
+    upscale_2d.desc = "2D Layer Upscaling Filter";
+    upscale_2d.info = "Select the native SM2-Emu filter applied to 2D tile layers before they are composited with 3D. Faithful keeps the original crisp pixels; xBR and ScaleFX smooth pixel-art edges. Applies only to Vulkan and OpenGL and takes effect immediately.";
+    upscale_2d.category_key = "video";
+    upscale_2d.values[0] = {"faithful", "Faithful"};
+    upscale_2d.values[1] = {"xbr", "xBR"};
+    upscale_2d.values[2] = {"scalefx", "ScaleFX"};
+    upscale_2d.default_value = "faithful";
+    registered_definitions.push_back(upscale_2d);
 #endif
 
     retro_core_option_v2_definition timing{};
@@ -189,6 +213,16 @@ inline void build_option_definitions()
     overlay.values[1] = {"enabled", "Enabled"};
     overlay.default_value = "disabled";
     registered_definitions.push_back(overlay);
+
+    retro_core_option_v2_definition audio_balance{};
+    audio_balance.key = "sm2_audio_balance";
+    audio_balance.desc = "Enhanced Audio Balance";
+    audio_balance.info = "Apply the SM2-Emu 0.9.7 audio balance automatically to every supported game, including VF2's separate music, effects, announcer and voice levels. Disabled preserves unity gain and the unbalanced emulated output. Changes take effect immediately.";
+    audio_balance.category_key = "audio";
+    audio_balance.values[0] = {"enabled", "Enabled"};
+    audio_balance.values[1] = {"disabled", "Disabled"};
+    audio_balance.default_value = "enabled";
+    registered_definitions.push_back(audio_balance);
 
     retro_core_option_v2_definition crosshair{};
     crosshair.key = "sm2_crosshairs";
@@ -225,6 +259,16 @@ inline void build_option_definitions()
     offscreen_reload.default_value = "enabled";
     registered_definitions.push_back(offscreen_reload);
 
+    retro_core_option_v2_definition gamepad_rumble{};
+    gamepad_rumble.key = "sm2_gamepad_rumble";
+    gamepad_rumble.desc = "Gamepad Rumble";
+    gamepad_rumble.info = "Enable the SM2-Emu gamepad vibration model for driving games. Drive-board impacts produce short jolts and steering deflection produces a lighter cornering vibration. Other games remain silent. Changes take effect immediately.";
+    gamepad_rumble.category_key = "input";
+    gamepad_rumble.values[0] = {"enabled", "Enabled"};
+    gamepad_rumble.values[1] = {"disabled", "Disabled"};
+    gamepad_rumble.default_value = "enabled";
+    registered_definitions.push_back(gamepad_rumble);
+
     retro_core_option_v2_definition shifter{};
     shifter.key = "sm2_four_speed_shifter";
     shifter.desc = "4-Speed Shifter";
@@ -234,36 +278,6 @@ inline void build_option_definitions()
     shifter.values[1] = {"standard", "Standard"};
     shifter.default_value = "h_gate";
     registered_definitions.push_back(shifter);
-
-    retro_core_option_v2_definition water_ski_slide_axis{};
-    water_ski_slide_axis.key = "sm2_water_ski_slide_axis";
-    water_ski_slide_axis.desc = "Sega Water Ski Slide Axis Mode";
-    water_ski_slide_axis.info = "Inverted reverses Left Analog X for Slide so X+ produces 00 and X- produces FF. Normal preserves the frontend axis polarity. Applied only to Sega Water Ski. Changes take effect immediately.";
-    water_ski_slide_axis.category_key = "input";
-    water_ski_slide_axis.values[0] = {"inverted", "Inverted"};
-    water_ski_slide_axis.values[1] = {"normal", "Normal"};
-    water_ski_slide_axis.default_value = "inverted";
-    registered_definitions.push_back(water_ski_slide_axis);
-
-    retro_core_option_v2_definition ski_swing_axis{};
-    ski_swing_axis.key = "sm2_ski_super_g_swing_axis";
-    ski_swing_axis.desc = "Sega Ski Super G Swing Axis Mode";
-    ski_swing_axis.info = "Inverted reverses Left Analog X for Swing so X+ produces 00 and X- produces FF. Normal preserves the frontend axis polarity. Applied only to Sega Ski Super G. Changes take effect immediately.";
-    ski_swing_axis.category_key = "input";
-    ski_swing_axis.values[0] = {"inverted", "Inverted"};
-    ski_swing_axis.values[1] = {"normal", "Normal"};
-    ski_swing_axis.default_value = "inverted";
-    registered_definitions.push_back(ski_swing_axis);
-
-    retro_core_option_v2_definition top_skater_curving_axis{};
-    top_skater_curving_axis.key = "sm2_top_skater_curving_axis";
-    top_skater_curving_axis.desc = "Top Skater Curving Axis Mode";
-    top_skater_curving_axis.info = "Inverted reverses Left Analog X for Curving so X+ produces 00 and X- produces FF. Normal preserves the frontend axis polarity. Applied to all Top Skater sets. Changes take effect immediately.";
-    top_skater_curving_axis.category_key = "input";
-    top_skater_curving_axis.values[0] = {"inverted", "Inverted"};
-    top_skater_curving_axis.values[1] = {"normal", "Normal"};
-    top_skater_curving_axis.default_value = "inverted";
-    registered_definitions.push_back(top_skater_curving_axis);
 
     retro_core_option_v2_definition desert_elevation_control{};
     desert_elevation_control.key = "sm2_desert_elevation_control";
@@ -407,25 +421,18 @@ inline bool four_speed_h_gate()
              && option.value && std::strcmp(option.value, "standard") == 0);
 }
 
-inline bool ski_super_g_swing_inverted()
+inline bool gamepad_rumble_enabled()
 {
-    retro_variable option{"sm2_ski_super_g_swing_axis", nullptr};
+    retro_variable option{"sm2_gamepad_rumble", nullptr};
     return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
-             && option.value && std::strcmp(option.value, "normal") == 0);
+             && option.value && std::strcmp(option.value, "disabled") == 0);
 }
 
-inline bool water_ski_slide_inverted()
+inline bool audio_balance_enabled()
 {
-    retro_variable option{"sm2_water_ski_slide_axis", nullptr};
+    retro_variable option{"sm2_audio_balance", nullptr};
     return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
-             && option.value && std::strcmp(option.value, "normal") == 0);
-}
-
-inline bool top_skater_curving_inverted()
-{
-    retro_variable option{"sm2_top_skater_curving_axis", nullptr};
-    return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
-             && option.value && std::strcmp(option.value, "normal") == 0);
+             && option.value && std::strcmp(option.value, "disabled") == 0);
 }
 
 inline DrivingAnalogOptions driving_analog_options()
@@ -468,6 +475,27 @@ inline DesertElevationOptions desert_elevation_options()
     options.inverted = std::strcmp(value("sm2_desert_elevation_axis", "normal"),
                                    "inverted") == 0;
     return options;
+}
+
+inline unsigned texture_filter_quality()
+{
+    retro_variable option{"sm2_texture_filter", nullptr};
+    if (!(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option))
+        || !option.value || std::strcmp(option.value, "faithful") == 0)
+        return 0;
+    const unsigned quality = static_cast<unsigned>(std::atoi(option.value));
+    return quality == 2 || quality == 4 || quality == 8 || quality == 16 ? quality : 0;
+}
+
+inline unsigned upscale_2d_mode()
+{
+    retro_variable option{"sm2_upscale_2d", nullptr};
+    if (!(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option))
+        || !option.value)
+        return 0;
+    if (std::strcmp(option.value, "xbr") == 0) return 1;
+    if (std::strcmp(option.value, "scalefx") == 0) return 2;
+    return 0;
 }
 
 inline GunInputMode gun_input_mode()
@@ -561,6 +589,7 @@ inline void register_core_options(retro_environment_t env)
     static retro_core_option_v2_category categories[] = {
         {"system", "System", "Machine settings stored in battery-backed memory."},
         {"video", "Video", "Renderer, resolution, A/V cadence and diagnostics."},
+        {"audio", "Audio", "Sound emulation and per-game mixing."},
         {"input", "Input", "Controller profiles and input response."},
         {nullptr, nullptr, nullptr}};
     unsigned version = 0;

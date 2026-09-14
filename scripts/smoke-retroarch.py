@@ -70,9 +70,6 @@ def main():
     p.add_argument('--desert-elevation-control',choices=['relative','absolute'],default='relative')
     p.add_argument('--desert-elevation-speed',choices=[str(value) for value in range(10,201,10)],default='100')
     p.add_argument('--desert-elevation-axis',choices=['normal','inverted'],default='normal')
-    p.add_argument('--ski-super-g-swing-axis',choices=['inverted','normal'],default='inverted')
-    p.add_argument('--water-ski-slide-axis',choices=['inverted','normal'],default='inverted')
-    p.add_argument('--top-skater-curving-axis',choices=['inverted','normal'],default='inverted')
     p.add_argument('--bel-inputs',action='store_true',
                    help='Add left-stick gun aim plus Shot and Missile to the replay')
     p.add_argument('--gun-inputs',action='store_true',
@@ -81,6 +78,7 @@ def main():
                    help='Optional East action for --gun-inputs')
     p.add_argument('--offscreen-reload-shortcut',choices=['enabled','disabled'],default='enabled',
                    help='Core option for explicit RetroPad, Mouse and Lightgun reload inputs')
+    p.add_argument('--gamepad-rumble',choices=['enabled','disabled'],default='enabled')
     p.add_argument('--crosshairs',choices=['0','1','2','3'],default='0',
                    help='Crosshair mask: disabled, P1, P2, or both players')
     p.add_argument('--timeout',type=int,default=180)
@@ -88,8 +86,11 @@ def main():
     p.add_argument('--opengl-driver',choices=['gl','glcore'],default='glcore',
                    help='RetroArch video driver used with --renderer opengl')
     p.add_argument('--scale',type=int,choices=range(1,5),default=1)
+    p.add_argument('--texture-filter',choices=['faithful','2','4','8','16'],default='faithful')
+    p.add_argument('--upscale-2d',choices=['faithful','xbr','scalefx'],default='faithful')
     p.add_argument('--av-timing',choices=['native','60hz'],default='native')
     p.add_argument('--timing-overlay',choices=['disabled','enabled'],default='disabled')
+    p.add_argument('--audio-balance',choices=['enabled','disabled'],default='enabled')
     p.add_argument('--initial-nvram-setup',choices=['enabled','disabled'],default='enabled')
     p.add_argument('--nvram-settings',choices=['disabled','enabled'],default='disabled')
     p.add_argument('--vf2-country',choices=['japan','usa','export'],default='japan')
@@ -211,17 +212,17 @@ def main():
     cfg['core_options_path']=str(out/'core-options.cfg')
     (out/'core-options.cfg').write_text(
         f'sm2_renderer = "{a.renderer}"\nsm2_internal_resolution = "{a.scale}"\n'
+        f'sm2_texture_filter = "{a.texture_filter}"\nsm2_upscale_2d = "{a.upscale_2d}"\n'
         f'sm2_av_timing = "{a.av_timing}"\n'
         f'sm2_timing_overlay = "{a.timing_overlay}"\n'
+        f'sm2_audio_balance = "{a.audio_balance}"\n'
         f'sm2_gun_input = "{"analog" if gun_inputs else "hybrid"}"\n'
         f'sm2_offscreen_reload_shortcut = "{a.offscreen_reload_shortcut}"\n'
+        f'sm2_gamepad_rumble = "{a.gamepad_rumble}"\n'
         f'sm2_crosshairs = "{a.crosshairs}"\n'
         f'sm2_desert_elevation_control = "{a.desert_elevation_control}"\n'
         f'sm2_desert_elevation_speed = "{a.desert_elevation_speed}"\n'
         f'sm2_desert_elevation_axis = "{a.desert_elevation_axis}"\n'
-        f'sm2_ski_super_g_swing_axis = "{a.ski_super_g_swing_axis}"\n'
-        f'sm2_water_ski_slide_axis = "{a.water_ski_slide_axis}"\n'
-        f'sm2_top_skater_curving_axis = "{a.top_skater_curving_axis}"\n'
         f'sm2_initial_nvram_setup = "{a.initial_nvram_setup}"\n'
         f'sm2_nvram_settings = "{a.nvram_settings}"\n'
         f'sm2_nvram_vf2_country = "{a.vf2_country}"\n'
@@ -271,7 +272,11 @@ def main():
     assert peak>0 and params.nframes>44100*20
     srm=(out/'saves'/f'{a.set_name}.srm').read_bytes()
     assert len(srm)==64+16384+128 and srm[:8]==b'SM2SRAM\0'
-    report={'set_name':a.set_name,'recording_format':recording_format,'renderer':a.renderer,'internal_scale':a.scale,'av_timing':a.av_timing,'timing_overlay':a.timing_overlay,'crosshairs':a.crosshairs,'save_ram_size':len(srm),'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,
+    report={'set_name':a.set_name,'recording_format':recording_format,'renderer':a.renderer,'internal_scale':a.scale,
+            'texture_filter':a.texture_filter,'upscale_2d':a.upscale_2d,
+            'gamepad_rumble':a.gamepad_rumble,
+            'av_timing':a.av_timing,'timing_overlay':a.timing_overlay,'audio_balance':a.audio_balance,
+            'crosshairs':a.crosshairs,'save_ram_size':len(srm),'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,
             'audio_peak':peak,'audio_sha256':hashlib.sha256(pcm).hexdigest(),
             'screenshot_sha256':hashlib.sha256(png).hexdigest(),
             'note':'Inspect screenshot for gameplay; audible quality and physical devices require manual validation.'}

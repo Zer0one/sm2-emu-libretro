@@ -135,10 +135,8 @@ public:
     [[nodiscard]] Model2Sound& sound() { return m_sound; }
     [[nodiscard]] const Model2Sound& sound() const { return m_sound; }
     [[nodiscard]] SoundBoard& sound_board() override { return m_sound; }
-    void set_communication_transport(M2CommTransport* transport) override
-    {
-        m_comm.set_transport(transport);
-    }
+    [[nodiscard]] M2Comm& comm() override { return m_comm; }
+    [[nodiscard]] const M2Comm& comm() const override { return m_comm; }
 
     /// The serial link to the sound board, for reporting how much traffic it
     /// carried.

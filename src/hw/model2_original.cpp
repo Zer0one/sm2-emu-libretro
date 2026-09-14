@@ -84,6 +84,7 @@ inline void store32(u8* p, u32 v) { std::memcpy(p, &v, sizeof(v)); }
 constexpr u32 kRomMainCpu      = 0x00000000;  // 2 MB
 constexpr u32 kScratchRam      = 0x00200000;  // 128 KB, half of Model 2A's
 constexpr u32 kRomMirror       = 0x00220000;  // 128 KB view of maincpu at 0x20000
+constexpr u32 kMaxxPic         = 0x00240000;  // 64 KB PIC/ROM overlay (To The MAXX)
 constexpr u32 kWorkRam         = 0x00500000;  // 1 MB
 constexpr u32 kGeoPort         = 0x00800000;  // 16 KB, Geometrizer function ports
 constexpr u32 kGeoProgram      = 0x00804000;  // 16 KB, Geometrizer upload
@@ -290,6 +291,7 @@ void Model2Original::reset()
     m_copro.reset();
     m_geometry.reset();
     m_render_list.clear();
+    m_maxx_state = 0;
 
     m_copro_debt    = 0;
     m_in_copro_sync = false;
@@ -715,6 +717,38 @@ u16 Model2Original::register_flags(u32 address)
     return cpu::kBusFlagNone;
 }
 
+bool Model2Original::has_maxx_pic() const
+{
+    return m_game.protection == rom::Protection::DaytonaMaxx;
+}
+
+u32 Model2Original::maxx_read(u32 address, u32 width)
+{
+    const u32 offset = address - kMaxxPic;
+
+    // MAME's model2o_maxx_state::maxx_r: the PIC is read through the upper
+    // halfword lane in the first eight dwords and repeats a 16-step response.
+    if (offset < 0x20 && width == 2 && (address & 2u) != 0) {
+        m_maxx_state = static_cast<u8>((m_maxx_state + 1) & 0x0f);
+        if (m_maxx_state == 0) return 0x0007;
+        return (m_maxx_state & 0x02) != 0 ? 0x0000 : 0x0004;
+    }
+    if (offset == 0x20 && width == 4) {
+        return 0x00ff0000;
+    }
+
+    // Outside those responses the board exposes the program ROM beginning at
+    // 0x40000, exactly like the fallback in MAME's MAXX handler.
+    const usize rom_offset = static_cast<usize>(offset) + 0x40000;
+    if (rom_offset + width <= m_rom_maincpu.size()) {
+        const u8* const p = m_rom_maincpu.data() + rom_offset;
+        if (width == 1) return *p;
+        if (width == 2) return load16(p);
+        return load32(p);
+    }
+    return width == 1 ? 0xff : width == 2 ? 0xffff : 0xffffffff;
+}
+
 // ---------------------------------------------------------------------------
 // Register reads
 // ---------------------------------------------------------------------------
@@ -1064,6 +1098,9 @@ void Model2Original::register_write(u32 address, u32 value, u32 width)
 
 u8 Model2Original::read8(u32 address)
 {
+    if (has_maxx_pic() && address >= kMaxxPic && address < kMaxxPic + 0x10000) {
+        return static_cast<u8>(maxx_read(address, 1));
+    }
     const Window w = resolve(address);
     if (w.base != nullptr) {
         return *w.base;
@@ -1073,6 +1110,9 @@ u8 Model2Original::read8(u32 address)
 
 u16 Model2Original::read16(u32 address)
 {
+    if (has_maxx_pic() && address >= kMaxxPic && address < kMaxxPic + 0x10000) {
+        return static_cast<u16>(maxx_read(address, 2));
+    }
     const Window w = resolve(address);
     if (w.base != nullptr && w.size >= 2) {
         return load16(w.base);
@@ -1082,6 +1122,9 @@ u16 Model2Original::read16(u32 address)
 
 u32 Model2Original::read32(u32 address)
 {
+    if (has_maxx_pic() && address >= kMaxxPic && address < kMaxxPic + 0x10000) {
+        return maxx_read(address, 4);
+    }
     const Window w = resolve(address);
     if (w.base != nullptr && w.size >= 4) {
         return load32(w.base);
@@ -1100,6 +1143,9 @@ u32 Model2Original::read32(u32 address)
 // read_dword_flags.
 std::pair<u8, u16> Model2Original::read8_flags(u32 address)
 {
+    if (has_maxx_pic() && address >= kMaxxPic && address < kMaxxPic + 0x10000) {
+        return {static_cast<u8>(maxx_read(address, 1)), cpu::kBusFlagNone};
+    }
     const Window w = resolve(address);
     if (w.base != nullptr) {
         if ((w.flags & cpu::kBusFlagBurst) == 0) {
@@ -1135,6 +1181,9 @@ u16 Model2Original::write8_flags(u32 address, u8 value)
 
 std::pair<u32, u16> Model2Original::read32_flags(u32 address)
 {
+    if (has_maxx_pic() && address >= kMaxxPic && address < kMaxxPic + 0x10000) {
+        return {maxx_read(address, 4), cpu::kBusFlagNone};
+    }
     const Window w = resolve(address);
     if (w.base != nullptr && w.size >= 4) {
         if ((w.flags & cpu::kBusFlagBurst) == 0) {

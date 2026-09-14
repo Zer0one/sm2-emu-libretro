@@ -20,6 +20,8 @@
 #include "core/log.h"
 
 #include <algorithm>
+#include <array>
+#include <unordered_map>
 
 namespace sm2::hw {
 namespace {
@@ -206,6 +208,8 @@ void Model2Sound::generate_audio(u32 host_cycles)
         return;
     }
 
+    update_balance_gains();
+
     // Nothing draining the buffer means a headless run. The SCSP still has to be
     // stepped, because that is where its timers and envelopes advance, so the
     // samples are generated and then the oldest are dropped.
@@ -340,6 +344,92 @@ u16 Model2Sound::read16(u32 address)
     ++m_counters.unmapped_reads;
     SM2_TRACE("sound: unmapped read16 at %06x", address);
     return 0;
+}
+
+void Model2Sound::apply_flat_gain(u16 gain)
+{
+    std::array<u16, 32> gains;
+    gains.fill(gain);
+    m_scsp.set_slot_gains(gains.data());
+}
+
+void Model2Sound::configure_balance(const std::string& game_name)
+{
+    // Upstream 0.9.7 per-set SCSP gain, in 1/256 units (256 == unity).
+    // This is a home-listening balance against Daytona, not a hardware claim.
+    static const std::unordered_map<std::string, u16> kFlatGain = {
+        {"airwlkrs", 793}, {"bel", 1521}, {"desert", 254},
+        {"doa", 254}, {"doaa", 254}, {"doaab", 254}, {"doaae", 254}, {"doab", 254},
+        {"dynabb", 3019}, {"dynabb97", 1296},
+        {"dynamcop", 1792}, {"dynamcopb", 1792}, {"dynamcopc", 1792},
+        {"dyndeka2", 1792}, {"dyndeka2b", 1792},
+        {"fvipers", 403}, {"fvipersa", 403}, {"fvipersb", 403},
+        {"gunblade", 1050}, {"hotd", 2735}, {"hotdo", 2735}, {"hotdp", 2735},
+        {"hpyagu98", 1275},
+        {"indy500", 2602}, {"indy500d", 2602}, {"indy500to", 2602},
+        {"lastbrnx", 2736}, {"lastbrnxj", 2736}, {"lastbrnxu", 2736},
+        {"manxtt", 799}, {"manxttc", 799}, {"manxttdx", 799},
+        {"motoraid", 1632}, {"motoraiddx", 1632},
+        {"overrev", 3892}, {"overrevb", 4022}, {"overrevba", 3852},
+        {"pltkids", 2770}, {"pltkidsa", 2770},
+        {"rchase2", 745}, {"rchase2a", 745}, {"schamp", 403}, {"sfight", 403},
+        {"segawski", 1353}, {"sgt24h", 6907}, {"skisuprg", 1323}, {"skytargt", 1592},
+        {"srallyc", 739}, {"srallycb", 739}, {"srallycc", 739},
+        {"srallycdx", 739}, {"srallycdxa", 739},
+        {"stcc", 384}, {"stcca", 384}, {"stccb", 384}, {"stcco", 384},
+        {"topskatr", 232}, {"topskatrj", 232}, {"topskatru", 232}, {"topskatruo", 232},
+        {"vcop", 321}, {"vcopa", 321}, {"vcop2", 641},
+        {"von", 1195}, {"vonj", 1195}, {"vonr", 1195}, {"vonu", 1195},
+        {"vstriker", 1576}, {"vstrikero", 1576}, {"waverunr", 1181},
+        {"zerogun", 1984}, {"zerogunj", 1984},
+        {"zeroguna", 2931}, {"zerogunaj", 2931},
+    };
+
+    m_balance_profile_active = game_name == "vf2" || game_name == "vf2a"
+                            || game_name == "vf2b" || game_name == "vf2o";
+    if (m_balance_profile_active) {
+        constexpr float kVf2FamilyGain = 840.0f / 256.0f;
+        m_music_gain     = static_cast<u16>(51  * kVf2FamilyGain);
+        m_sfx_gain       = static_cast<u16>(256 * kVf2FamilyGain);
+        m_announcer_gain = static_cast<u16>(333 * kVf2FamilyGain);
+        m_voice_gain     = static_cast<u16>(410 * kVf2FamilyGain);
+    }
+
+    const auto it = kFlatGain.find(game_name);
+    m_flat_gain = it == kFlatGain.end() ? 256 : it->second;
+    apply_flat_gain(m_audio_balance_enabled ? m_flat_gain : u16{256});
+}
+
+void Model2Sound::set_audio_balance_enabled(bool enabled)
+{
+    if (m_audio_balance_enabled == enabled) return;
+    m_audio_balance_enabled = enabled;
+    apply_flat_gain(enabled ? m_flat_gain : u16{256});
+}
+
+void Model2Sound::update_balance_gains()
+{
+    if (!m_audio_balance_enabled || !m_balance_profile_active) return;
+
+    constexpr u32 kTable   = 0x2800;
+    constexpr u16 kSfxLo   = 0x100, kSfxHi = 0x13f;
+    constexpr u16 kAnnLo   = 0x140, kAnnHi = 0x161;
+    constexpr u16 kVoiceLo = 0x200, kVoiceHi = 0x26f;
+
+    u16 gains[32];
+    std::fill(std::begin(gains), std::end(gains), u16{256});
+    for (int entry = 0; entry < 32; ++entry) {
+        const u32 base = kTable + static_cast<u32>(entry) * 0x10;
+        if (base + 8 > m_ram.size() || m_ram[base + 2] == 0) continue;
+        const u32 slot = (u16(m_ram[base] << 8) | m_ram[base + 1]) / 0x20;
+        if (slot >= 32) continue;
+        const u16 sound = u16(m_ram[base + 6] << 8) | m_ram[base + 7];
+        if (sound >= kAnnLo && sound <= kAnnHi) gains[slot] = m_announcer_gain;
+        else if (sound >= kSfxLo && sound <= kSfxHi) gains[slot] = m_sfx_gain;
+        else if (sound >= kVoiceLo && sound <= kVoiceHi) gains[slot] = m_voice_gain;
+        else gains[slot] = m_music_gain;
+    }
+    m_scsp.set_slot_gains(gains);
 }
 
 void Model2Sound::write16(u32 address, u16 value)

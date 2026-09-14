@@ -60,6 +60,10 @@ public:
     void shutdown();
     void abandon_context();
 
+    /// Anisotropic texture-filter quality (0 = faithful single-tap, else the
+    /// tap ceiling). Uploaded to the shader each draw; live, no reallocation.
+    void set_texture_quality(u32 quality) { m_texture_quality = quality; }
+
     /// As render::vk::Poly3DPass::build(): triangulate this frame's polygons
     /// and refresh whatever machine memory changed since it last ran.
     void build(const hw::Model2MachineBase* machine, const hw::Model2Video& video);
@@ -117,6 +121,8 @@ private:
 
     /// Internal 3D render scale; the per-batch scissor is scaled by N.
     u32 m_render_scale = 1;
+
+    u32 m_texture_quality = 0;  ///< 0 = faithful single-tap, else tap ceiling
 };
 
 }  // namespace sm2::render::gl
