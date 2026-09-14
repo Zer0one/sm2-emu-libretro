@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include "save_ram.h"
+#include "core_options.h"
+#include "initial_nvram.h"
 #include "nvram_settings.h"
 
 #include <algorithm>
 #include <array>
 #include <cstdio>
+#include <map>
 #include <numeric>
 #include <set>
 #include <string>
@@ -16,10 +19,58 @@ namespace {
 using namespace sm2;
 
 int failures = 0;
+std::map<std::string, std::string> option_labels;
+std::map<std::string, std::string> option_infos;
+std::map<std::string, bool> option_visibility;
+std::map<std::string, std::string> option_values;
+
+bool option_environment(unsigned command, void* data)
+{
+    if (command == RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION) {
+        *static_cast<unsigned*>(data) = 2;
+        return true;
+    }
+    if (command == RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2) {
+        const auto* options = static_cast<retro_core_options_v2*>(data);
+        for (auto* definition = options->definitions; definition && definition->key; ++definition) {
+            option_labels[definition->key] = definition->desc ? definition->desc : "";
+            option_infos[definition->key] = definition->info ? definition->info : "";
+        }
+        return true;
+    }
+    if (command == RETRO_ENVIRONMENT_GET_VARIABLE) {
+        auto* variable = static_cast<retro_variable*>(data);
+        const auto selected = option_values.find(variable->key);
+        if (selected != option_values.end()) {
+            variable->value = selected->second.c_str();
+            return true;
+        }
+        if (std::string_view(variable->key) == "sm2_nvram_settings") {
+            variable->value = "enabled";
+            return true;
+        }
+        return false;
+    }
+    if (command == RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY) {
+        const auto* display = static_cast<retro_core_option_display*>(data);
+        option_visibility[display->key] = display->visible;
+        return true;
+    }
+    return command == RETRO_ENVIRONMENT_SET_CORE_OPTIONS_UPDATE_DISPLAY_CALLBACK;
+}
 void expect(bool condition, const char* description)
 {
     if (!condition) {
         std::fprintf(stderr, "FAIL: %s\n", description);
+        ++failures;
+    }
+}
+
+void expect_game(bool condition, std::string_view game, const char* description)
+{
+    if (!condition) {
+        std::fprintf(stderr, "FAIL [%.*s]: %s\n", static_cast<int>(game.size()),
+                     game.data(), description);
         ++failures;
     }
 }
@@ -44,6 +95,135 @@ libretro::SaveRam valid_vf2_save(std::array<u8, libretro::kBackupRamSize>& backu
 
 int main()
 {
+    expect(libretro::retroarch_option_label("LINK ID") == "Link ID",
+           "RetroArch option labels use title case and preserve ID");
+    expect(libretro::retroarch_option_label("VJCOM DIFFICULTY") == "VJCOM Difficulty",
+           "RetroArch option labels preserve game acronyms");
+    expect(libretro::retroarch_option_label("ENERGY(1P)") == "Energy (1P)",
+           "RetroArch option labels separate parenthesized player abbreviations");
+    expect(libretro::retroarch_option_label("ENERGY(VS)") == "Energy (VS)",
+           "RetroArch option labels separate parenthesized acronyms");
+    expect(libretro::retroarch_option_label("VERY HARD") == "Very Hard"
+               && libretro::retroarch_option_label("USA") == "USA"
+               && libretro::retroarch_option_label("BLUE (No.2)") == "Blue (No.2)",
+           "RetroArch value labels use title case while preserving acronyms and punctuation");
+    expect(libretro::retroarch_option_label("URL ADDRESS") == "URL Address",
+           "RetroArch option labels preserve URL");
+    libretro::register_core_options(option_environment);
+    expect(option_labels["sm2_nvram_settings"] == "NVRAM Settings",
+           "NVRAM master label matches the Supermodel convention");
+    expect(option_labels["sm2_nvram_daytona_link_id"] == "Link ID"
+               && option_labels["sm2_nvram_daytona_advertise_sound"] == "Advertise Sound",
+           "registered Daytona option labels use RetroArch title case");
+    const auto* definitions = libretro::registered_definitions.data();
+    const auto find_definition = [definitions](std::string_view key) {
+        for (const auto* definition = definitions; definition->key; ++definition)
+            if (key == definition->key) return definition;
+        return static_cast<const retro_core_option_v2_definition*>(nullptr);
+    };
+    const auto* difficulty = find_definition("sm2_nvram_daytona_difficulty");
+    const auto* cabinet = find_definition("sm2_nvram_daytona_cabinet");
+    const auto* manxtt_cabinet = find_definition("sm2_nvram_manxtt_cabinet_type");
+    const auto* steering_response = find_definition("sm2_steering_response");
+    const auto* steering_range = find_definition("sm2_steering_output_range");
+    const auto* accelerator_range = find_definition("sm2_accelerator_output_range");
+    const auto* brake_range = find_definition("sm2_brake_output_range");
+    const auto* water_ski_slide_axis = find_definition("sm2_water_ski_slide_axis");
+    const auto* ski_swing_axis = find_definition("sm2_ski_super_g_swing_axis");
+    const auto* top_skater_curving_axis = find_definition("sm2_top_skater_curving_axis");
+    expect(difficulty && std::string_view(difficulty->values[0].label) == "Normal (Default)"
+               && std::string_view(difficulty->values[1].label) == "Hard",
+           "registered NVRAM values use RetroArch title case without changing keys");
+    expect(cabinet && std::string_view(cabinet->default_value) == "deluxe"
+               && std::string_view(cabinet->values[2].label) == "Deluxe (Default)",
+           "Daytona Cabinet core option defaults to Deluxe");
+    expect(manxtt_cabinet && std::string_view(manxtt_cabinet->default_value) == "twin"
+               && std::string_view(manxtt_cabinet->values[1].label) == "Twin (Default)",
+           "Manx TT Cabinet Type core option defaults to Twin");
+    expect(steering_response && std::string_view(steering_response->default_value) == "linear"
+               && std::string_view(steering_response->values[1].label)
+                    == "Progressive (Fine Center)"
+               && std::string_view(steering_response->values[2].label)
+                    == "FBNeo Logarithmic (Fine Center)",
+           "Driving Steering Response matches the Supermodel convention");
+    expect(steering_range && accelerator_range && brake_range
+               && std::string_view(steering_range->default_value) == "100"
+               && std::string_view(accelerator_range->default_value) == "100"
+               && std::string_view(brake_range->default_value) == "100"
+               && std::string_view(steering_range->values[0].label) == "50%"
+               && std::string_view(steering_range->values[2].label) == "63% (30-80-D0)"
+               && std::string_view(steering_range->values[11].label) == "150%"
+               && std::string_view(accelerator_range->values[3].label) == "75.3% (00-C0)"
+               && std::string_view(brake_range->values[3].label) == "75.3% (00-C0)",
+           "Driving analog ranges expose the Supermodel calibration presets");
+    expect(water_ski_slide_axis
+               && std::string_view(water_ski_slide_axis->default_value) == "inverted"
+               && std::string_view(water_ski_slide_axis->values[0].label) == "Inverted"
+               && std::string_view(water_ski_slide_axis->values[1].label) == "Normal",
+           "Sega Water Ski Slide Axis Mode defaults to Inverted");
+    option_values.clear();
+    expect(libretro::water_ski_slide_inverted(),
+           "Sega Water Ski Slide Axis Mode defaults to Inverted when unset");
+    option_values["sm2_water_ski_slide_axis"] = "normal";
+    expect(!libretro::water_ski_slide_inverted(),
+           "Sega Water Ski Slide Axis Mode reads Normal");
+    option_values.clear();
+    expect(ski_swing_axis
+               && std::string_view(ski_swing_axis->default_value) == "inverted"
+               && std::string_view(ski_swing_axis->values[0].label) == "Inverted"
+               && std::string_view(ski_swing_axis->values[1].label) == "Normal",
+           "Sega Ski Super G Swing Axis Mode defaults to Inverted");
+    option_values.clear();
+    expect(libretro::ski_super_g_swing_inverted(),
+           "Sega Ski Super G Swing Axis Mode defaults to Inverted when unset");
+    option_values["sm2_ski_super_g_swing_axis"] = "normal";
+    expect(!libretro::ski_super_g_swing_inverted(),
+           "Sega Ski Super G Swing Axis Mode reads Normal");
+    option_values.clear();
+    expect(top_skater_curving_axis
+               && std::string_view(top_skater_curving_axis->default_value) == "inverted"
+               && std::string_view(top_skater_curving_axis->values[0].label) == "Inverted"
+               && std::string_view(top_skater_curving_axis->values[1].label) == "Normal",
+           "Top Skater Curving Axis Mode defaults to Inverted");
+    expect(libretro::top_skater_curving_inverted(),
+           "Top Skater Curving Axis Mode defaults to Inverted when unset");
+    option_values["sm2_top_skater_curving_axis"] = "normal";
+    expect(!libretro::top_skater_curving_inverted(),
+           "Top Skater Curving Axis Mode reads Normal");
+    option_values.clear();
+    option_values = {
+        {"sm2_steering_response", "fbneo"},
+        {"sm2_steering_output_range", "140"},
+        {"sm2_accelerator_output_range", "75.3"},
+        {"sm2_brake_output_range", "80"},
+    };
+    const auto driving_options = libretro::driving_analog_options();
+    expect(driving_options.steering_response == libretro::SteeringResponse::FBNeoLogarithmic
+               && driving_options.steering_output_range == 140
+               && driving_options.accelerator_output_range_per_mille == 753
+               && driving_options.brake_output_range_per_mille == 800,
+           "Driving analog options read the frontend values independently");
+    option_values.clear();
+    expect(option_infos["sm2_nvram_daytona_link_id"].find("LINK ID") == std::string::npos
+               && option_infos["sm2_nvram_daytona_link_id"].find("daytona's") == std::string::npos,
+           "registered option descriptions use frontend-facing text");
+    option_visibility.clear();
+    libretro::set_option_game("daytona");
+    size_t visible_daytona = 0;
+    size_t visible_other_games = 0;
+    for (const auto& [key, visible] : option_visibility) {
+        if (!visible || key == "sm2_nvram_settings") continue;
+        if (key.starts_with("sm2_nvram_daytona_")) ++visible_daytona;
+        else if (key.starts_with("sm2_nvram_")) ++visible_other_games;
+    }
+    expect(visible_daytona == 8 && visible_other_games == 0,
+           "only the loaded game's NVRAM option group is visible");
+    for (const auto* definition = definitions; definition->key; ++definition) {
+        const std::string_view key = definition->key;
+        if (key != "sm2_nvram_settings" && !key.starts_with("sm2_nvram_"))
+            expect(option_visibility[definition->key],
+                   "all non-NVRAM options remain visible for Daytona");
+    }
     {
         const auto options = libretro::nvram::all_options();
         std::set<std::string> keys;
@@ -70,6 +250,68 @@ int main()
                "Hanguk Pro Yagu 98 exposes the reviewed option set");
         expect(libretro::nvram::options_for_game("pltkids").size() == 3,
                "Pilot Kids exposes the reviewed option set");
+
+        std::set<std::string> games;
+        for (const auto& option : options) games.insert(option.game);
+        expect(games.size() == 35, "initial NVRAM catalog covers 35 reviewed parents");
+        const std::set<std::pair<std::string, std::string>> offline = {
+            {"daytona", "link_id"}, {"manxtt", "link_type"},
+            {"overrev", "link_max"}, {"sgt24h", "link_type"},
+            {"sgt24h", "link_max"}, {"srallyc", "link_type"},
+            {"stcc", "link_type"}, {"von", "network_link_attribute"},
+        };
+        const std::set<std::pair<std::string, std::string>> title_defaults = {
+            {"daytona", "cabinet"},
+            {"manxtt", "cabinet_type"},
+        };
+        for (const auto& game : games) {
+            expect_game(libretro::initial_nvram::has_template(game), game,
+                        "reviewed parent has an initial NVRAM template");
+            std::array<u8, libretro::kBackupRamSize> initial_backup{};
+            std::array<u8, libretro::kEepromSize> initial_eeprom{};
+            expect_game(libretro::initial_nvram::seed(game, initial_backup, initial_eeprom) ==
+                            libretro::initial_nvram::SeedResult::Loaded,
+                        game, "validated initial NVRAM template decodes");
+            const auto game_options = libretro::nvram::options_for_game(game);
+            const auto selected = libretro::nvram::initial_values(game);
+            expect(selected.size() == game_options.size(),
+                   "initial NVRAM selection matches the game option layout");
+            for (size_t i = 0; i < game_options.size(); ++i) {
+                const std::string suffix = game_options[i].suffix;
+                const bool expected = suffix == "country" || suffix == "nation"
+                    || offline.contains({game, suffix})
+                    || title_defaults.contains({game, suffix});
+                expect(selected[i].empty() != expected,
+                       "initial NVRAM changes only country, offline and explicit core-default fields");
+            }
+            const auto applied = libretro::nvram::apply(
+                game, initial_backup, initial_eeprom, selected);
+            expect_game(applied == libretro::nvram::ApplyResult::Changed
+                            || applied == libretro::nvram::ApplyResult::Unchanged,
+                        game, "initial NVRAM defaults apply before the first frame");
+            if (game == "daytona") {
+                expect(initial_backup[0x1a] == 0 && initial_backup[0x9a] == 0,
+                       "Daytona initial NVRAM applies DELUXE to both settings banks");
+                expect(initial_eeprom[0x1a] == initial_backup[0x1b]
+                           && initial_eeprom[0x1b] == initial_backup[0x1a],
+                           "Daytona initial NVRAM synchronizes the DELUXE setting to EEPROM");
+            } else if (game == "manxtt") {
+                expect(initial_eeprom[0x0a] == 1,
+                       "Manx TT initial NVRAM applies TWIN cabinet type");
+            }
+            libretro::SaveRam initial_save{};
+            libretro::export_save_ram(game, initial_backup, initial_eeprom, initial_save);
+            std::array<u8, libretro::kBackupRamSize> roundtrip_backup{};
+            std::array<u8, libretro::kEepromSize> roundtrip_eeprom{};
+            expect(libretro::import_save_ram(game, initial_save, roundtrip_backup,
+                                             roundtrip_eeprom) ==
+                       libretro::SaveImportResult::Loaded
+                       && roundtrip_backup == initial_backup
+                       && roundtrip_eeprom == initial_eeprom,
+                   "initial NVRAM persists through the frontend save container");
+        }
+        expect(!libretro::initial_nvram::has_template("vcopa"),
+               "unverified clone does not reuse a parent template implicitly");
     }
 
     std::array<u8, libretro::kBackupRamSize> backup{};
@@ -146,6 +388,7 @@ int main()
         expect(libretro::nvram::apply("daytona", settings_backup, settings_eeprom, selections) ==
                libretro::nvram::ApplyResult::Changed, "Daytona defaults apply to a valid layout");
         expect(settings_backup[0x0b] == 0, "Daytona defaults to SINGLE for offline boot");
+        expect(settings_backup[0x1a] == 0, "Daytona defaults to DELUXE cabinet");
         expect(settings_backup[0x1b] == 0, "Daytona defaults to USA");
         expect(std::equal(settings_backup.begin(), settings_backup.begin() + 0x80,
                           settings_backup.begin() + 0x80), "Daytona settings mirror is synchronized");

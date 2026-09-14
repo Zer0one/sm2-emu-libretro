@@ -153,7 +153,8 @@ struct VulkanRenderer::Impl final : render::vk::PassContext {
         out.frontend.image_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         return out;
     }
-    void render(hw::Model2MachineBase& machine, retro_video_refresh_t video) {
+    void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
+                const CrosshairState& crosshairs) {
         const uint32_t mask = vk->get_sync_index_mask(vk->handle);
         const unsigned index = vk->get_sync_index(vk->handle);
         if (index >= outputs.size() || !(mask & (1u << index)))
@@ -186,6 +187,43 @@ struct VulkanRenderer::Impl final : render::vk::PassContext {
         tilemaps.record_below(out.frontend.image_view, frame.background(), &attachment, polygons.stencil_has_depth());
         if (!render_test) polygons.draw_polygons();
         tilemaps.record_above();
+        const CrosshairGeometry geometry = crosshair_geometry(
+            crosshairs, 496 * scale, 384 * scale);
+        if (geometry.count) {
+            VkRenderingAttachmentInfo colour{};
+            colour.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+            colour.imageView = out.frontend.image_view;
+            colour.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            colour.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            colour.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            VkRenderingInfo rendering{};
+            rendering.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+            rendering.renderArea.extent = {496 * scale, 384 * scale};
+            rendering.layerCount = 1;
+            rendering.colorAttachmentCount = 1;
+            rendering.pColorAttachments = &colour;
+            vkCmdBeginRendering(cmd(), &rendering);
+            for (std::size_t i = 0; i < geometry.count; ++i) {
+                const auto& rect = geometry.rectangles[i];
+                VkClearAttachment crosshair_attachment{};
+                crosshair_attachment.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                crosshair_attachment.colorAttachment = 0;
+                crosshair_attachment.clearValue.color.float32[0] =
+                    static_cast<float>((rect.colour >> 16) & 0xffu) / 255.0f;
+                crosshair_attachment.clearValue.color.float32[1] =
+                    static_cast<float>((rect.colour >> 8) & 0xffu) / 255.0f;
+                crosshair_attachment.clearValue.color.float32[2] =
+                    static_cast<float>(rect.colour & 0xffu) / 255.0f;
+                crosshair_attachment.clearValue.color.float32[3] = 1.0f;
+                VkClearRect clear{};
+                clear.rect.offset = {rect.x, rect.y};
+                clear.rect.extent = {static_cast<u32>(rect.width),
+                                     static_cast<u32>(rect.height)};
+                clear.layerCount = 1;
+                vkCmdClearAttachments(cmd(), 1, &crosshair_attachment, 1, &clear);
+            }
+            vkCmdEndRendering(cmd());
+        }
         render::vk::record_image_barrier(cmd(), out.image, VK_IMAGE_ASPECT_COLOR_BIT,
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
@@ -204,5 +242,9 @@ struct VulkanRenderer::Impl final : render::vk::PassContext {
 VulkanRenderer::VulkanRenderer() : impl(std::make_unique<Impl>()) {}
 VulkanRenderer::~VulkanRenderer() = default;
 void VulkanRenderer::init(retro_environment_t env, unsigned scale, retro_log_printf_t log) { impl->init(env, scale, log); }
-void VulkanRenderer::render(hw::Model2MachineBase& machine, retro_video_refresh_t video) { impl->render(machine, video); }
+void VulkanRenderer::render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
+                            const CrosshairState& crosshairs)
+{
+    impl->render(machine, video, crosshairs);
+}
 }

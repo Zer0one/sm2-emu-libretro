@@ -3547,7 +3547,7 @@ static constexpr Value kValues195[] = {
 static constexpr Option kOptions[] = {
     {"daytona", "link_id", "LINK ID", "Set LINK ID in daytona's operator NVRAM. The standalone value is the safe default when no peer cabinet is connected.", "single", kValues0, std::size(kValues0), kPatches0, std::size(kPatches0)},
     {"daytona", "car_number", "CAR NUMBER", "Set CAR NUMBER in daytona's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues1, std::size(kValues1), kPatches1, std::size(kPatches1)},
-    {"daytona", "cabinet", "CABINET", "Set CABINET in daytona's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "twin", kValues2, std::size(kValues2), kPatches2, std::size(kPatches2)},
+    {"daytona", "cabinet", "CABINET", "Set CABINET in daytona's operator NVRAM. This core defaults the Daytona family to Deluxe.", "deluxe", kValues2, std::size(kValues2), kPatches2, std::size(kPatches2)},
     {"daytona", "country", "COUNTRY", "Set COUNTRY in daytona's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues3, std::size(kValues3), kPatches3, std::size(kPatches3)},
     {"daytona", "difficulty", "DIFFICULTY", "Set DIFFICULTY in daytona's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues4, std::size(kValues4), kPatches4, std::size(kPatches4)},
     {"daytona", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in daytona's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues5, std::size(kValues5), kPatches5, std::size(kPatches5)},
@@ -3645,7 +3645,7 @@ static constexpr Option kOptions[] = {
     {"lastbrnx", "master_volume", "MASTER VOLUME", "Set MASTER VOLUME in lastbrnx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues96, std::size(kValues96), kPatches96, std::size(kPatches96)},
     {"manxtt", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in manxtt's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues97, std::size(kValues97), kPatches97, std::size(kPatches97)},
     {"manxtt", "country", "COUNTRY", "Set COUNTRY in manxtt's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues98, std::size(kValues98), kPatches98, std::size(kPatches98)},
-    {"manxtt", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in manxtt's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "deluxe", kValues99, std::size(kValues99), kPatches99, std::size(kPatches99)},
+    {"manxtt", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in manxtt's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "twin", kValues99, std::size(kValues99), kPatches99, std::size(kPatches99)},
     {"manxtt", "link_type", "LINK TYPE", "Set LINK TYPE in manxtt's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "not_link", kValues100, std::size(kValues100), kPatches100, std::size(kPatches100)},
     {"manxtt", "bike_color", "BIKE COLOR (No.)", "Set BIKE COLOR (No.) in manxtt's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "red_no_1", kValues101, std::size(kValues101), kPatches101, std::size(kPatches101)},
     {"manxtt", "race_mode", "RACE MODE", "Set RACE MODE in manxtt's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "race", kValues102, std::size(kValues102), kPatches102, std::size(kPatches102)},

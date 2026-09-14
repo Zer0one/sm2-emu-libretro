@@ -11,6 +11,7 @@ inline PFN_vkCmdBeginRendering vkCmdBeginRendering = nullptr;
 inline PFN_vkCmdBindDescriptorSets vkCmdBindDescriptorSets = nullptr;
 inline PFN_vkCmdBindPipeline vkCmdBindPipeline = nullptr;
 inline PFN_vkCmdBindVertexBuffers vkCmdBindVertexBuffers = nullptr;
+inline PFN_vkCmdClearAttachments vkCmdClearAttachments = nullptr;
 inline PFN_vkCmdCopyBufferToImage vkCmdCopyBufferToImage = nullptr;
 inline PFN_vkCmdDispatch vkCmdDispatch = nullptr;
 inline PFN_vkCmdDraw vkCmdDraw = nullptr;
@@ -62,6 +63,8 @@ inline void load_vk_dispatch(const retro_hw_render_interface_vulkan& vk) {
     if (!vkCmdBindPipeline) throw std::runtime_error("Missing frontend Vulkan function: vkCmdBindPipeline");
     vkCmdBindVertexBuffers = reinterpret_cast<PFN_vkCmdBindVertexBuffers>(vk.get_device_proc_addr(vk.device, "vkCmdBindVertexBuffers"));
     if (!vkCmdBindVertexBuffers) throw std::runtime_error("Missing frontend Vulkan function: vkCmdBindVertexBuffers");
+    vkCmdClearAttachments = reinterpret_cast<PFN_vkCmdClearAttachments>(vk.get_device_proc_addr(vk.device, "vkCmdClearAttachments"));
+    if (!vkCmdClearAttachments) throw std::runtime_error("Missing frontend Vulkan function: vkCmdClearAttachments");
     vkCmdCopyBufferToImage = reinterpret_cast<PFN_vkCmdCopyBufferToImage>(vk.get_device_proc_addr(vk.device, "vkCmdCopyBufferToImage"));
     if (!vkCmdCopyBufferToImage) throw std::runtime_error("Missing frontend Vulkan function: vkCmdCopyBufferToImage");
     vkCmdDispatch = reinterpret_cast<PFN_vkCmdDispatch>(vk.get_device_proc_addr(vk.device, "vkCmdDispatch"));

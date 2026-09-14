@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 #include "libretro.h"
+#include "input.h"
 #include "nvram_settings.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <deque>
 #include <iterator>
@@ -21,19 +24,81 @@ inline bool nvram_master_visible = false;
 inline bool nvram_game_visible = false;
 inline std::vector<retro_core_option_v2_definition> registered_definitions;
 inline std::deque<std::string> option_key_storage;
+inline std::deque<std::string> option_label_storage;
+inline std::deque<std::string> option_info_storage;
+inline std::deque<std::string> option_value_label_storage;
 inline std::deque<std::string> default_label_storage;
 inline std::deque<std::string> legacy_value_storage;
 inline std::vector<retro_variable> legacy_definitions;
+
+inline std::string retroarch_option_label(std::string_view label)
+{
+    static constexpr std::string_view acronyms[] = {
+        "BGM", "CRT", "DX", "EUR", "EXP", "GT", "ID", "JPN", "NG", "OK", "PK", "SD",
+        "SP", "TT", "URL", "US", "USA", "VJCOM", "VJMAN", "VS",
+    };
+    std::string result;
+    result.reserve(label.size() + 2);
+    for (size_t i = 0; i < label.size();) {
+        const unsigned char current = static_cast<unsigned char>(label[i]);
+        if (!std::isalnum(current)) {
+            if (label[i] == '(' && !result.empty() && result.back() != ' ')
+                result.push_back(' ');
+            result.push_back(label[i++]);
+            continue;
+        }
+        size_t end = i;
+        bool has_digit = false;
+        while (end < label.size() && std::isalnum(static_cast<unsigned char>(label[end]))) {
+            has_digit |= std::isdigit(static_cast<unsigned char>(label[end])) != 0;
+            ++end;
+        }
+        const std::string_view word = label.substr(i, end - i);
+        const bool acronym = has_digit || std::find(std::begin(acronyms), std::end(acronyms), word)
+                                           != std::end(acronyms);
+        for (size_t offset = 0; offset < word.size(); ++offset) {
+            const unsigned char character = static_cast<unsigned char>(word[offset]);
+            result.push_back(static_cast<char>(acronym ? character
+                : offset == 0 ? std::toupper(character) : std::tolower(character)));
+        }
+        i = end;
+    }
+    return result;
+}
+
+inline std::string retroarch_option_info(const nvram::Option& option,
+                                         std::string_view display_label)
+{
+    std::string result = option.description;
+    const auto replace_all = [&](std::string_view from, std::string_view to) {
+        for (size_t position = 0; (position = result.find(from, position)) != std::string::npos;
+             position += to.size())
+            result.replace(position, from.size(), to);
+    };
+    replace_all(option.label, display_label);
+    replace_all(std::string(option.game) + "'s", "the game's");
+    return result;
+}
 
 inline void build_option_definitions()
 {
     if (!registered_definitions.empty()) return;
     const auto all = nvram::all_options();
-    registered_definitions.reserve(all.size() + 7);
+    registered_definitions.reserve(all.size() + 18);
+
+    retro_core_option_v2_definition initial_nvram{};
+    initial_nvram.key = "sm2_initial_nvram_setup";
+    initial_nvram.desc = "Automatic Initial NVRAM Setup";
+    initial_nvram.info = "When no frontend .srm or valid standalone .nv/.eeprom exists, initialize supported parent sets from their validated Service Menu sample before the first emulated frame, then apply the selected country, safe offline/link values and core defaults such as Daytona's Deluxe cabinet. Automatic setup never replaces existing saves; normal game writes still persist. Delete the game's save data to regenerate the initial setup.";
+    initial_nvram.category_key = "system";
+    initial_nvram.values[0] = {"enabled", "Enabled"};
+    initial_nvram.values[1] = {"disabled", "Disabled"};
+    initial_nvram.default_value = "enabled";
+    registered_definitions.push_back(initial_nvram);
 
     retro_core_option_v2_definition master{};
     master.key = "sm2_nvram_settings";
-    master.desc = "NVRAM Settings (Restart Required)";
+    master.desc = "NVRAM Settings";
     master.info = "Let RetroArch manage supported operator settings for the loaded game. When enabled, every displayed value is applied at startup and overrides later Service Menu changes. When disabled, the core does not modify these fields.";
     master.category_key = "system";
     master.values[0] = {"disabled", "Disabled"};
@@ -43,14 +108,18 @@ inline void build_option_definitions()
 
     for (const auto& option : all) {
         option_key_storage.emplace_back("sm2_nvram_" + std::string(option.game) + "_" + option.suffix);
+        option_label_storage.emplace_back(retroarch_option_label(option.label));
+        option_info_storage.emplace_back(retroarch_option_info(option, option_label_storage.back()));
         retro_core_option_v2_definition definition{};
         definition.key = option_key_storage.back().c_str();
-        definition.desc = option.label;
-        definition.info = option.description;
+        definition.desc = option_label_storage.back().c_str();
+        definition.info = option_info_storage.back().c_str();
         definition.category_key = "system";
         const size_t count = std::min(option.value_count, std::size(definition.values) - 1);
         for (size_t value = 0; value < count; ++value) {
-            const char* label = option.values[value].label;
+            option_value_label_storage.emplace_back(
+                retroarch_option_label(option.values[value].label));
+            const char* label = option_value_label_storage.back().c_str();
             if (std::strcmp(option.values[value].key, option.default_value) == 0) {
                 default_label_storage.emplace_back(std::string(label) + " (Default)");
                 label = default_label_storage.back().c_str();
@@ -111,6 +180,178 @@ inline void build_option_definitions()
     overlay.default_value = "disabled";
     registered_definitions.push_back(overlay);
 
+    retro_core_option_v2_definition crosshair{};
+    crosshair.key = "sm2_crosshairs";
+    crosshair.desc = "Show Crosshair";
+    crosshair.info = "Select which native SM2-Emu vector crosshair is displayed in gun games. Changes take effect immediately.";
+    crosshair.category_key = "input";
+    crosshair.values[0] = {"0", "Disabled"};
+    crosshair.values[1] = {"1", "Player 1 Only"};
+    crosshair.values[2] = {"2", "Player 2 Only"};
+    crosshair.values[3] = {"3", "Players 1 & 2"};
+    crosshair.default_value = "0";
+    registered_definitions.push_back(crosshair);
+
+    retro_core_option_v2_definition gun_input{};
+    gun_input.key = "sm2_gun_input";
+    gun_input.desc = "Gun Input Mode";
+    gun_input.info = "Input source for gun games. Standard accepts RetroArch Lightgun, Mouse, and the left Analog Stick through one virtual cursor. Mouse + Analog Stick excludes Lightgun coordinates while retaining both relative cursor sources. Dedicated modes restrict input to the selected source. Changes take effect immediately.";
+    gun_input.category_key = "input";
+    gun_input.values[0] = {"hybrid", "Standard"};
+    gun_input.values[1] = {"lightgun", "Lightgun Only"};
+    gun_input.values[2] = {"mouse_analog", "Mouse + Analog Stick"};
+    gun_input.values[3] = {"mouse", "Mouse Only"};
+    gun_input.values[4] = {"analog", "Analog Stick Only"};
+    gun_input.default_value = "hybrid";
+    registered_definitions.push_back(gun_input);
+
+    retro_core_option_v2_definition offscreen_reload{};
+    offscreen_reload.key = "sm2_offscreen_reload_shortcut";
+    offscreen_reload.desc = "Off-Screen Reload Shortcut";
+    offscreen_reload.info = "For Virtua Cop, Virtua Cop 2 and The House of the Dead, enables explicit forced off-screen reload inputs on RetroPad East/LB, Mouse Right and Lightgun Reload. A physical Lightgun off-screen Trigger remains an intrinsic cabinet action and always works. Takes effect immediately.";
+    offscreen_reload.category_key = "input";
+    offscreen_reload.values[0] = {"enabled", "Enabled"};
+    offscreen_reload.values[1] = {"disabled", "Disabled"};
+    offscreen_reload.default_value = "enabled";
+    registered_definitions.push_back(offscreen_reload);
+
+    retro_core_option_v2_definition shifter{};
+    shifter.key = "sm2_four_speed_shifter";
+    shifter.desc = "4-Speed Shifter";
+    shifter.info = "Applied only to recognized 4-Speed driving games. H-Gate selects gears from the four diagonal positions of the right analog stick. Standard assigns first through fourth gear to Up, Down, Left and Right. West remains Neutral and L1/R1 remain sequential Shift Down/Up.";
+    shifter.category_key = "input";
+    shifter.values[0] = {"h_gate", "H-Gate Mode"};
+    shifter.values[1] = {"standard", "Standard"};
+    shifter.default_value = "h_gate";
+    registered_definitions.push_back(shifter);
+
+    retro_core_option_v2_definition water_ski_slide_axis{};
+    water_ski_slide_axis.key = "sm2_water_ski_slide_axis";
+    water_ski_slide_axis.desc = "Sega Water Ski Slide Axis Mode";
+    water_ski_slide_axis.info = "Inverted reverses Left Analog X for Slide so X+ produces 00 and X- produces FF. Normal preserves the frontend axis polarity. Applied only to Sega Water Ski. Changes take effect immediately.";
+    water_ski_slide_axis.category_key = "input";
+    water_ski_slide_axis.values[0] = {"inverted", "Inverted"};
+    water_ski_slide_axis.values[1] = {"normal", "Normal"};
+    water_ski_slide_axis.default_value = "inverted";
+    registered_definitions.push_back(water_ski_slide_axis);
+
+    retro_core_option_v2_definition ski_swing_axis{};
+    ski_swing_axis.key = "sm2_ski_super_g_swing_axis";
+    ski_swing_axis.desc = "Sega Ski Super G Swing Axis Mode";
+    ski_swing_axis.info = "Inverted reverses Left Analog X for Swing so X+ produces 00 and X- produces FF. Normal preserves the frontend axis polarity. Applied only to Sega Ski Super G. Changes take effect immediately.";
+    ski_swing_axis.category_key = "input";
+    ski_swing_axis.values[0] = {"inverted", "Inverted"};
+    ski_swing_axis.values[1] = {"normal", "Normal"};
+    ski_swing_axis.default_value = "inverted";
+    registered_definitions.push_back(ski_swing_axis);
+
+    retro_core_option_v2_definition top_skater_curving_axis{};
+    top_skater_curving_axis.key = "sm2_top_skater_curving_axis";
+    top_skater_curving_axis.desc = "Top Skater Curving Axis Mode";
+    top_skater_curving_axis.info = "Inverted reverses Left Analog X for Curving so X+ produces 00 and X- produces FF. Normal preserves the frontend axis polarity. Applied to all Top Skater sets. Changes take effect immediately.";
+    top_skater_curving_axis.category_key = "input";
+    top_skater_curving_axis.values[0] = {"inverted", "Inverted"};
+    top_skater_curving_axis.values[1] = {"normal", "Normal"};
+    top_skater_curving_axis.default_value = "inverted";
+    registered_definitions.push_back(top_skater_curving_axis);
+
+    retro_core_option_v2_definition desert_elevation_control{};
+    desert_elevation_control.key = "sm2_desert_elevation_control";
+    desert_elevation_control.desc = "Desert Tank Elevation Control";
+    desert_elevation_control.info = "Relative treats the centered Left Analog Y axis as a proportional movement control: releasing the stick holds the current turret elevation. Absolute maps the stick position directly to the full elevation range. Applied only to Desert Tank. Changes take effect immediately.";
+    desert_elevation_control.category_key = "input";
+    desert_elevation_control.values[0] = {"relative", "Relative"};
+    desert_elevation_control.values[1] = {"absolute", "Absolute"};
+    desert_elevation_control.default_value = "relative";
+    registered_definitions.push_back(desert_elevation_control);
+
+    retro_core_option_v2_definition desert_elevation_speed{};
+    desert_elevation_speed.key = "sm2_desert_elevation_speed";
+    desert_elevation_speed.desc = "Desert Tank Elevation Speed (Relative Only)";
+    desert_elevation_speed.info = "Adjust the maximum turret elevation movement speed in Relative mode. Stick displacement continues to control the actual speed proportionally. Applied only to Desert Tank. Changes take effect immediately.";
+    desert_elevation_speed.category_key = "input";
+    desert_elevation_speed.values[0] = {"10", "10%"};
+    desert_elevation_speed.values[1] = {"20", "20%"};
+    desert_elevation_speed.values[2] = {"30", "30%"};
+    desert_elevation_speed.values[3] = {"40", "40%"};
+    desert_elevation_speed.values[4] = {"50", "50%"};
+    desert_elevation_speed.values[5] = {"60", "60%"};
+    desert_elevation_speed.values[6] = {"70", "70%"};
+    desert_elevation_speed.values[7] = {"80", "80%"};
+    desert_elevation_speed.values[8] = {"90", "90%"};
+    desert_elevation_speed.values[9] = {"100", "100%"};
+    desert_elevation_speed.values[10] = {"110", "110%"};
+    desert_elevation_speed.values[11] = {"120", "120%"};
+    desert_elevation_speed.values[12] = {"130", "130%"};
+    desert_elevation_speed.values[13] = {"140", "140%"};
+    desert_elevation_speed.values[14] = {"150", "150%"};
+    desert_elevation_speed.values[15] = {"160", "160%"};
+    desert_elevation_speed.values[16] = {"170", "170%"};
+    desert_elevation_speed.values[17] = {"180", "180%"};
+    desert_elevation_speed.values[18] = {"190", "190%"};
+    desert_elevation_speed.values[19] = {"200", "200%"};
+    desert_elevation_speed.default_value = "100";
+    registered_definitions.push_back(desert_elevation_speed);
+
+    retro_core_option_v2_definition desert_elevation_axis{};
+    desert_elevation_axis.key = "sm2_desert_elevation_axis";
+    desert_elevation_axis.desc = "Desert Tank Elevation Axis Mode";
+    desert_elevation_axis.info = "Normal maps Left Analog Y up/down to turret elevation up/down. Inverted reverses the axis in both Relative and Absolute control modes. Applied only to Desert Tank. Changes take effect immediately.";
+    desert_elevation_axis.category_key = "input";
+    desert_elevation_axis.values[0] = {"normal", "Normal"};
+    desert_elevation_axis.values[1] = {"inverted", "Inverted"};
+    desert_elevation_axis.default_value = "normal";
+    registered_definitions.push_back(desert_elevation_axis);
+
+    retro_core_option_v2_definition steering_response{};
+    steering_response.key = "sm2_steering_response";
+    steering_response.desc = "Driving Steering Response";
+    steering_response.info = "Applied only to games recognized as Driving. Select the steering response curve; Progressive and FBNeo Logarithmic reduce sensitivity around the center while retaining the available output range. Changes take effect immediately.";
+    steering_response.category_key = "input";
+    steering_response.values[0] = {"linear", "Linear"};
+    steering_response.values[1] = {"progressive", "Progressive (Fine Center)"};
+    steering_response.values[2] = {"fbneo", "FBNeo Logarithmic (Fine Center)"};
+    steering_response.default_value = "linear";
+    registered_definitions.push_back(steering_response);
+
+    const auto add_output_range = [](const char* key, const char* label, const char* info,
+                                     bool steering) {
+        retro_core_option_v2_definition definition{};
+        definition.key = key;
+        definition.desc = label;
+        definition.info = info;
+        definition.category_key = "input";
+        static constexpr std::pair<const char*, const char*> steering_values[] = {
+            {"50", "50%"}, {"60", "60%"}, {"63", "63% (30-80-D0)"},
+            {"70", "70%"}, {"80", "80%"}, {"90", "90%"},
+            {"100", "100%"}, {"110", "110%"}, {"120", "120%"},
+            {"130", "130%"}, {"140", "140%"}, {"150", "150%"},
+        };
+        static constexpr std::pair<const char*, const char*> pedal_values[] = {
+            {"50", "50%"}, {"60", "60%"}, {"70", "70%"},
+            {"75.3", "75.3% (00-C0)"}, {"80", "80%"}, {"90", "90%"},
+            {"100", "100%"}, {"110", "110%"}, {"120", "120%"},
+            {"130", "130%"}, {"140", "140%"}, {"150", "150%"},
+        };
+        const auto* values = steering ? steering_values : pedal_values;
+        const size_t value_count = steering ? std::size(steering_values)
+                                            : std::size(pedal_values);
+        for (size_t i = 0; i < value_count; ++i) {
+            definition.values[i] = {values[i].first, values[i].second};
+        }
+        definition.default_value = "100";
+        return definition;
+    };
+    registered_definitions.push_back(add_output_range(
+        "sm2_steering_output_range", "Driving Steering Output Range",
+        "Applied only to games recognized as Driving. Scale steering around its center. Values below 100% reduce the emulated wheel range; values above 100% reach full lock with less physical stick travel. The 63% preset maps full travel to the 30-80-D0 ADC range. Changes take effect immediately.", true));
+    registered_definitions.push_back(add_output_range(
+        "sm2_accelerator_output_range", "Driving Accelerator Output Range",
+        "Applied only to games recognized as Driving. Scale the accelerator from its released position. Values below 100% reduce the maximum emulated pedal output; values above 100% reach full output with less physical trigger travel. The 75.3% preset maps full travel to the 00-C0 ADC range. Changes take effect immediately.", false));
+    registered_definitions.push_back(add_output_range(
+        "sm2_brake_output_range", "Driving Brake Output Range",
+        "Applied only to games recognized as Driving. Scale the brake from its released position. Values below 100% reduce the maximum emulated pedal output; values above 100% reach full output with less physical trigger travel. The 75.3% preset maps full travel to the 00-C0 ADC range. Changes take effect immediately.", false));
+
     registered_definitions.push_back({});
 }
 
@@ -130,6 +371,115 @@ inline bool timing_overlay_enabled()
            option.value && std::strcmp(option.value, "enabled") == 0;
 }
 
+inline unsigned crosshair_mask()
+{
+    retro_variable option{"sm2_crosshairs", nullptr};
+    if (!(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option))
+        || !option.value)
+        return 0;
+    if (std::strcmp(option.value, "enabled") == 0) return 3;
+    if (std::strcmp(option.value, "disabled") == 0) return 0;
+    return option.value[0] >= '0' && option.value[0] <= '3' && option.value[1] == '\0'
+        ? static_cast<unsigned>(option.value[0] - '0') : 0;
+}
+
+inline bool initial_nvram_setup_enabled()
+{
+    retro_variable option{"sm2_initial_nvram_setup", nullptr};
+    return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+             && option.value && std::strcmp(option.value, "disabled") == 0);
+}
+
+inline bool four_speed_h_gate()
+{
+    retro_variable option{"sm2_four_speed_shifter", nullptr};
+    return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+             && option.value && std::strcmp(option.value, "standard") == 0);
+}
+
+inline bool ski_super_g_swing_inverted()
+{
+    retro_variable option{"sm2_ski_super_g_swing_axis", nullptr};
+    return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+             && option.value && std::strcmp(option.value, "normal") == 0);
+}
+
+inline bool water_ski_slide_inverted()
+{
+    retro_variable option{"sm2_water_ski_slide_axis", nullptr};
+    return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+             && option.value && std::strcmp(option.value, "normal") == 0);
+}
+
+inline bool top_skater_curving_inverted()
+{
+    retro_variable option{"sm2_top_skater_curving_axis", nullptr};
+    return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+             && option.value && std::strcmp(option.value, "normal") == 0);
+}
+
+inline DrivingAnalogOptions driving_analog_options()
+{
+    const auto value = [](const char* key, const char* fallback) {
+        retro_variable option{key, nullptr};
+        return option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+                && option.value
+            ? option.value : fallback;
+    };
+    DrivingAnalogOptions options;
+    const char* response = value("sm2_steering_response", "linear");
+    options.steering_response = std::strcmp(response, "progressive") == 0
+        ? SteeringResponse::Progressive
+        : std::strcmp(response, "fbneo") == 0
+            ? SteeringResponse::FBNeoLogarithmic : SteeringResponse::Linear;
+    options.steering_output_range = std::atoi(value("sm2_steering_output_range", "100"));
+    const char* accelerator = value("sm2_accelerator_output_range", "100");
+    const char* brake = value("sm2_brake_output_range", "100");
+    options.accelerator_output_range_per_mille =
+        std::strcmp(accelerator, "75.3") == 0 ? 753 : std::atoi(accelerator) * 10;
+    options.brake_output_range_per_mille =
+        std::strcmp(brake, "75.3") == 0 ? 753 : std::atoi(brake) * 10;
+    return options;
+}
+
+inline DesertElevationOptions desert_elevation_options()
+{
+    const auto value = [](const char* key, const char* fallback) {
+        retro_variable option{key, nullptr};
+        return option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+                && option.value
+            ? option.value : fallback;
+    };
+    DesertElevationOptions options;
+    options.control = std::strcmp(value("sm2_desert_elevation_control", "relative"),
+                                  "absolute") == 0
+        ? DesertElevationControl::Absolute : DesertElevationControl::Relative;
+    options.speed_percent = std::atoi(value("sm2_desert_elevation_speed", "100"));
+    options.inverted = std::strcmp(value("sm2_desert_elevation_axis", "normal"),
+                                   "inverted") == 0;
+    return options;
+}
+
+inline GunInputMode gun_input_mode()
+{
+    retro_variable option{"sm2_gun_input", nullptr};
+    if (!(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option))
+        || !option.value)
+        return GunInputMode::Hybrid;
+    if (std::strcmp(option.value, "lightgun") == 0) return GunInputMode::Lightgun;
+    if (std::strcmp(option.value, "mouse") == 0) return GunInputMode::Mouse;
+    if (std::strcmp(option.value, "mouse_analog") == 0) return GunInputMode::MouseAnalog;
+    if (std::strcmp(option.value, "analog") == 0) return GunInputMode::AnalogSticks;
+    return GunInputMode::Hybrid;
+}
+
+inline bool offscreen_reload_shortcut_enabled()
+{
+    retro_variable option{"sm2_offscreen_reload_shortcut", nullptr};
+    return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+             && option.value && std::strcmp(option.value, "disabled") == 0);
+}
+
 inline bool update_option_visibility()
 {
     if (!option_environment) return false;
@@ -141,8 +491,12 @@ inline bool update_option_visibility()
     retro_core_option_display master{"sm2_nvram_settings", master_visible};
     option_environment(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &master);
     for (const auto& definition : registered_definitions) {
-        if (!definition.key || std::strncmp(definition.key, "sm2_nvram_", 11) != 0 ||
-            std::strcmp(definition.key, "sm2_nvram_settings") == 0) continue;
+        if (!definition.key || std::strcmp(definition.key, "sm2_nvram_settings") == 0) continue;
+        if (!std::string_view(definition.key).starts_with("sm2_nvram_")) {
+            retro_core_option_display display{definition.key, true};
+            option_environment(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &display);
+            continue;
+        }
         const std::string prefix = "sm2_nvram_" + option_game + "_";
         retro_core_option_display display{definition.key,
             game_visible && std::strncmp(definition.key, prefix.c_str(), prefix.size()) == 0};
@@ -189,6 +543,7 @@ inline void register_core_options(retro_environment_t env)
     static retro_core_option_v2_category categories[] = {
         {"system", "System", "Machine settings stored in battery-backed memory."},
         {"video", "Video", "Renderer, resolution, A/V cadence and diagnostics."},
+        {"input", "Input", "Controller profiles and input response."},
         {nullptr, nullptr, nullptr}};
     unsigned version = 0;
     if (env(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version) && version >= 2) {

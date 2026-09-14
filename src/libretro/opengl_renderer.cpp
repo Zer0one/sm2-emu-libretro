@@ -118,7 +118,8 @@ struct OpenGlRenderer::Impl {
         tilemaps.abandon_context();
     }
 
-    void render(hw::Model2MachineBase& machine, retro_video_refresh_t video)
+    void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
+                const CrosshairState& crosshairs)
     {
         auto& frame = machine.video();
         const bool render_test = machine.render_test_mode();
@@ -145,6 +146,23 @@ struct OpenGlRenderer::Impl {
         // owns the final fit.  Copy the complete 496x384 raster here instead of
         // applying the standalone window letterbox inside the core as well.
         present.present(496 * scale, 384 * scale, static_cast<u32>(target), false);
+        const CrosshairGeometry geometry = crosshair_geometry(
+            crosshairs, 496 * scale, 384 * scale);
+        if (geometry.count) {
+            render::gl::Enable(GL_SCISSOR_TEST);
+            render::gl::ColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+            for (std::size_t i = 0; i < geometry.count; ++i) {
+                const auto& rect = geometry.rectangles[i];
+                const float red = static_cast<float>((rect.colour >> 16) & 0xffu) / 255.0f;
+                const float green = static_cast<float>((rect.colour >> 8) & 0xffu) / 255.0f;
+                const float blue = static_cast<float>(rect.colour & 0xffu) / 255.0f;
+                render::gl::Scissor(rect.x, static_cast<int>(384 * scale) - rect.y - rect.height,
+                                    rect.width, rect.height);
+                render::gl::ClearColor(red, green, blue, 1.0f);
+                render::gl::Clear(GL_COLOR_BUFFER_BIT);
+            }
+            render::gl::Disable(GL_SCISSOR_TEST);
+        }
         if (video) video(RETRO_HW_FRAME_BUFFER_VALID, 496 * scale, 384 * scale, 0);
     }
 };
@@ -156,8 +174,9 @@ void OpenGlRenderer::init(unsigned scale, bool es, retro_log_printf_t log)
     impl->init(scale, es, log ? log : gl_logger);
 }
 void OpenGlRenderer::abandon_context() { impl->abandon_context(); }
-void OpenGlRenderer::render(hw::Model2MachineBase& machine, retro_video_refresh_t video)
+void OpenGlRenderer::render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
+                            const CrosshairState& crosshairs)
 {
-    impl->render(machine, video);
+    impl->render(machine, video, crosshairs);
 }
 }

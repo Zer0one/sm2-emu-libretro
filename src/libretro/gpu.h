@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 #include "libretro.h"
+#include "crosshair.h"
 #include <memory>
 namespace sm2::hw { class Model2MachineBase; }
 namespace sm2::libretro {
@@ -12,7 +13,8 @@ public:
     VulkanRenderer();
     ~VulkanRenderer();
     void init(retro_environment_t env, unsigned scale, retro_log_printf_t log);
-    void render(hw::Model2MachineBase& machine, retro_video_refresh_t video);
+    void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
+                const CrosshairState& crosshairs);
 private:
     struct Impl;
     std::unique_ptr<Impl> impl;
@@ -27,7 +29,8 @@ public:
     ~OpenGlRenderer();
     void init(unsigned scale, bool es, retro_log_printf_t log);
     void abandon_context();
-    void render(hw::Model2MachineBase& machine, retro_video_refresh_t video);
+    void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
+                const CrosshairState& crosshairs);
 private:
     struct Impl;
     std::unique_ptr<Impl> impl;

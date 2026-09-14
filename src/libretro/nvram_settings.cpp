@@ -210,7 +210,13 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
         return std::equal(eeprom.begin(), eeprom.begin() + 8, "SEGAGBNY") &&
                load_u16(eeprom, 0x08) == gunblade_crc(eeprom.subspan(0x10, 0x4a)) &&
                load_u16(eeprom, 0x10) == 0x0058;
-    if (game == "fvipers" || game == "vf2")
+    if (game == "fvipers")
+        return backup[0x3306] == 0x12 && backup[0x3307] == 0
+            && std::equal(backup.begin() + 0x3308, backup.begin() + 0x3318,
+                          "VIRTUA FIGHTER 2")
+            && static_cast<u16>(backup[0x3302] | (static_cast<u16>(backup[0x3303]) << 8)) ==
+                crc16_ccitt(backup.subspan(0x3340, 29));
+    if (game == "vf2")
         return named_layout_valid(backup, "VIRTUA FIGHTER 2", 29) &&
                static_cast<u16>(backup[0x3302] | (static_cast<u16>(backup[0x3303]) << 8)) ==
                    crc16_ccitt(backup.subspan(0x3340, 29));
@@ -372,6 +378,37 @@ std::span<const Option> options_for_game(std::string_view game)
     const auto last = std::find_if(first, std::end(kOptions),
                                    [game](const Option& option) { return option.game != game; });
     return {first, static_cast<size_t>(last - first)};
+}
+
+std::vector<std::string> initial_values(std::string_view game)
+{
+    const auto options = options_for_game(game);
+    std::vector<std::string> selected(options.size());
+    static constexpr std::pair<std::string_view, std::string_view> offline[] = {
+        {"daytona", "link_id"},
+        {"manxtt", "link_type"},
+        {"overrev", "link_max"},
+        {"sgt24h", "link_type"},
+        {"sgt24h", "link_max"},
+        {"srallyc", "link_type"},
+        {"stcc", "link_type"},
+        {"von", "network_link_attribute"},
+    };
+    static constexpr std::pair<std::string_view, std::string_view> initial_defaults[] = {
+        {"daytona", "cabinet"},
+        {"manxtt", "cabinet_type"},
+    };
+    for (size_t i = 0; i < options.size(); ++i) {
+        const std::string_view suffix = options[i].suffix;
+        const bool country = suffix == "country" || suffix == "nation";
+        const bool safe_offline = std::find(std::begin(offline), std::end(offline),
+            std::pair{game, suffix}) != std::end(offline);
+        const bool title_default = std::find(std::begin(initial_defaults),
+            std::end(initial_defaults), std::pair{game, suffix}) != std::end(initial_defaults);
+        if (country || safe_offline || title_default)
+            selected[i] = options[i].default_value;
+    }
+    return selected;
 }
 
 ApplyResult apply(std::string_view game, std::span<u8> backup,

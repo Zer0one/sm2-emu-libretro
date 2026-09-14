@@ -2,6 +2,8 @@
 // Libretro owns presentation and pacing; the upstream machine owns emulation.
 #include "libretro.h"
 #include "core_options.h"
+#include "crosshair.h"
+#include "initial_nvram.h"
 #include "input.h"
 #include "save_ram.h"
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
@@ -45,6 +47,8 @@ enum class RendererApi { Software, Vulkan, OpenGL, OpenGLES };
 
 struct Content {
     rom::GameSpec game;
+    libretro::ControllerConfiguration controllers;
+    libretro::InputRuntime input_runtime;
     std::unique_ptr<hw::Model2MachineBase> machine;
     hw::SoftRenderer renderer;
     std::vector<u32> frame = std::vector<u32>(width * height);
@@ -58,8 +62,10 @@ struct Content {
     bool hardware_frame_valid = false;
     unsigned scale = 1;
     bool save_ram_initialized = false;
+    bool native_nvram_available = false;
     bool option_pending = false;
     unsigned option_wait_frames = 0;
+    std::string nvram_game;
     std::vector<std::string> nvram_values;
     libretro::AVTimingMode timing = libretro::AVTimingMode::Native;
     double cadence_accumulator = 0;
@@ -161,6 +167,19 @@ void export_frontend_save(Content& c)
                               c.machine->settings_eeprom(), save_ram);
 }
 
+bool native_nvram_available(const std::filesystem::path& directory,
+                            std::string_view game)
+{
+    const auto valid_size = [](const std::filesystem::path& path, uintmax_t expected) {
+        std::error_code error;
+        return std::filesystem::is_regular_file(path, error)
+            && !error && std::filesystem::file_size(path, error) == expected && !error;
+    };
+    const std::string base(game);
+    return valid_size(directory / (base + ".nv"), libretro::kBackupRamSize)
+        || valid_size(directory / (base + ".eeprom"), libretro::kEepromSize);
+}
+
 void initialize_frontend_save(Content& c)
 {
     const auto result = libretro::import_save_ram(c.game.name, save_ram,
@@ -171,10 +190,35 @@ void initialize_frontend_save(Content& c)
         c.machine->sound_board().clear_pending_samples();
         c.audio.clear();
         message(RETRO_LOG_INFO, "Loaded frontend-managed save RAM");
-    } else if (result == libretro::SaveImportResult::Invalid) {
-        message(RETRO_LOG_WARN, "Ignored invalid or mismatched frontend save RAM; using native NVRAM import");
     } else {
-        message(RETRO_LOG_INFO, "Initialized frontend save RAM from native NVRAM or machine defaults");
+        if (result == libretro::SaveImportResult::Invalid)
+            message(RETRO_LOG_WARN, "Ignored invalid or mismatched frontend save RAM");
+        bool seeded = false;
+        if (!c.native_nvram_available && libretro::initial_nvram_setup_enabled()) {
+            const std::string_view seed_game = libretro::initial_nvram::has_template(c.game.name)
+                ? std::string_view(c.game.name) : std::string_view(c.game.parent);
+            const auto seeded_result = libretro::initial_nvram::seed(
+                seed_game, c.machine->backup_ram(), c.machine->settings_eeprom());
+            if (seeded_result == libretro::initial_nvram::SeedResult::InvalidTemplate)
+                throw std::runtime_error("Invalid embedded initial NVRAM template");
+            if (seeded_result == libretro::initial_nvram::SeedResult::Loaded) {
+                if (!c.nvram_game.empty()) {
+                    const auto initial = libretro::nvram::initial_values(c.nvram_game);
+                    const auto applied = libretro::nvram::apply(
+                        c.nvram_game, c.machine->backup_ram(), c.machine->settings_eeprom(), initial);
+                    if (applied == libretro::nvram::ApplyResult::Unsupported
+                        || applied == libretro::nvram::ApplyResult::LayoutNotReady)
+                        throw std::runtime_error("Embedded initial NVRAM template has an unsupported layout");
+                }
+                c.machine->reset();
+                c.machine->sound_board().clear_pending_samples();
+                c.audio.clear();
+                seeded = true;
+                message(RETRO_LOG_INFO, "Applied automatic initial NVRAM setup before the first frame");
+            }
+        }
+        if (!seeded)
+            message(RETRO_LOG_INFO, "Initialized frontend save RAM from native NVRAM or machine defaults");
     }
     c.save_ram_initialized = true;
     export_frontend_save(c);
@@ -183,7 +227,7 @@ void initialize_frontend_save(Content& c)
 void apply_pending_option(Content& c)
 {
     if (!c.option_pending) return;
-    const auto result = libretro::nvram::apply(c.game.name, c.machine->backup_ram(),
+    const auto result = libretro::nvram::apply(c.nvram_game, c.machine->backup_ram(),
                                                 c.machine->settings_eeprom(),
                                                 c.nvram_values);
     if (result == libretro::nvram::ApplyResult::LayoutNotReady) return;
@@ -369,7 +413,20 @@ void unload()
     if (environment) {
         static const retro_input_descriptor empty[] = {{}};
         environment(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, const_cast<retro_input_descriptor*>(empty));
+        static const retro_controller_info no_controllers[] = {{nullptr, 0}};
+        environment(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, const_cast<retro_controller_info*>(no_controllers));
     }
+}
+
+void publish_controls()
+{
+    if (!content || !environment) return;
+    const auto gun_mode = libretro::gun_input_mode();
+    libretro::configure_controllers(content->game, content->controllers, gun_mode);
+    content->input_descriptors = libretro::descriptors(
+        content->game, devices, gun_mode, libretro::offscreen_reload_shortcut_enabled());
+    environment(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, content->controllers.ports.data());
+    environment(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, content->input_descriptors.data());
 }
 size_t send_audio(Content& c, size_t requested_frames = static_cast<size_t>(-1))
 {
@@ -436,7 +493,9 @@ void retro_get_system_av_info(retro_system_av_info* info)
 }
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
-    if (port < devices.size()) devices[port] = device & RETRO_DEVICE_MASK;
+    if (port >= devices.size()) return;
+    devices[port] = device;
+    publish_controls();
 }
 bool retro_load_game(const retro_game_info* game)
 {
@@ -448,13 +507,17 @@ bool retro_load_game(const retro_game_info* game)
         if (!environment || !environment(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &format))
             throw std::runtime_error("Frontend does not support XRGB8888 video");
         const auto db_path = directory(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY) / "sm2-emu" / "games.xml";
-        const auto save_root = directory(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY) / "sm2-emu";
+        // RetroArch may already return a core- or content-specific save path.
+        // Use it directly, as the frontend owns the .srm location. Optional
+        // standalone .nv/.eeprom files are imported from the same directory.
+        const auto save_path = directory(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY);
         rom::GameDatabase database;
         if (!database.load(db_path.string()))
             throw std::runtime_error("Cannot load system/sm2-emu/games.xml");
         auto loaded = rom::RomLoader::load(database, game->path);
         if (!loaded) throw std::runtime_error("ROM loading failed; see missing-file/CRC details in log");
-        // The database name becomes a directory component, never an arbitrary path.
+        // The database name becomes a native-save filename and save-container ID,
+        // never an arbitrary path.
         if (loaded->game.name.empty() || loaded->game.name == "." || loaded->game.name == ".."
             || loaded->game.name.find_first_of("/\\") != std::string::npos)
             throw std::runtime_error("Invalid ROM set name in database");
@@ -462,8 +525,7 @@ bool retro_load_game(const retro_game_info* game)
         next->game = loaded->game;
         next->machine = hw::create_machine(next->game, std::move(loaded->roms));
         if (!next->machine) throw std::runtime_error("Machine initialization failed");
-        const auto save_path = save_root / next->game.name;
-        std::filesystem::create_directories(save_path);
+        next->native_nvram_available = native_nvram_available(save_path, next->game.name);
         next->machine->set_nvram_directory(save_path.string());
         next->machine->load_nvram();
         next->machine->reset();
@@ -476,18 +538,26 @@ bool retro_load_game(const retro_game_info* game)
         next->cadence_accumulator = 60.0 - next->native_fps;
         next->timing_overlay = libretro::timing_overlay_enabled();
         environment(RETRO_ENVIRONMENT_GET_CAN_DUPE, &next->can_dupe);
-        next->nvram_values = libretro::selected_nvram_values(next->game.name);
+        next->nvram_game = !libretro::nvram::options_for_game(next->game.name).empty()
+            ? next->game.name : next->game.parent;
+        next->nvram_values = libretro::selected_nvram_values(next->nvram_game);
         next->option_pending = !next->nvram_values.empty() && libretro::nvram_settings_enabled();
-        next->input_descriptors = libretro::descriptors(next->game);
         next->audio.reserve(static_cast<size_t>(next->rate) * 2);
         content = std::move(next);
-        libretro::set_option_game(content->game.name);
+        libretro::set_option_game(content->nvram_game);
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
         select_renderer(*content);
 #endif
-        environment(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, content->input_descriptors.data());
+        devices.fill(RETRO_DEVICE_JOYPAD);
+        publish_controls();
         if (!libretro::digital_profile(content->game))
             message(RETRO_LOG_WARN, "This cabinet's gameplay controls are not implemented yet; Coin/Start/Test/Service only.");
+        else {
+            char controls[192];
+            std::snprintf(controls, sizeof(controls), "Input profile: %s",
+                          libretro::profile_name(libretro::recognize_profile(content->game)));
+            message(RETRO_LOG_INFO, controls);
+        }
         char report[256];
         std::snprintf(report, sizeof(report), "Loaded %s: %ux%u, %.9f Hz, %u Hz stereo",
                       content->game.name.c_str(), width, height, content->fps, content->rate);
@@ -516,6 +586,7 @@ void retro_reset()
         content->machine->sound_board().clear_pending_samples();
         content->audio.clear();
         content->cadence_accumulator = 60.0 - content->native_fps;
+        content->input_runtime = {};
         content->audio_frame_remainder = 0;
         content->audio_frames_due = 0;
         content->have_previous_run_start = false;
@@ -549,6 +620,7 @@ void retro_run()
             if (!overlay) clear_timing_overlay(*content);
             if (overlay && !content->timing_overlay) reset_timing_measurements(*content);
             content->timing_overlay = overlay;
+            publish_controls();
         }
         if (!content->save_ram_initialized) initialize_frontend_save(*content);
         apply_pending_option(*content);
@@ -560,7 +632,15 @@ void retro_run()
             if (advance_machine) content->cadence_accumulator -= 60.0;
         }
         if (advance_machine) {
-            libretro::poll_input(content->machine->inputs(), content->game, devices, input_state_cb);
+            libretro::poll_input(content->machine->inputs(), content->game, devices,
+                                 content->input_runtime, libretro::four_speed_h_gate(),
+                                 input_state_cb, libretro::gun_input_mode(),
+                                 libretro::offscreen_reload_shortcut_enabled(),
+                                 libretro::driving_analog_options(),
+                                 libretro::desert_elevation_options(),
+                                 libretro::water_ski_slide_inverted(),
+                                 libretro::ski_super_g_swing_inverted(),
+                                 libretro::top_skater_curving_inverted());
             const auto machine_start = std::chrono::steady_clock::now();
             content->machine->run_frame();
             const auto machine_end = std::chrono::steady_clock::now();
@@ -583,14 +663,18 @@ void retro_run()
                 if (content->renderer_api == RendererApi::Vulkan) {
 #ifdef SM2_LIBRETRO_VULKAN
                     if (!content->gpu) throw std::runtime_error("Frontend Vulkan context is not ready");
-                    content->gpu->render(*content->machine, video_cb);
+                    content->gpu->render(*content->machine, video_cb,
+                        libretro::crosshair_state(content->game, content->input_runtime,
+                                                  libretro::crosshair_mask()));
 #else
                     throw std::runtime_error("This core was built without Vulkan support");
 #endif
                 } else {
 #ifdef SM2_LIBRETRO_OPENGL
                     if (!content->gl) throw std::runtime_error("Frontend OpenGL context is not ready");
-                    content->gl->render(*content->machine, video_cb);
+                    content->gl->render(*content->machine, video_cb,
+                        libretro::crosshair_state(content->game, content->input_runtime,
+                                                  libretro::crosshair_mask()));
 #else
                     throw std::runtime_error("This core was built without OpenGL support");
 #endif
@@ -607,6 +691,9 @@ void retro_run()
                 // Upstream packs R in bits 0..7. Libretro XRGB8888 packs R in 16..23.
                 for (auto& pixel : content->frame)
                     pixel = ((pixel & 0xffu) << 16) | (pixel & 0xff00u) | ((pixel >> 16) & 0xffu);
+                libretro::draw_crosshairs(content->frame, width, height,
+                    libretro::crosshair_state(content->game, content->input_runtime,
+                                              libretro::crosshair_mask()));
             }
             if (video_cb) {
                 if (!advance_machine && content->can_dupe) video_cb(nullptr, width, height, 0);
