@@ -147,6 +147,7 @@ in `GPU_REPORT.json`.
 | OpenGL, 60 Hz con overlay e perdita contesto | 600 callback, 575 invii GPU, 25 duplicazioni, 440814 frame audio e 9 aggiornamenti overlay |
 | OpenGL, scala 4× e tre cicli load/reset/unload | Acquisizione 1984 × 1536 e tutti i cicli superati |
 | RetroArch 1.18 Linux arm64, driver `gl`, Mesa llvmpipe | Fallback GLES3 legacy negoziato, contesto ES 3.2 pronto, 2300 frame, screenshot e SRAM salvati; il controllo finale del runner non accetta la registrazione Matroska di questa vecchia versione |
+| Virtua Cop 2, crosshair P1 in RetroArch macOS | Software e Vulkan hanno completato 2300 callback, gameplay, acquisizione GPU, audio e Save RAM; la crosshair vettoriale segue il cursore e il pass Vulkan resta stabile durante gli shortcut off-screen. Il percorso OpenGL è compilato nello stesso artefatto e resta da osservare in un frontend OpenGL 4.3/ES 3.1 reale. |
 
 Per ripetere una prova GPU con immagini native:
 

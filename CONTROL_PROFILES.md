@@ -1,7 +1,7 @@
 # Catalogo proposto dei profili Libretro — punto 3.1
 
-Stato: analisi completata, catalogo proposto per revisione. Nessuna nuova
-mappatura o opzione è stata implementata in questo passaggio.
+Stato: catalogo revisionato; i profili implementati e verificati sono descritti
+nella roadmap e in `LIBRETRO.md`.
 
 ## Metodo e confini
 
@@ -43,7 +43,7 @@ seguono l'azione, non il numero del bit.
 | Virtua Striker | Virtua Striker 2 e revisioni | Joystick (Standard): Soccer | Stesse azioni Short Pass, Long Pass, Shoot; ordine dei bit Model 2 diverso dall'ordine logico del profilo |
 | Virtual On | Virtual-On Oratorio Tangram | Joystick (Twin) | Stessi due stick per un giocatore, grilletti e pulsanti superiori; conservare il nome Dash del Model 2 e indicare Turbo come equivalente Supermodel |
 | Daytona USA | Daytona USA 2 / Power Edition | Driving: 4-Speed + VR4 | Stessi quattro rapporti e quattro pulsanti VR; cablaggio e calibrazione restano Model 2 |
-| Sega Rally Championship | Sega Rally 2 | Driving: 4-Speed + VR1 + Handbrake, obiettivo da verificare | Cambio e VR1 definiti; MAME dichiara Hand Brake su IN2, assente nei metadati SM2. Fino alla verifica usare la variante Driving: 4-Speed + VR1, senza pubblicizzare Handbrake |
+| Sega Rally Championship | Sega Rally 2 | Driving: 4-Speed + VR1 + Handbrake | Cambio e VR1 definiti; Hand Brake usa l'ingresso analogico IN2, da 0x00 rilasciato a 0xFF premuto |
 | Gunblade NY | L.A. Machineguns | Gun | Famiglia e modalità delle sorgenti condivise; Gunblade dichiara un trigger per giocatore, Supermodel espone Left/Right Shot. Mantenere la variante di azioni del gioco, senza inventare un secondo trigger |
 
 Il confronto non è limitato al nome della serie: vale per ogni equivalenza
@@ -52,31 +52,38 @@ esempio, Ski Super G a Ski Champ o le motociclette al profilo Harley-Davidson.
 
 ### Convenzioni da mantenere nell'implementazione successiva
 
-- **Fighting:** Punch su South, Kick su East, Guard su West. VF2/Fighting
-  Vipers usano IN1/IN2 con maschere 0x01/0x02/0x04; l'alias LB del terzo
-  comando già presente nel core resta Guard. North/Escape non è un'azione VF2.
+- **Fighting:** Kick su South, Punch su East, Guard su West. VF2/Fighting
+  Vipers usano IN1/IN2 con maschere 0x01/0x02/0x04. North/Escape non è
+  un'azione VF2.
 - **Soccer:** Short Pass su South, Long Pass su East, Shoot su West. Su Model 2
   corrispondono rispettivamente a **0x04, 0x01, 0x02** in IN1/IN2. Il driver
   MAME segnala che il menu Service mostra l'ordine standard 1-2-3 mentre in
-  partita è 2-3-1: la prova deve verificare le azioni in partita. L'alias LB
-  seguirà Shoot, terza azione logica, anziché conservare erroneamente bit 0x04.
+  partita è 2-3-1: la prova deve verificare le azioni in partita.
 - **Twin:** stick sinistro/destro sui corrispondenti assi, Left/Right Shot
   Trigger su L2/R2, Left/Right Dash (Turbo) su L/R. Il cablaggio IN1/IN2 del
   Model 2 descrive le due metà dello stesso giocatore.
 - **Driving:** Steering sullo stick sinistro X, Brake su L2, Accelerator su R2,
   Shift Down/Up su L/R; per quattro marce, stesso H-Gate/Standard sullo stick
-  destro e Neutral su West. Daytona mantiene VR1 Red/Up, VR2 Blue/Down,
-  VR3 Yellow/Left, VR4 Green/Right. Sega Rally usa VR1 su Up; riservare
-  Handbrake su South soltanto dopo verifica del percorso SM2.
-- **Gun:** riusare il nome di famiglia `Gun`; `Gun (Lightgun)` e `Gun (Mouse)`
-  indicano sorgenti selezionate come in Supermodel. L'interfaccia seriale o
-  posizionale del cabinet rimane una proprietà interna. South/Trigger è lo
-  sparo primario; East può ospitare un'azione secondaria solo se prevista dal
-  gioco. Ricarica e comportamento fuori schermo richiedono verifica per titolo.
+  destro e Neutral su West. Daytona usa VR1 Red/Down, VR2 Blue/Left,
+  VR3 Yellow/Right, VR4 Green/Up. Sega Rally usa VR1 su Up e porta
+  `Handbrake (Analog)` su South, traducendolo negli estremi 0x00/0xFF di IN2.
+- **Gun:** riusare il nome di famiglia `Gun`; `Gun (Lightgun)`, `Gun (Mouse)`,
+  `Gun (Mouse + Analog Stick)` e `Gun (Analog Sticks)` indicano la sorgente
+  selezionata come in Supermodel. Tutti i sei parent usano
+  coordinate assolute. Virtua Cop, Virtua Cop 2 e House of the Dead le ricevono
+  dalla lightgun seriale RS-422 a 10 bit e ricaricano sparando fuori dall'area
+  calibrata: South/RB sono `Shot` ed East/LB sono `Reload Offscreen`. Gunblade NY, Rail
+  Chase 2 e Behind Enemy Lines usano invece assi posizionali a 8 bit che non
+  ritornano al centro e non hanno reload fuori schermo; BEL assegna `Missile`
+  a East/LB. L'interfaccia del cabinet resta una proprietà interna del profilo.
 
-Sono vincoli di progetto per i prossimi sottopunti, non nuove mappature già
-installate. In particolare la mappatura generica della milestone 2 non
-applica ancora la permutazione Soccer.
+La famiglia Gun è implementata per tutti i dieci set parent/clone. La Core
+Option `Gun Input Mode` espone Standard, Lightgun, Mouse + Analog Stick, Mouse e
+Analog Stick. La traduzione mantiene separati il percorso seriale e quello
+posizionale; i descrittori mostrano `Reload Offscreen` soltanto per i tre parent
+che lo supportano e `Missile` soltanto per BEL. Per i primi, `Off-Screen Reload
+Shortcut` controlla i binding RetroPad East/LB, Mouse destro e Lightgun Reload ed è
+attiva per default; il grilletto fisicamente fuori schermo resta indipendente.
 
 ### Evidenza e limiti del confronto
 
@@ -103,13 +110,16 @@ separatamente l'eventuale integrazione dei metadati upstream.
 | --- | --- | --- | ---: |
 | Joystick (Standard): Fighting | Famiglie vf2/fvipers + firma digitale attesa; azioni verificate Punch/Kick/Guard | VF2, Fighting Vipers | 7 |
 | Joystick (Standard): Soccer | Famiglia vstriker + firma digitale attesa; traduzione per azione | Virtua Striker | 2 |
-| Joystick (Standard): varianti da specificare | Rimanenti joystick digitali + buttons3; nomi delle azioni da verificare prima di assegnare Fighting o altre varianti | Last Bronx, Dynamite Cop, Dead or Alive, Zero Gunner | 22 |
+| Joystick (Standard): varianti da specificare | Rimanenti joystick digitali + buttons3; nomi delle azioni da verificare prima di assegnare Fighting o altre varianti | Last Bronx, Dynamite Cop, Dead or Alive, Zero Gunner | 21 |
+| Joystick (Standard): Baseball (Hanguk Pro Yagu 98) | Layout digitale VF2 a due giocatori; Button 1/2/3, senza assi Bat Swing | Hanguk Pro Yagu 98 | 1 |
 | Joystick (Twin) | Eccezione esplicita Virtual On: due stick dello stesso giocatore | Virtual On e revisioni | 4 |
 | Joystick (Analog): Sky Target | stickx/sticky; joystick centrato, comandi di azione digitali | Sky Target | 1 |
 | Driving: 4-Speed + VR4 | steer/accel/brake + gearbox, famiglia daytona con quattro VR verificati | Daytona USA | 4 |
-| Driving: 4-Speed + VR1 | steer/accel/brake + gearbox, famiglia srallyc; Handbrake da verificare per raggiungere il profilo del seguito | Sega Rally | 5 |
-| Driving: Sequential | steer/accel/brake + shift_buttons | Indy 500, Over Rev, Super GT 24h, Sega Touring Car | 11 |
-| Driving: Motorcycle / Sequential | bank/throttle/brake + shift_buttons; variante dei comandi del cabinet da verificare | Manx TT, Motor Raid | 5 |
+| Driving: 4-Speed + VR1 + Handbrake | steer/accel/brake + gearbox, famiglia srallyc; Handbrake analogico su IN2 | Sega Rally | 5 |
+| Driving: Sequential + VR2 | steer/accel/brake + shift_buttons; due View | Indy 500, Over Rev, Sega Touring Car | 10 |
+| Driving: Sequential + VR1 | steer/accel/brake + shift_buttons; un View | Super GT 24h | 1 |
+| Driving: Sequential (Manx TT Superbike) | bank/throttle/brake + shift_buttons; Start condiviso con VR | Manx TT | 3 |
+| Driving: Sequential (Motor Raid) | bank/throttle/brake + shift_buttons; azioni specifiche Motor Raid | Motor Raid | 2 |
 | Gun — seriale lightgun | Interfaccia seriale lightgun, coordinate a 10 bit | Virtua Cop 1/2, The House of the Dead | 6 |
 | Gun — posizionale, Shot | Assi gun1/gun2 sul mux analogico; pulsanti secondo il gioco | Gunblade NY, Rail Chase 2 | 3 |
 | Gun — posizionale, Shot + Missile | Stessi assi, gun_missile abilitato | Behind Enemy Lines | 1 |
@@ -118,23 +128,25 @@ separatamente l'eventuale integrazione dei metadati upstream.
 | Special: Ski Super G | swing/inclining | Sega Ski Super G | 1 |
 | Special: Top Skater | curving/slide e comandi digitali particolari | Top Skater e revisioni | 4 |
 | Special: Wave Runner | handle/roll/throttle/pitch; non trattarlo come volante a tre assi | Wave Runner | 1 |
-| Joystick (1P): firma generica da verificare | common + joystick1 + buttons3, nessun asse dichiarato; descrizione del cabinet insufficiente | Air Walkers, Desert Tank, Royal Ascot II | 3 |
+| Joystick (Standard): Basketball (Air Walkers) | common + joystick1 + buttons3; P1/P2 implementati, multiplexing P3/P4 rinviato | Air Walkers | 1 |
+| Joystick (Standard): Horse Racing (Royal Ascot II) | common + joystick1 + buttons3; migliore mappatura consentita dai metadata correnti | Royal Ascot II | 1 |
+| Joystick (Analog): Desert Tank + VR3 | Scheda Model 1 I/O già emulata; steer/accel/elevation e cablaggio digitale verificati da MAME | Desert Tank | 1 |
 
-Totale: **83 set in 18 gruppi proposti**, incluso il gruppo da verificare.
+Totale: **83 set in 23 raggruppamenti di lavoro**.
 La divisione tra famiglie e varianti evita di creare un profilo completo per
 ogni revisione ROM. I gruppi Special restano separati perché gli assi hanno
 significati fisici diversi.
 
 I gruppi Gun distinguono qui le interfacce e le azioni per la pianificazione:
 la famiglia esposta resta `Gun`, con le varianti di sorgente di Supermodel.
-I 18 gruppi non sono quindi 18 nuove famiglie indipendenti nel frontend.
+I 23 raggruppamenti non sono quindi 23 nuove famiglie indipendenti nel frontend.
 
 Dentro Joystick (Standard), Fighting e Soccer sono ora espliciti per i set
 verificati; completare le altre varianti per azione, combattimento, sparatutto
 e baseball digitale senza dedurle dal solo genere del gioco.
 I soli flag `buttons3` non permettono di ricavare nomi come Punch, Kick o Pass:
-le etichette effettive richiedono verifica del titolo. `hpyagu98` è digitale
-nei metadati attuali, distinto dai due Dynamite Baseball con assi bat1/bat2.
+le etichette effettive richiedono verifica del titolo. `hpyagu98` usa il profilo
+digitale approvato, distinto dai due Dynamite Baseball con assi bat1/bat2.
 
 ## Ambiguità da risolvere prima delle mappature
 
@@ -158,12 +170,12 @@ nei metadati attuali, distinto dai due Dynamite Baseball con assi bat1/bat2.
    canale, polarità e scala.
 5. **Continuità con Supermodel:** i flag SM2 non distinguono Fighting e Soccer.
    Servono associazioni semantiche minime per le famiglie verificate, con
-   firma attesa e prova delle azioni. Sega Rally ha inoltre una lacuna Handbrake:
-   non trasformare l'assenza del metadato in una dichiarazione che il comando
-   non esiste, né in supporto implementato.
+   firma attesa e prova delle azioni. Per Sega Rally il riconoscitore esplicito
+   completa la firma con il freno a mano analogico documentato su IN2.
 6. **Copertura:** il riconoscimento del cabinet non dimostra che il titolo
-   sia giocabile. I tre casi generici 1P e i cabinet speciali richiedono
-   verifica dedicata; il fallback deve essere esplicito e conservativo.
+   sia giocabile. Air Walkers espone P1/P2 attraverso i due ingressi già
+   supportati; P3/P4 restano in attesa del multiplexing. Il fallback deve essere
+   esplicito e conservativo.
 
 ## Regole per il successivo riconoscitore
 
@@ -196,17 +208,22 @@ possono mantenere esplicitamente un set nel gruppo da verificare.
 
 - **Joystick (Standard): Fighting (7):** `vf2`, `vf2b`, `vf2a`, `vf2o`, `fvipers`, `fvipersa`, `fvipersb`.
 - **Joystick (Standard): Soccer (2):** `vstriker`, `vstrikero`.
-- **Joystick (Standard): varianti da specificare (22):** `zeroguna`, `zerogunaj`, `doaa`, `doaab`, `doa`, `doaae`, `doab`, `dynamcop`, `dynamcopb`, `dynamcopc`, `dyndeka2`, `dyndeka2b`, `hpyagu98`, `lastbrnx`, `lastbrnxj`, `lastbrnxu`, `pltkids`, `pltkidsa`, `schamp`, `sfight`, `zerogun`, `zerogunj`.
+- **Joystick (Standard): varianti da specificare (21):** `zeroguna`, `zerogunaj`, `doaa`, `doaab`, `doa`, `doaae`, `doab`, `dynamcop`, `dynamcopb`, `dynamcopc`, `dyndeka2`, `dyndeka2b`, `lastbrnx`, `lastbrnxj`, `lastbrnxu`, `pltkids`, `pltkidsa`, `schamp`, `sfight`, `zerogun`, `zerogunj`.
+- **Joystick (Standard): Baseball (Hanguk Pro Yagu 98) (1):** `hpyagu98`.
 - **Joystick (Analog): Sky Target (1):** `skytargt`.
 - **Gun — seriale lightgun (6):** `vcop2`, `hotd`, `hotdo`, `hotdp`, `vcop`, `vcopa`.
-- **Joystick (1P): firma generica da verificare (3):** `airwlkrs`, `desert`, `rascot2`.
+- **Joystick (Standard): Basketball (Air Walkers) (1):** `airwlkrs`.
+- **Joystick (Standard): Horse Racing (Royal Ascot II) (1):** `rascot2`.
+- **Joystick (Analog): Desert Tank + VR3 (1):** `desert`.
 - **Gun — posizionale, Shot + Missile (1):** `bel`.
 - **Driving: 4-Speed + VR4 (4):** `daytona`, `daytona93`, `daytonas`, `daytonase`.
 - **Driving: 4-Speed + VR1 (5):** `srallyc`, `srallycb`, `srallycc`, `srallycdx`, `srallycdxa`.
 - **Special: Baseball (2):** `dynabb`, `dynabb97`.
 - **Gun — posizionale, Shot (3):** `gunblade`, `rchase2`, `rchase2a`.
-- **Driving: Sequential (11):** `indy500`, `indy500d`, `indy500to`, `overrev`, `overrevb`, `overrevba`, `sgt24h`, `stcc`, `stcca`, `stccb`, `stcco`.
-- **Driving: Motorcycle / Sequential (5):** `manxtt`, `manxttc`, `manxttdx`, `motoraid`, `motoraiddx`.
+- **Driving: Sequential + VR2 (10):** `indy500`, `indy500d`, `indy500to`, `overrev`, `overrevb`, `overrevba`, `stcc`, `stcca`, `stccb`, `stcco`.
+- **Driving: Sequential + VR1 (1):** `sgt24h`.
+- **Driving: Sequential (Manx TT Superbike) (3):** `manxtt`, `manxttc`, `manxttdx`.
+- **Driving: Sequential (Motor Raid) (2):** `motoraid`, `motoraiddx`.
 - **Special: Water Ski (1):** `segawski`.
 - **Special: Ski Super G (1):** `skisuprg`.
 - **Special: Top Skater (4):** `topskatr`, `topskatrj`, `topskatru`, `topskatruo`.

@@ -76,12 +76,12 @@ Il primo definisce il catalogo; le mappature si implementano dopo la sua revisio
   del profilo, documentando differenze reali e lacune dei metadati.
 - Separare ciò che i metadati determinano dalle eccezioni o lacune da verificare.
 - Consegnare [CONTROL_PROFILES.md](CONTROL_PROFILES.md): 83 set, 14 firme
-  generiche e 18 gruppi proposti, con matrice Model 2 / Model 3 e casi da verificare.
+  generiche e 23 raggruppamenti di lavoro, con matrice Model 2 / Model 3 e casi da verificare.
 
 Criterio: copertura del catalogo e revisione dei profili proposti. Nessuna
 nuova mappatura, opzione o modifica alla persistenza in questo sottopunto.
 
-### 3.2 Riconoscimento e controlli digitali
+### 3.2 Riconoscimento e controlli digitali — implementato e verificato localmente
 
 - Implementare il riconoscitore secondo il catalogo revisionato, con fallback
   esplicito; registrare dispositivo e descrittori pertinenti al gioco.
@@ -92,7 +92,16 @@ nuova mappatura, opzione o modifica alla persistenza in questo sottopunto.
 Criterio: test del riconoscitore sui set catalogati, nessun controllo improprio,
 P1/P2 indipendenti e prova dei profili digitali in RetroArch.
 
-### 3.3 Profili di guida
+Il riconoscitore copre i 34 set parent/clone revisionati per i profili digitali
+e rifiuta firme I/O cambiate o non catalogate. Nomi, descrizioni e posizioni
+RetroPad sono quelli approvati in `Docs/revisione_profili_model2.xlsx`. Ogni
+profilo espone la variante predefinita con Test/Service e quella ridotta senza
+i due comandi. I controlli ROM-free verificano inoltre indipendenza P1/P2,
+permutazione hardware Soccer e doppia leva Virtual On. VF2, Virtua Striker e
+Virtual On sono stati avviati fino a una partita reale in RetroArch macOS;
+rimane distinta la prova manuale con un controller fisico.
+
+### 3.3 Profili di guida — implementati e verificati localmente
 
 - Procedere per varianti 4-Speed + VR4/VR1, Sequential e Motorcycle.
   Per Sega Rally verificare Handbrake prima di esporre il profilo completo
@@ -104,44 +113,222 @@ P1/P2 indipendenti e prova dei profili digitali in RetroArch.
 Criterio: estremi/riposo degli assi, cambio e azioni verificati per variante,
 più prova con un dispositivo di guida appropriato per il supporto dichiarato.
 
+Il primo gruppo copre i quattro set Daytona e i cinque set Sega Rally. Espone
+`Driving: 4-Speed + VR4` e `Driving: 4-Speed + VR1 + Handbrake`, ciascuno con
+la variante predefinita Test/Service e quella ridotta. L'opzione `4-Speed
+Shifter` seleziona H-Gate, predefinito, oppure Standard; Neutral e Shift
+Down/Up restano sempre disponibili. I test verificano assi, trigger analogici,
+VR, cambio e freno a mano IN2. Le ROM parent hanno raggiunto una gara reale in
+RetroArch macOS, a 300 km/h Daytona e 127 km/h Sega Rally nel frame acquisito.
+La prova con volante fisico resta distinta. I profili Motorcycle sono coperti
+nei gruppi Manx TT e Motor Raid descritti sotto.
+
+Il secondo gruppo copre dieci set delle famiglie Indy 500, Over Rev e Sega
+Touring Car Championship con il profilo unico `Driving: Sequential + VR2`.
+Descrizioni e posizioni derivano direttamente dalle tre righe approvate del
+foglio Excel. View 1/2 usano D-Pad Up/Down; Shift Down/Up usano L1/R1 e agiscono
+direttamente sui due ingressi momentanei hardware; Brake, Accelerator e Steering
+restano esclusivamente analogici. Il profilo espone entrambe le varianti con e
+senza Test/Service.
+
+Le tre ROM parent sono state avviate con successo in RetroArch macOS usando un
+replay di avvio: Indy 500 ha raggiunto
+la griglia di partenza, Over Rev la selezione modalità e STCC l'inserimento
+nome. Audio e Save RAM sono risultati validi in tutte le esecuzioni.
+
+Il terzo gruppo aggiunge il solo Super GT 24h come `Driving: Sequential + VR1`.
+Rispetto alla variante VR2 espone esclusivamente `VR1` su D-Pad Up; cambio,
+sterzo e pedali seguono le posizioni approvate nel foglio, con pedali analogici
+e polarità invertita dichiarata dai metadata, senza correzioni aggiuntive nel
+binding. MAME segnala ancora sterzo non centrato e pedali pulsanti: il limite va
+indagato nell'emulazione analogica comune. La ROM parent ha raggiunto la
+selezione del circuito in RetroArch macOS.
+
+Il quarto gruppo aggiunge i tre set Manx TT come `Driving: Sequential (Manx TT
+Superbike)`. Il profilo usa Bank sullo stick sinistro X, Brake/Accelerator sui
+trigger analogici, Shift Down/Up su L1/R1 e l'azione combinata `Start / VR` su
+Start; non espone comandi sul D-Pad. La polarità Bank segue il metadato
+invertito. La ROM parent ha raggiunto il controllo iniziale del motion slider
+in RetroArch macOS.
+
+Il quinto gruppo aggiunge `motoraid` e `motoraiddx` come `Driving: Sequential
+(Motor Raid)`. Rispetto a Manx TT aggiunge Kick su South e Punch su East;
+queste azioni raggiungono gli stessi due ingressi arcade usati rispettivamente
+da Shift Up e Shift Down, secondo il cablaggio del gioco e le posizioni
+approvate nel foglio. La ROM parent ha raggiunto una gara in RetroArch macOS;
+audio e Save RAM sono validi.
+
 ### 3.4 Puntamento e joystick analogico
 
-- Implementare la famiglia Gun con varianti interne seriale/posizionale e
-  Missile, oltre a Joystick (Analog); conservare i comportamenti fisici distinti.
-  I nomi Gun (Lightgun)/Gun (Mouse) identificano la modalità di sorgente.
-- Verificare P1/P2, trigger, eventuale ricarica, modalità delle sorgenti e mirini;
-  introdurre le opzioni solo quando il relativo comportamento funziona.
+Stato: Joystick (Analog) e famiglia Gun implementati; resta la prova manuale
+con periferiche fisiche Lightgun e Mouse.
 
 Criterio: calibrazione, polarità, pulsanti e cambio sorgente verificati; prova
 con periferiche reali per le combinazioni dichiarate supportate.
 
+L'audit preliminare dei sei parent Gun ha confermato coordinate assolute per
+tutti. `vcop`, `vcop2` e `hotd` usano la lightgun seriale RS-422 a 10 bit e
+supportano il reload sparando fuori dall'area calibrata; il foglio assegna
+quindi `Reload Offscreen` a East. `gunblade`, `rchase2` e `bel` usano assi
+posizionali a 8 bit e non espongono questa azione; BEL conserva `Missile` su
+East. Queste due famiglie hardware richiedono traduzioni interne distinte.
+
+Il primo gruppo del punto 3.4 implementa `skytargt` come `Joystick (Analog):
+Sky Target`. Il profilo usa esclusivamente lo stick sinistro per gli assi X/Y,
+con X invertito e Y normale secondo i metadata, South/RB ed East/LB per
+`Machine Gun`/`Missile`, e D-Pad Up per `View Change`. Espone le
+varianti con e senza Test/Service. I controlli ROM-free verificano firma,
+descrittori, bit digitali e assi. La ROM parent
+ha raggiunto una partita in RetroArch macOS; audio e Save RAM sono validi.
+
+Il secondo gruppo implementa `bel` come `Gun: Behind Enemy Lines` per due
+giocatori. Ogni port usa South/East per `Shot`/`Missile` e lo stick sinistro
+per `Gun Yaw (Analog Cursor)`/`Gun Pitch (Analog Cursor)`, senza binding non
+previsti dal foglio. La traduzione conserva i quattro range analogici distinti,
+i bit Shot/Missile di P1/P2 e lo scambio hardware delle linee Test/Service
+specifico di BEL. I controlli ROM-free coprono entrambe le varianti service,
+descrittori, assi e bit digitali. La ROM ha raggiunto una partita in RetroArch
+macOS; audio e Save RAM sono validi.
+
+Il terzo gruppo completa la famiglia Gun: `gunblade`, `rchase2`, `vcop`,
+`vcop2` e `hotd`, incluse le revisioni, usano il profilo `Gun`; BEL conserva il
+profilo specifico. La Core Option `Gun Input Mode` riprende da Supermodel i
+percorsi Standard, Lightgun, Mouse + Analog Stick, Mouse e Analog Stick e
+aggiorna subito nomi e descrittori. Il core traduce il cursore virtuale nel
+protocollo seriale RS-422 a 10 bit oppure nei quattro canali posizionali a 8 bit
+in base ai metadata. `Reload Offscreen` è disponibile solo per Virtua Cop 1/2 e
+House of the Dead; BEL espone invece `Missile` su East/LB.
+
+Il difetto del mirino verticale di BEL con un `.srm` già inizializzato è stato
+risolto estendendo il workaround hardware esistente al preset di calibrazione
+incluso nell'Initial NVRAM. Build, controlli input, avvio automatico di 600 frame
+e prova manuale in RetroArch macOS completati: il Service Menu riceve entrambi
+gli assi e il mirino del gioco si muove in entrambe le direzioni.
+
+La Core Option `Off-Screen Reload Shortcut`, visibile soltanto sui sei set
+seriali, abilita per default RetroPad East/LB, Mouse destro e Lightgun Reload. Se
+disabilitata rimuove questi descrittori e ingressi; una lightgun puntata fuori
+schermo e azionata col grilletto continua a usare il gesto nativo del cabinet.
+
+I controlli senza ROM verificano tutti i dieci set, P1/P2, le cinque modalità,
+i range e le polarità degli assi, il particolare grilletto P2 di House of the Dead e l'assenza
+del reload nei cabinet posizionali. Gunblade NY e Virtua Cop 2 hanno raggiunto
+una partita in RetroArch macOS con audio e Save RAM validi. La validazione con
+Lightgun e Mouse fisici è demandata alle prove manuali dell'utente.
+
 ### 3.5 Cabinet speciali e casi da verificare
 
-- Trattare singolarmente Baseball, Water Ski, Ski Super G, Top Skater e Wave
-  Runner; riesaminare i tre casi generici 1P sulla base di dati verificati.
-- Verificare e allineare gli I/O di Air Walkers alla matrice MAME P1-P4,
-  includendo multiplexing e linee Start/Coin, prima di implementare il profilo
-  a quattro giocatori.
+Primo gruppo completato: `dynabb` e `dynabb97` espongono il profilo condiviso
+`Joystick (Standard): Baseball (Dynamite Baseball)`, con joystick, due pulsanti
+e `Bat Swing` su Right Analog Y verso il basso per ciascun giocatore. I
+controlli ROM-free verificano firma, descrizioni, P1/P2, semiasse e varianti
+Test/Service; entrambi i parent hanno raggiunto una partita in RetroArch macOS.
+
+Secondo gruppo completato: `segawski` espone `Special: Water Ski` con Set su
+South, Pitch Left/Right su L1/R1 e sui binding secondari West/East, Slide su
+Left Analog X e l'alias hardware
+`Start / Select Down`. La polarità di Slide è selezionabile tramite Core Option,
+con `Inverted` come default. `skisuprg` espone `Special: Ski Super G`
+con Inclining su Right Analog X/canale 0 e Swing su Left Analog X/canale 1.
+La polarità di Swing è selezionabile tramite Core Option, con `Inverted` come
+default, e
+Foot Sensor attivi alti su L1/R1. I controlli ROM-free verificano
+firme, descrittori, bit, assi e varianti Test/Service. Water Ski ha raggiunto
+una gara reale. Ski Super G carica profilo, audio e Save RAM, ma resta bloccato
+su `DRIVE BOARD TROUBLE CODE: FF`: il set è preliminary e il database SM2 non
+include la ROM drive-board definita da MAME. La relativa emulazione resta un
+sottopunto futuro separato dai profili.
+
+Terzo gruppo completato: `topskatr`, `topskatrj`, `topskatru` e `topskatruo`
+espongono `Special: Top Skater`. Curving e Slide restano assi distinti su Left
+Analog X e Right Analog X. La polarità di Curving è selezionabile tramite Core
+Option, con `Inverted` come default; Slide resta invariato. Select Left/Right e
+Jump Front/Tail raggiungono i bit
+documentati da MAME. I controlli ROM-free coprono tutte le revisioni, firme,
+descrittori, assi e varianti Test/Service. Il parent ha raggiunto una sessione
+di gioco in RetroArch macOS con audio e Save RAM validi.
+
+Quarto gruppo completato: `waverunr` espone `Special: Wave Runner` con View,
+Handle, Pitch, Roll e Throttle nelle posizioni approvate. I controlli ROM-free
+verificano firma, descrittori, intera escursione dei quattro canali, valore di
+riposo dichiarato, safety sensor non bindabile e varianti Test/Service. Il
+parent ha raggiunto una sessione di gioco in RetroArch macOS con audio e Save
+RAM validi.
+
+Quinto gruppo completato: `airwlkrs` espone P1/P2 con
+`Joystick (Standard): Basketball (Air Walkers)`; `rascot2` espone
+`Joystick (Standard): Horse Racing (Royal Ascot II)` secondo i metadata
+disponibili. Entrambi hanno firme, descrittori, bit e varianti Test/Service
+coperti dai controlli ROM-free. Air Walkers raggiunge una partita reale con
+audio e Save RAM validi. Royal Ascot II mostra il titolo e salva la Save RAM,
+ma resta silenzioso e non supera la sequenza iniziale verso l'attesa SegaNet
+nel replay standard.
+
+Sesto gruppo completato: `desert` espone `Joystick (Analog): Desert Tank + VR3`. Il backend
+Model 1 I/O esistente riceve ora dai metadata condivisi Steering, Accelerator
+ed Elevation sui canali 0-2; il profilo aggiunge VR1-VR3, Machine Gun, Cannon e
+Shift toggle con le posizioni approvate. I controlli ROM-free verificano firma,
+descrittori, riposo e controllo relativo/assoluto di Elevation, velocità e
+inversione dell'asse, toggle, alias RB/LB per Machine Gun/Cannon e varianti
+Test/Service.
+La build standalone compila con lo
+stesso metadato e il parent ha raggiunto una missione reale in RetroArch macOS
+con audio e Save RAM validi.
+
+Settimo gruppo completato: `hpyagu98` espone `Joystick (Standard): Baseball
+(Hanguk Pro Yagu 98)` a due giocatori, con D-Pad e Button 1/2/3 sul layout
+elettrico VF2 documentato da MAME. I controlli ROM-free verificano entrambe le
+porte, descrittori, bit e varianti Test/Service. Il parent ha raggiunto una
+partita reale in RetroArch macOS con audio e Save RAM validi. Il problema di
+persistenza di `FAVORITE` resta confinato alla NVRAM e non blocca il profilo
+input.
+
+- Integrare in seguito P3/P4 di Air Walkers mediante il multiplexing della
+  matrice. P1/P2, incluse le rispettive linee Start/Coin, sono implementati.
 - Integrare ciascun profilo con i suoi test senza estendere implicitamente le
   conclusioni agli altri cabinet o confondere input supportati e gioco funzionante.
 
 Criterio: chiusura documentata per ogni profilo; i casi non verificati restano
 indicati nel catalogo e nel frontend.
 
+Al termine dell'intera macro-attività dei profili: implementare la crosshair,
+determinare i dati di calibrazione dei sei parent Gun e integrarli nei campioni
+di `Automatic Initial NVRAM Setup`. La crosshair è ora implementata per tutti i
+sei parent Gun nei backend Software, Vulkan e OpenGL, con opzione e convenzioni
+derivate da Supermodel; restano l'acquisizione delle calibrazioni e la
+rigenerazione dei campioni iniziali.
+
 ### 3.6 Persistenza NVRAM/EEPROM
 
-Stato: prima iterazione implementata. `RETRO_MEMORY_SAVE_RAM` contiene backup
-RAM ed EEPROM in formato versionato; import frontend, fallback nativo e prime
-opzioni verificate (`vf2` Difficulty/Country/Display Type/Drink) sono coperti da test ROM-free e da avvii
-reali consecutivi in RetroArch. Restano la matrice degli altri parent e i casi
-di errore del frontend sulle piattaforme target.
+Stato: persistenza e matrice dei parent implementate. `RETRO_MEMORY_SAVE_RAM`
+contiene backup RAM ed EEPROM in formato versionato; import frontend, fallback
+nativo e 196 impostazioni operatore per 35 parent sono coperti da test senza
+ROM e da avvii reali consecutivi in RetroArch. `Automatic Initial NVRAM Setup`
+carica per questi parent un campione completo validato prima del primo frame,
+soltanto in assenza di `.srm` e NVRAM native valide, quindi applica Country/Nation
+USA o Export e i valori offline necessari. Restano la validazione esplicita dei
+dati di calibrazione e i casi di errore del frontend sulle piattaforme target.
 
 - Verificare riavvio, separazione per gioco, file mancanti, invalidi e directory
   non scrivibili; preservare i salvataggi esistenti.
 - Valutare SRAM gestita dal frontend definendo prima formato, precedenza e
   import conservativo dei file nativi. Non confonderla con i save state.
-- Eventuali preset iniziali o campi configurabili richiedono validazione per
-  ROM set; nessuna inizializzazione automatica dei salvataggi esistenti.
+- Rigenerare i campioni iniziali dopo la validazione per ROM set dei dati di
+  calibrazione; non inizializzare o modificare automaticamente i salvataggi
+  esistenti.
+- Eseguire una campagna dedicata a tutti i clone presenti in `games.xml`:
+  acquisire per ciascuno un `.srm` nativo da un avvio pulito, con NVRAM Settings
+  e Automatic Initial NVRAM Setup disabilitati, quindi confrontarne backup RAM,
+  struttura EEPROM, checksum e valori predefiniti con il parent. Se i dati
+  coincidono, verificare con un avvio pulito e uno consecutivo che l'ereditarietà
+  del campione parent funzioni. Se differiscono, sospendere l'ereditarietà NVRAM
+  per quel clone e valutarne separatamente layout, offset delle opzioni e
+  campione iniziale tramite service menu prima di abilitarlo.
+- Registrare `indy500d` come primo caso noto da approfondire nella campagna:
+  dopo l'inizializzazione usa una banca EEPROM specchiata da 44 byte, mentre
+  `indy500`/`indy500to` usano 36 byte. Gli offset parent successivi a Country,
+  Cabinet Type e Difficulty possono sovrapporsi ai dati specifici della Deluxe;
+  per ora non introdurre una correzione non validata.
 
 Criterio: persistenza e import provati con casi positivi e negativi; eventuali
 campi NVRAM esposti devono avere valori e precedenza espliciti.
@@ -166,14 +353,32 @@ del frontend. L'overlay usa lo status OSD Libretro e riporta medie su 61 callbac
 per macchina, video, audio, `retro_run`, frame peggiore, cadenza effettiva e
 capacità stimata. `Frame Skip` è stato escluso per scelta progettuale.
 
-Opzioni legate ai controlli, da introdurre soltanto con i relativi profili:
+Il cambio a quattro marce `H-Gate Mode`/`Standard`, derivato da Supermodel, è
+già implementato con H-Gate come default.
 
-- modalità Lightgun/Mouse/Analog Stick, mirini e ricarica fuori schermo;
+Opzioni legate ai controlli introdotte direttamente dal core Supermodel:
+
+- `Driving Steering Response`: `Linear` come default, `Progressive (Fine
+  Center)` e `FBNeo Logarithmic (Fine Center)`; applicazione limitata ai
+  profili Driving;
+- `Driving Steering Output Range`: default `100%`, con regolazione comune
+  `50%`–`150%`; sotto il 100% limita l'escursione emulata e sopra il 100%
+  anticipa il fondo corsa. Include il preset Supermodel `63% (30-80-D0)`, che
+  produce esattamente tale intervallo ADC;
+- `Driving Accelerator Output Range` e `Driving Brake Output Range`: opzioni
+  indipendenti, default `100%`, con regolazione comune `50%`–`150%`. Il preset
+  Supermodel `75.3% (00-C0)` produce esattamente tale intervallo ADC.
+
+Le quattro regolazioni precedenti sono implementate, restano sempre visibili,
+agiscono soltanto sui profili Driving e sono verificate con curve, saturazione,
+pedali normali/invertiti e Throttle motociclistico. Restano da introdurre:
+
 - recoil della pistola e intensità;
-- cambio a quattro marce H-Gate/Standard;
-- risposta e intervallo di sterzo, acceleratore e freno;
 - rumble e force feedback, distinguendo le capacità realmente offerte da
   Libretro da quelle direzionali dello standalone.
+
+Come in Supermodel, le quattro regolazioni di guida devono restare sempre
+visibili e non produrre effetti fuori dai profili Driving.
 
 Altre opzioni da valutare separatamente:
 

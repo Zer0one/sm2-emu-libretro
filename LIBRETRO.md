@@ -37,6 +37,253 @@ directory save. Le ROM restano esterne: il core accetta i percorsi ZIP/7z e
 chiede al frontend di non estrarre gli archivi. Se il loader richiede parent
 o firmware separati, valgono le regole del database upstream.
 
+Il core usa direttamente la directory save fornita dal frontend, che può già
+essere specifica per `SM2-Emu` o per il contenuto. RetroArch gestisce qui
+`<gioco>.srm`; eventuali immagini standalone `<gioco>.nv` e
+`<gioco>.eeprom` da importare vanno nella stessa directory. Il core non crea
+ulteriori sottocartelle `sm2-emu/<gioco>`.
+
+## Profili digitali
+
+Il core riconosce esplicitamente tutti gli 83 set parent/clone revisionati
+attraverso i profili completati finora. Le descrizioni e i binding sono
+quelli approvati in `Docs/revisione_profili_model2.xlsx`; firme sconosciute o
+cambiate restano nel fallback conservativo. Ogni profilo registra due tipi di
+dispositivo su entrambe le porte: quello predefinito con slot Test/Service
+rimappabili e la variante senza i due slot. Poiché Model 2 dispone soltanto
+delle linee `Service A` e `Test A`, L3/R3 del Player 2 sono binding secondari
+virtuali delle stesse linee, non comandi B distinti.
+
+I controlli ROM-free verificano tutti i set riconosciuti, le stringhe dei
+profili e delle azioni, P1/P2 indipendenti, le due varianti del dispositivo e
+la traduzione hardware. In particolare Virtua Striker associa South/East/West
+a `Short Pass`/`Long Pass`/`Shoot` scrivendo rispettivamente i bit Model 2
+`0x04`/`0x01`/`0x02`; Virtual On usa i due stick analogici per le due leve,
+L1/R1 per `Left/Right Dash (Turbo)` e L2/R2 per `Left/Right Shot Trigger`.
+
+Le prove RetroArch macOS con VF2, Virtua Striker e Virtual On hanno raggiunto
+una partita reale con video, audio e SRAM validi. Questo dimostra caricamento,
+registrazione del profilo e input automatizzato; la sensazione e il remapping
+di un controller fisico restano una verifica manuale distinta.
+
+I parent Dynamite Baseball e Dynamite Baseball 97 condividono il profilo
+`Joystick (Standard): Baseball (Dynamite Baseball)`. Ogni giocatore conserva
+joystick e `Button 1`/`Button 2`; `Bat Swing` usa esclusivamente Right Analog Y
+spinto verso il basso e pilota separatamente `bat1`/`bat2`. La direzione verso
+l'alto resta al valore di riposo. Anche questo profilo espone le varianti con
+e senza Test/Service. Entrambi i parent hanno raggiunto una partita in
+RetroArch macOS con audio e Save RAM validi.
+
+Sega Water Ski espone `Special: Water Ski`: D-Pad Up/Down selezionano
+`Select Up`/`Select Down`, L1/R1 controllano `Pitch Left`/`Pitch Right`, South è
+`Set` e Left Analog X è `Slide`. West/East sono binding secondari rispettivamente
+per `Pitch Left`/`Pitch Right`. `Sega Water Ski Slide Axis Mode` usa
+`Inverted` come default (`X+` produce `00`, `X-` produce `FF`); `Normal`
+conserva la polarità del frontend. L'opzione è sempre visibile e si applica
+immediatamente. Start condivide la linea hardware di `Select Down`, come indica
+il descrittore `Start / Select Down`. La ROM parent ha raggiunto una gara in
+RetroArch macOS con audio e Save RAM validi.
+
+Sega Ski Super G espone `Special: Ski Super G`. D-Pad Up/Down sono `Zoom In` e
+`Zoom Out`, L1/R1 sono i due Foot Sensor attivi alti e South/East/West sono
+`Select 2`/`Select 3`/`Select 1`. Right Analog X controlla `Inclining` sul
+canale Model 2 0 e Left Analog X controlla `Swing` sul canale Model 2 1 con
+`Sega Ski Super G Swing Axis Mode` impostato di default su `Inverted`: X+
+produce `00`, X- produce `FF`. `Normal` conserva invece la polarità del
+frontend. L'opzione è sempre visibile e si applica immediatamente. Il
+profilo e la Save RAM sono validi, ma la partita si
+ferma su `DRIVE BOARD TROUBLE CODE: FF`: il set è già marcato preliminary e il
+database SM2 non contiene la ROM drive-board presente nella definizione MAME.
+Questo limite appartiene all'emulazione comune, non all'adattatore di input.
+
+Le quattro revisioni Top Skater condividono `Special: Top Skater`. D-Pad
+Left/Right corrispondono a `Select Left`/`Select Right`, South/East a `Jump
+Front`/`Jump Tail`, Left Analog X a `Curving` e Right Analog X a `Slide`.
+`Top Skater Curving Axis Mode` usa `Inverted` come default (`X+` produce `00`,
+`X-` produce `FF`); `Normal` conserva la polarità del frontend. L'opzione è
+sempre visibile, si applica immediatamente e non modifica Slide.
+Direzioni e pulsanti non assegnati nel foglio non vengono esposti. Il parent ha
+raggiunto una sessione di gioco in RetroArch macOS con audio e Save RAM validi;
+le tre revisioni ereditano la stessa firma verificata dal catalogo.
+
+Wave Runner espone `Special: Wave Runner`: D-Pad Up è `View`, R2 è `Throttle`,
+Left Analog X/Y sono `Handle`/`Pitch` e Right Analog X è `Roll`. Il core usa il
+valore di riposo dichiarato nei metadata per tutti e quattro i canali e lascia
+al frontend l'eventuale conversione di R2 digitale in analogico. Il safety
+sensor del cabinet resta un dettaglio hardware interno e non viene esposto come
+binding. Il parent ha raggiunto una sessione di gioco in RetroArch macOS con
+profilo registrato, audio non silenzioso e Save RAM valida.
+
+Air Walkers espone P1 e P2 con `Joystick (Standard): Basketball (Air Walkers)`,
+D-Pad e `Button 1`/`Button 2`/`Button 3` nelle posizioni approvate. Coin 2,
+Start 2 e il gameplay P2 raggiungono rispettivamente le linee comuni e `IN2`.
+Il parent ha raggiunto una partita reale con audio e Save RAM validi. Il
+multiplexing P3/P4 documentato da MAME resta un aggiornamento futuro del backend
+I/O.
+
+Royal Ascot II espone `Joystick (Standard): Horse Racing (Royal Ascot II)` a un
+giocatore, usando D-Pad e tre pulsanti generici come consentono i metadata
+correnti. La prova reale registra il profilo, visualizza il titolo e salva la
+Save RAM; l'audio resta silenzioso e il replay non supera la sequenza iniziale
+che conduce all'attesa SegaNet già documentata. Il set è preliminary e il
+cabinet fisico non è ancora identificato, quindi il risultato non dimostra la
+giocabilità né la semantica dei tre pulsanti.
+
+Desert Tank espone `Joystick (Analog): Desert Tank + VR3`. I metadata condivisi con lo
+standalone descrivono ora i tre canali della scheda Model 1 I/O: Left Analog X
+è `Steering`, R2 è `Accelerator` e Left/Right Analog Y controllano `Elevation`.
+Per default lo scostamento dello stick determina direzione e velocità della
+torretta, mentre il rilascio mantiene l'ultima posizione nell'intervallo
+`00`–`FF`; la posizione iniziale è `80`. Le Core Options sempre visibili
+`Desert Tank Elevation Control`, `Desert Tank Elevation Speed (Relative Only)`
+e `Desert Tank Elevation Axis Mode` permettono rispettivamente di ripristinare
+la mappatura assoluta, regolare la velocità relativa e invertire l'asse.
+D-Pad Down/Left/Up
+sono `VR1 (Blue)`/`VR2 (Green)`/`VR3 (Red)`,
+South/East sono
+`Machine Gun`/`Cannon`, con gli alias secondari RB/LB, e West aziona `Shift`
+come toggle. Il profilo ha le
+varianti con e senza Test/Service. Il parent ha raggiunto una missione reale in
+RetroArch macOS con tutti i percorsi input presenti nel replay, audio non
+silenzioso e Save RAM valida.
+
+Hanguk Pro Yagu 98 espone a due giocatori `Joystick (Standard): Baseball
+(Hanguk Pro Yagu 98)`. Entrambe le porte usano D-Pad e `Button 1`/`Button 2`/
+`Button 3` sul layout elettrico VF2 indicato da MAME, con varianti con e senza
+Test/Service. È distinto dal profilo Dynamite Baseball perché non dichiara assi
+analogici Bat Swing. Il problema noto di `FAVORITE` non salvato dal Service
+Menu riguarda la NVRAM e non modifica profilo o binding. Il parent ha raggiunto
+una partita reale in RetroArch macOS con input registrato, audio non silenzioso
+e Save RAM valida.
+
+## Profili di guida a quattro marce
+
+I quattro set Daytona espongono `Driving: 4-Speed + VR4`; i cinque set Sega
+Rally espongono `Driving: 4-Speed + VR1 + Handbrake`. Tutte le descrizioni e
+posizioni corrispondono al foglio revisionato. Sterzo conserva la precisione
+analogica dello stick sinistro; Brake e Accelerator leggono esclusivamente i
+trigger analogici L2/R2. Sega Rally traduce South negli estremi del freno a
+mano analogico IN2: 0x00 rilasciato e 0xFF premuto.
+
+La Core Option `4-Speed Shifter` usa H-Gate per default e può passare alla
+modalità Standard; West resta `4-Speed: Neutral` e L1/R1 restano `Shift
+Down`/`Shift Up`. Entrambi i profili hanno le varianti con e senza Test/Service.
+I controlli ROM-free coprono i nove set, cablaggio VR, assi, pedali e cambio.
+Le prove RetroArch macOS hanno raggiunto gare reali con input registrato:
+Daytona a 300 km/h e Sega Rally a 127 km/h nei frame finali acquisiti.
+
+## Profili di guida con cambio sequenziale
+
+I tre parent Indy 500, Over Rev e Sega Touring Car Championship, con le loro
+revisioni per un totale di dieci set, espongono il profilo approvato `Driving:
+Sequential + VR2`. D-Pad Up/Down corrispondono a `View 1`/`View 2`, L1/R1 a
+`Shift Down`/`Shift Up`, L2/R2 ai pedali analogici e lo stick sinistro X a
+`Steering`. Il cambio agisce direttamente sui due ingressi momentanei Model 2:
+il core non mantiene uno stato della marcia. Le direzioni D-Pad e gli assi non
+assegnati nel foglio non vengono esposti.
+
+Anche questo profilo offre il dispositivo predefinito con Test/Service e quello
+ridotto senza i due comandi. Il core non converte ingressi digitali in pedali
+analogici; l'eventuale rimappatura appartiene al frontend.
+
+Le ROM parent sono state avviate in RetroArch macOS con il replay specifico:
+Indy 500 ha raggiunto la griglia di partenza, Over Rev la selezione modalità e
+STCC l'inserimento nome. Tutte e tre le esecuzioni hanno registrato il profilo
+atteso, audio non silenzioso e Save RAM della dimensione prevista.
+
+Super GT 24h espone separatamente `Driving: Sequential + VR1`: conserva lo
+stesso sterzo, pedali e cambio sequenziale, ma assegna soltanto `VR1` a D-Pad
+Up come prescritto dal foglio. Accelerator e Brake conservano la polarità
+invertita dichiarata dai metadata, senza correzioni aggiuntive nel binding.
+MAME segnala per questo gioco problemi analogici ancora aperti: sterzo che non
+si centra e pedali che pulsano invece di mantenere un valore stabile. D-Pad
+Down non è esposto. Anche questo profilo
+ha le varianti con e senza Test/Service. La ROM parent ha raggiunto la selezione
+del circuito in RetroArch macOS con audio e Save RAM validi.
+
+I tre set Manx TT espongono `Driving: Sequential (Manx TT Superbike)`. `Bank`
+usa lo stick sinistro X con la polarità invertita dichiarata dal gioco; Brake e
+Accelerator usano esclusivamente i trigger analogici L2/R2 e il cambio usa
+L1/R1. Start conserva l'azione combinata `Start / VR`; il D-Pad non espone
+azioni. `Cabinet Type` usa `Twin` come default sia nelle Core Options sia nel
+setup NVRAM del primo avvio. Le varianti con e senza Test/Service sono
+disponibili. La ROM parent ha
+raggiunto il controllo iniziale del motion slider con audio e Save RAM validi.
+
+I due set Motor Raid espongono `Driving: Sequential (Motor Raid)`. Mantengono
+Bank, pedali, cambio e `Start / VR` nelle stesse posizioni del foglio e
+aggiungono `Kick` su South e `Punch` su East. Punch/Shift Up e Kick/Shift Down
+raggiungono rispettivamente gli stessi due ingressi arcade, come previsto dal
+cablaggio Motor Raid. La ROM parent ha raggiunto una gara in RetroArch macOS;
+audio e Save RAM sono validi.
+
+Le quattro regolazioni analogiche riprese da Supermodel sono sempre visibili e
+agiscono soltanto sui profili Driving. `Driving Steering Response` offre
+`Linear`, predefinito, `Progressive (Fine Center)` e `FBNeo Logarithmic (Fine
+Center)`. `Driving Steering Output Range`, `Driving Accelerator Output Range`
+e `Driving Brake Output Range` sono indipendenti, usano `100%` come default e
+offrono valori comuni dal `50%` al `150%`. Sotto il 100% riducono l'escursione
+emulata; sopra il 100% raggiungono il fondo corsa con minore corsa fisica. Le
+regolazioni preservano polarità e riposo Model 2; Accelerator si applica anche
+al Throttle dei profili motociclistici. Come nel core Supermodel, il preset
+sterzo `63% (30-80-D0)` produce l'intervallo ADC esatto `30-80-D0`, mentre il
+preset pedali `75.3% (00-C0)` produce l'intervallo esatto `00-C0`.
+
+Sky Target espone `Joystick (Analog): Sky Target`. Lo stick sinistro conserva
+gli assi `Analog Joystick X`/`Analog Joystick Y` e le polarità dichiarate dal
+gioco: X invertito, Y normale. South/RB ed East/LB corrispondono a
+`Machine Gun` e `Missile`; D-Pad Up controlla `View Change`.
+Il profilo a un giocatore offre le varianti con e senza Test/Service. La ROM
+parent ha raggiunto una partita in RetroArch macOS con punteggio e colpi
+registrati; audio e Save RAM sono validi.
+
+I dieci set Gun revisionati sono implementati in due profili esposti. Virtua
+Cop, Virtua Cop 2, House of the Dead, Gunblade NY e Rail Chase 2 usano `Gun`;
+Behind Enemy Lines usa `Gun: Behind Enemy Lines`. Entrambe le porte offrono le
+varianti con e senza Service A/Test A; sulla porta 2 sono alias virtuali delle
+stesse linee hardware A.
+
+La Core Option `Gun Input Mode`, derivata da Supermodel, seleziona `Standard`,
+`Lightgun Only`, `Mouse + Analog Stick`, `Mouse Only` o `Analog Stick Only`.
+Standard unifica le tre sorgenti in un cursore virtuale. Le modalità dedicate
+e i descrittori vengono aggiornati immediatamente. South e RB sul RetroPad,
+grilletto e clic sinistro sono `Shot`. BEL assegna `Missile` a East/LB, clic destro,
+Lightgun Aux A e Reload; per BEL Reload è soltanto un secondo binding della stessa azione.
+
+Il core conserva le due interfacce arcade. Virtua Cop 1/2 e House of the Dead
+ricevono coordinate seriali RS-422 a 10 bit; East o LB, clic destro o il comando
+Lightgun Reload eseguono `Reload Offscreen` portando la mira fuori dall'area
+calibrata e premendo Shot. La Core Option `Off-Screen Reload Shortcut`, sempre
+visibile e attiva per default, abilita o disabilita insieme i tre binding nei
+giochi supportati. Il grilletto di una lightgun fisicamente puntata fuori schermo resta
+sempre un gesto nativo di ricarica. Gunblade NY, Rail Chase 2 e BEL ricevono invece
+coordinate posizionali a 8 bit nel mux analogico e non espongono Reload
+Offscreen. House of the Dead conserva inoltre il diverso bit hardware del
+grilletto P2. BEL mantiene Shot/Missile separati per P1/P2 e traduce le linee
+Test/Service scambiate dal cabinet in `Service A`/`Test A`.
+
+BEL dipende inoltre da quattro coppie centro/ampiezza e dai corrispondenti
+parametri temporanei in work RAM. Il workaround upstream riconosce sia lo stato
+non calibrato sia il preset distribuito da `Automatic Initial NVRAM Setup`, così
+il preset non impedisce l'inizializzazione dei parametri temporanei quando manca
+l'handshake della gun board. Un salvataggio già calibrato è stato provato in
+RetroArch macOS: gli assi cambiano nel Service Menu e il mirino del gioco si
+muove correttamente sia in orizzontale sia in verticale.
+
+La Core Option `Show Crosshair`, ripresa da Supermodel, seleziona `Disabled`,
+`Player 1 Only`, `Player 2 Only` oppure `Players 1 & 2` ed è disabilitata per
+default. La crosshair vettoriale rossa di P1 e verde di P2 usa lo stesso cursore
+virtuale condiviso da Lightgun, Mouse e Analog Stick, funziona nei renderer
+Software, Vulkan e OpenGL e scompare durante la ricarica fuori schermo. Come
+nel core Supermodel, si applica sia ai giochi con pistola seriale sia a Gunblade
+NY, Rail Chase 2 e Behind Enemy Lines, che usano gli assi posizionali.
+
+I controlli senza ROM coprono tutte le modalità, i descrittori, le calibrazioni,
+i bit dei grilletti e la distinzione del reload. Le prove RetroArch macOS con
+Gunblade NY e Virtua Cop 2 hanno raggiunto una partita con input analogico
+registrato, audio non silenzioso e Save RAM valida. Le periferiche fisiche
+Lightgun e Mouse restano da provare manualmente.
+
 ## Funzioni disponibili
 
 - Init/deinit, load/unload, reset e un frame emulato per `retro_run()`.
@@ -53,10 +300,25 @@ o firmware separati, valgono le regole del database upstream.
   set e il checksum del payload impediscono l'import silenzioso di file errati.
   Un `.srm` valido prevale; in sua assenza i file nativi `.nv`/`.eeprom` sono
   importati senza essere riscritti dal core Libretro.
+- Core Option `Automatic Initial NVRAM Setup`, Enabled per default. Per i 35
+  parent verificati, quando non esistono un `.srm` valido o file nativi
+  `.nv`/`.eeprom` validi, il core carica il campione completo ricavato dal
+  Service Menu prima del primo frame. Imposta quindi Country/Nation su USA,
+  oppure Export se USA non è disponibile, e i valori offline necessari per
+  evitare attese di cabinet collegati. Come scelta specifica del core, la
+  famiglia Daytona riceve inoltre Cabinet=Deluxe. Il setup automatico non sostituisce i
+  salvataggi esistenti; le normali scritture del gioco continuano a persistere.
+  Eliminando i dati di salvataggio del gioco si rigenera il setup.
 - Core Option v2 generale `NVRAM Settings`, Disabled per default come nel core
   Supermodel. Quando è Enabled mostra soltanto le opzioni del parent caricato e
   applica tutti i valori scelti all'avvio. Non usa `Keep Current`: disabilitando
   l'opzione generale il core lascia invariati i campi NVRAM.
+- Core Option `Gun Input Mode` con gli stessi cinque percorsi di Supermodel:
+  Standard, Lightgun, Mouse + Analog Stick, Mouse e Analog Stick.
+- Core Option `Off-Screen Reload Shortcut`, per Virtua Cop 1/2 e House of the
+  Dead: RetroPad East/LB, Mouse destro e Lightgun Reload; attiva per default.
+- Core Option `Show Crosshair`, disabilitata per default, con selezione P1, P2
+  o entrambi e composizione coerente nei percorsi Software, Vulkan e OpenGL.
 - 196 impostazioni operatore verificate per 35 parent. Oltre ai primi nove,
   sono coperti `airwlkrs`, `bel`, `dynabb`, `dynabb97`, `dynamcop`, `hotd`, `hpyagu98`, `indy500`,
   `gunblade`, `lastbrnx`, `manxtt`, `motoraid`, `overrev`, `rchase2`, `segawski`,
@@ -72,6 +334,10 @@ o firmware separati, valgono le regole del database upstream.
 - Ogni formato viene riconosciuto prima della scrittura. Il core rigenera CRC o
   checksum e sincronizza copie speculari ed EEPROM soltanto per i 34 layout
   dimostrati dai campioni reali; un layout non riconosciuto resta intatto.
+- I campioni iniziali sono generati in modo riproducibile dagli `.srm` validati
+  con `scripts/generate-initial-nvram-templates.py`, compressi e verificati di
+  nuovo a runtime tramite CRC. L'infrastruttura consente di sostituire i
+  campioni dopo la verifica delle calibrazioni senza cambiare il flusso del core.
 - Errori di caricamento segnalati al frontend; dettagli del loader nel log
   stderr. Nessun percorso implicito nella directory corrente.
 
@@ -83,13 +349,17 @@ I profili digitali semplici usano il D-pad e i pulsanti per posizione del pad:
 | South / East / West | Pulsanti originali 1 / 2 / 3 |
 | LB | Alias aggiuntivo del pulsante 3 |
 | North / RB | Pulsante 4 e alias, soltanto nei profili che non sono a tre pulsanti |
-| L3 / R3, porta 1 | Test / Service |
+| L3 / R3, porta 1 | Service A / Test A |
+| L3 / R3, porta 2 | Alias virtuali di Service A / Test A |
 
-Il bit Start specifico del gioco viene rispettato. Le azioni digitali di gioco
-sono abilitate solo nei profili semplici riconosciuti: guida, pistole,
-analogici e Virtual On ricevono per ora soltanto Coin/Start/Test/Service con
-un avviso. Le posizioni analogiche di riposo restano quelle della macchina.
+Il bit Start specifico del gioco viene rispettato. Le azioni sono abilitate
+soltanto nei profili riconosciuti; quelli ancora non implementati mantengono il
+fallback conservativo. Le posizioni analogiche di riposo restano quelle della
+macchina.
 I descrittori vengono aggiornati al caricamento e rimossi all'unload.
+Quando un gioco non offre gameplay sulla porta 2, quella porta conserva lo stesso
+nome del profilo del gioco: i descrittori RetroArch espongono soltanto Coin e
+Start, senza creare un profilo generico separato.
 
 ## Prove ripetibili
 
@@ -123,6 +393,9 @@ python3 scripts/smoke-retroarch.py \
 Lo script crea configurazione, salvataggi, replay e registrazioni dedicati.
 Il replay v1 fornisce anche gli stati dei pulsanti rilasciati, richiesti dal
 [lettore ufficiale di questa versione](https://github.com/libretro/RetroArch/blob/05f94af4/input/input_driver.c).
+Le modalità di guida codificano stick e trigger come `RETRO_DEVICE_ANALOG` (5):
+una sonda sul callback ha verificato R2 a 0 rilasciato e 32767 premuto; Motor
+Raid ha quindi raggiunto 205 nella cattura di controllo.
 Non include save state e non implica supporto alla serializzazione. Il formato
 non è dichiarato compatibile con tutte le versioni successive di RetroArch.
 La configurazione di prova usa CoreAudio e `audio_max_timing_skew = 0.0` per
@@ -170,6 +443,14 @@ Drink=OK, Difficulty=Hard e Display Type=C.R.T.; Daytona ha applicato
 Link ID=SINGLE e Country=USA con CRC, mirror ed EEPROM coerenti; Dead or Alive
 ha applicato Nation=USA con checksum additivo e mirror EEPROM coerenti. Le tre
 esecuzioni sono terminate con exit code 0 e hanno prodotto audio non silenzioso.
+
+Il 13 settembre 2026 RetroArch Nightly 1.22.2 ha verificato
+`Automatic Initial NVRAM Setup` con VF2. Senza salvataggi, il log registra il
+caricamento del campione prima del primo frame; il gioco raggiunge una partita,
+produce audio stereo non silenzioso e salva Country=USA in un contenitore
+valido. Una seconda esecuzione, avviata con un `.srm` Country=Japan già valido,
+registra invece l'import del salvataggio e mantiene Japan. Entrambe le sessioni
+terminano con exit code 0.
 
 Una successiva prova isolata con Air Walkers ha registrato tutte le 174 opzioni
 specifiche più l'interruttore generale tramite Core Options API v2. La ROM è

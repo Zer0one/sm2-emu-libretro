@@ -41,6 +41,14 @@ con entry point risolti dal frontend. Nessun nuovo accesso alla macchina/CPU.
 OpenGL riusa i passaggi upstream GL e riceve dal frontend funzioni e framebuffer;
 non introduce una finestra SDL né una copia dei renderer nell'adattatore.
 
+Eccezione hardware condivisa con lo standalone: il workaround BEL in
+`src/hw/model2c.cpp` mantiene i parametri temporanei della calibrazione anche
+quando la NVRAM contiene già il preset prodotto dal workaround stesso. Senza
+questo riconoscimento, `Automatic Initial NVRAM Setup` rende i byte persistenti
+validi ma impedisce al percorso precedente, limitato ai byte `0xff`, di
+inizializzare la trasformazione usata dal mirino durante la partita. Valori di
+calibrazione differenti dal preset non vengono sostituiti.
+
 Per ogni aggiornamento, registrare il commit upstream integrato e i riferimenti
 dei submodule, rivedere API e metadati modificati e risolvere i conflitti nel
 minor numero di punti possibile. Quando autorizzati, tenere distinti i commit
@@ -101,11 +109,11 @@ devono preservare fedeltà e comportamento della macchina. Le funzionalità
 sperimentali vanno indicate come tali, con i limiti verificati.
 
 Supermodel mantiene le regolazioni di guida visibili per prevedibilità,
-applicandole soltanto ai profili Driving. Riprendere questa convenzione quando
-implementate; mostrare invece campi NVRAM e opzioni specifiche di un singolo
-gioco soltanto nel contesto pertinente. I descrittori dei controlli devono
-sempre corrispondere al gioco caricato. Una voce visibile ma non applicabile
-deve dichiararlo chiaramente e non alterare altri profili.
+applicandole soltanto ai profili Driving. Tutte le opzioni non NVRAM restano
+sempre visibili; la descrizione dichiara gli eventuali giochi o profili ai quali
+si applicano. Soltanto i campi NVRAM sono filtrati per gioco. I descrittori dei
+controlli devono sempre corrispondere al gioco caricato e una voce non
+applicabile non deve alterare altri profili.
 
 ## Controlli e preferenze da conservare
 
@@ -126,13 +134,15 @@ con firme risolte, varianti, copertura dei set e lacune da verificare.
   Le etichette Star Wars Trilogy restano un esempio di precisione, non un
   insieme di azioni da introdurre nei giochi Model 2.
 - Usare il remapping nativo del frontend. Come riferimento Supermodel,
-  prevedere Test su L3 e Service su R3 rimappabili, con variante del dispositivo
-  senza questi slot; verificare eventuali conflitti per ogni profilo.
-- Per la guida, valutare cambio H-Gate/Standard dove esiste il selettore a
-  quattro marce, mantenendo i comandi sequenziali pertinenti. Esporre un asse
-  sterzo lineare rimappabile; regolazioni opzionali con default Linear/100% e
-  acceleratore/freno indipendenti, senza cambiare la calibrazione del gioco.
-  Non copiare i preset numerici particolari di Supermodel senza misure SM2.
+  prevedere Service su L3 e Test su R3 rimappabili, con variante del dispositivo
+  senza questi slot. Il Model 2 attualmente supportato espone soltanto Service A
+  e Test A sul Player 1. Verificare eventuali conflitti per ogni profilo.
+- Per la guida, il cambio H-Gate/Standard è disponibile dove esiste il selettore
+  a quattro marce, mantenendo i comandi sequenziali pertinenti. Lo sterzo resta
+  rimappabile e offre risposta Linear/Progressive/FBNeo; sterzo, acceleratore e
+  freno hanno intervalli indipendenti con default 100%. Le trasformazioni
+  preservano la calibrazione del gioco. I preset numerici particolari di
+  Supermodel non sono copiati senza misure SM2.
 - Per le pistole, prevedere modalità Standard con sorgenti combinate,
   Lightgun, Mouse, Mouse + Analog Stick e Analog Stick, una volta verificate.
   Distinguere coordinate assolute, movimento relativo e arbitraggio degli
@@ -143,13 +153,30 @@ con firme risolte, varianti, copertura dei set e lacune da verificare.
   di The Lost World o Star Wars di Supermodel ai giochi Model 2.
 - Un profilo sconosciuto richiede fallback esplicito e avviso nel log, senza
   assegnare per somiglianza i controlli di un altro cabinet.
+- Una porta 2 limitata a Coin/Start mantiene invariato il profilo del gioco; i
+  descrittori disponibili sulla porta esprimono la limitazione senza creare una
+  famiglia di profilo separata.
 
 ## Persistenza e responsabilità del frontend
 
 La memoria persistente è esposta come SRAM Libretro in un contenitore versionato
 che identifica il set e protegge il payload con checksum. Il `.srm` corrente ha
 precedenza; in sua assenza il core importa le memorie native senza riscriverle.
+La directory save restituita dal frontend viene usata direttamente: il core non
+aggiunge un proprio livello `sm2-emu/<gioco>`. Il `.srm` gestito dal frontend e
+gli eventuali `<gioco>.nv`/`<gioco>.eeprom` nativi condividono quindi la stessa
+directory, anche quando RetroArch l'ha già organizzata per nome del core.
 Questo non equivale ai save state.
+
+`Automatic Initial NVRAM Setup` è Enabled per default. In assenza sia del `.srm`
+sia di NVRAM native valide, i parent supportati ricevono un campione completo
+validato prima del primo frame; il core vi applica Country/Nation USA o Export e
+i valori offline necessari; il core imposta inoltre Daytona su Cabinet=Deluxe,
+senza attribuire questo valore al default originale del gioco. Il campione
+stabilisce subito un layout integro e
+non richiede una modifica tardiva seguita da riavvio. I salvataggi esistenti
+restano sempre prioritari; le successive scritture ordinarie del gioco
+continuano a essere esportate dal frontend.
 
 I primi override verificati sono `VF2 Difficulty`, `VF2 Country`, `VF2 Display
 Type` e `VF2 Drink`, visibili soltanto per `vf2` e autonomi. Come in Supermodel, un interruttore generale `NVRAM Settings`
