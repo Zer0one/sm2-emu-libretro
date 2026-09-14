@@ -124,6 +124,7 @@ int main()
     const auto* difficulty = find_definition("sm2_nvram_daytona_difficulty");
     const auto* cabinet = find_definition("sm2_nvram_daytona_cabinet");
     const auto* manxtt_cabinet = find_definition("sm2_nvram_manxtt_cabinet_type");
+    const auto* sgt24h_io_type = find_definition("sm2_nvram_sgt24h_io_type");
     const auto* steering_response = find_definition("sm2_steering_response");
     const auto* steering_range = find_definition("sm2_steering_output_range");
     const auto* accelerator_range = find_definition("sm2_accelerator_output_range");
@@ -139,6 +140,10 @@ int main()
     expect(manxtt_cabinet && std::string_view(manxtt_cabinet->default_value) == "twin"
                && std::string_view(manxtt_cabinet->values[1].label) == "Twin (Default)",
            "Manx TT Cabinet Type core option defaults to Twin");
+    expect(sgt24h_io_type && std::string_view(sgt24h_io_type->desc) == "I/O Type"
+               && std::string_view(sgt24h_io_type->default_value) == "c"
+               && std::string_view(sgt24h_io_type->values[2].label) == "C (Default)",
+           "Super GT 24h I/O Type core option defaults to C");
     expect(steering_response && std::string_view(steering_response->default_value) == "linear"
                && std::string_view(steering_response->values[1].label)
                     == "Progressive (Fine Center)"
@@ -228,7 +233,7 @@ int main()
     {
         const auto options = libretro::nvram::all_options();
         std::set<std::string> keys;
-        expect(options.size() == 196, "reviewed NVRAM option catalog has 196 entries");
+        expect(options.size() == 197, "reviewed NVRAM option catalog has 197 entries");
         for (const auto& option : options) {
             const std::string key = std::string(option.game) + ":" + option.suffix;
             expect(keys.insert(key).second, "NVRAM option keys are unique");
@@ -241,7 +246,7 @@ int main()
                "Air Walkers exposes the reviewed option set");
         expect(libretro::nvram::options_for_game("von").size() == 8,
                "Virtual On exposes the reviewed option set");
-        expect(libretro::nvram::options_for_game("sgt24h").size() == 7,
+        expect(libretro::nvram::options_for_game("sgt24h").size() == 8,
                "Super GT 24h exposes the reviewed option set");
         expect(libretro::nvram::options_for_game("gunblade").size() == 5,
                "Gunblade NY exposes the reviewed option set");
@@ -264,6 +269,7 @@ int main()
         const std::set<std::pair<std::string, std::string>> title_defaults = {
             {"daytona", "cabinet"},
             {"manxtt", "cabinet_type"},
+            {"sgt24h", "io_type"},
         };
         for (const auto& game : games) {
             expect_game(libretro::initial_nvram::has_template(game), game,
@@ -428,6 +434,7 @@ int main()
         settings_backup[0x6a] = 0x56;
         settings_backup[0x6b] = 0x78;
         settings_backup[0x14] = 3;
+        settings_backup[0x0a] = 1;
         settings_backup[0x1a] = 0;
         settings_backup[0x1c] = 1;
         settings_backup[0x1e] = 1;
@@ -448,7 +455,7 @@ int main()
         std::vector<std::string> selections;
         for (const auto& option : libretro::nvram::options_for_game("sgt24h"))
             selections.emplace_back(option.default_value);
-        expect(selections.size() == 7, "Super GT 24h has seven approved selections");
+        expect(selections.size() == 8, "Super GT 24h has eight approved selections");
         expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
                                      selections) == libretro::nvram::ApplyResult::Changed,
                "Super GT 24h defaults apply to valid native layouts");
@@ -459,6 +466,8 @@ int main()
         expect(settings_backup[0x14] == 0 && settings_backup[0x1c] == 0 &&
                settings_backup[0x1e] == 0 && settings_backup[0x20] == 0,
                "Super GT 24h gameplay and sound defaults are stored");
+        expect(settings_backup[0x0a] == 0,
+               "Super GT 24h defaults to I/O Type C");
         expect(settings_backup[0x68] == 0x12 && settings_backup[0x69] == 0x34 &&
                settings_backup[0x6a] == 0x56 && settings_backup[0x6b] == 0x78,
                "Super GT 24h runtime counter is not treated as integrity data");
@@ -471,6 +480,21 @@ int main()
                           settings_eeprom.begin() + 0x28,
                           settings_eeprom.begin() + 0x28),
                "Super GT 24h EEPROM mirror is synchronized");
+        selections.back() = "a";
+        expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Changed
+                   && settings_backup[0x0a] == 1,
+               "Super GT 24h I/O Type A writes its captured NVRAM value");
+        selections.back() = "b";
+        expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Changed
+                   && settings_backup[0x0a] == 3,
+               "Super GT 24h I/O Type B writes its captured NVRAM value");
+        selections.back() = "c";
+        expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Changed
+                   && settings_backup[0x0a] == 0,
+               "Super GT 24h I/O Type C writes its captured NVRAM value");
         expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
                                      selections) == libretro::nvram::ApplyResult::Unchanged,
                "reapplying Super GT 24h values is idempotent");

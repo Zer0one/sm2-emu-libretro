@@ -89,7 +89,7 @@ inline void build_option_definitions()
     retro_core_option_v2_definition initial_nvram{};
     initial_nvram.key = "sm2_initial_nvram_setup";
     initial_nvram.desc = "Automatic Initial NVRAM Setup";
-    initial_nvram.info = "When no frontend .srm or valid standalone .nv/.eeprom exists, initialize supported parent sets from their validated Service Menu sample before the first emulated frame, then apply the selected country, safe offline/link values and core defaults such as Daytona's Deluxe cabinet. Automatic setup never replaces existing saves; normal game writes still persist. Delete the game's save data to regenerate the initial setup.";
+    initial_nvram.info = "When no frontend .srm or valid standalone .nv/.eeprom exists, initialize supported parent sets from their validated Service Menu sample before the first emulated frame, then apply the selected country, safe offline/link values and core defaults such as Daytona's Deluxe cabinet and Super GT 24h's I/O Type C. Automatic setup never replaces existing saves; normal game writes still persist. Delete the game's save data to regenerate the initial setup.";
     initial_nvram.category_key = "system";
     initial_nvram.values[0] = {"enabled", "Enabled"};
     initial_nvram.values[1] = {"disabled", "Disabled"};

@@ -397,6 +397,7 @@ std::vector<std::string> initial_values(std::string_view game)
     static constexpr std::pair<std::string_view, std::string_view> initial_defaults[] = {
         {"daytona", "cabinet"},
         {"manxtt", "cabinet_type"},
+        {"sgt24h", "io_type"},
     };
     for (size_t i = 0; i < options.size(); ++i) {
         const std::string_view suffix = options[i].suffix;

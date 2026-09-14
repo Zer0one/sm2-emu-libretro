@@ -3368,6 +3368,14 @@ static constexpr Value kValues180[] = {
     {"off", "OFF", kDesired180 + 1},
 };
 
+static constexpr Patch kPatches196[] = {{0x0a, 0xff}};
+static constexpr u8 kDesired196[] = {0x01, 0x03, 0x00};
+static constexpr Value kValues196[] = {
+    {"a", "A", kDesired196 + 0},
+    {"b", "B", kDesired196 + 1},
+    {"c", "C", kDesired196 + 2},
+};
+
 static constexpr Patch kPatches181[] = {{0x14, 0xff, MemoryKind::Eeprom}};
 static constexpr u8 kDesired181[] = {0x01, 0x00};
 static constexpr Value kValues181[] = {
@@ -3694,6 +3702,7 @@ static constexpr Option kOptions[] = {
     {"sgt24h", "race_mode", "RACE MODE", "Set RACE MODE in sgt24h's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues178, std::size(kValues178), kPatches178, std::size(kPatches178)},
     {"sgt24h", "game_bgm", "GAME BGM", "Set GAME BGM in sgt24h's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues179, std::size(kValues179), kPatches179, std::size(kPatches179)},
     {"sgt24h", "demo_sound", "DEMO SOUND", "Set DEMO SOUND in sgt24h's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues180, std::size(kValues180), kPatches180, std::size(kPatches180)},
+    {"sgt24h", "io_type", "I/O TYPE", "Set I/O TYPE in sgt24h's operator NVRAM. Type C matches the I/O behavior emulated by SM2-Emu.", "c", kValues196, std::size(kValues196), kPatches196, std::size(kPatches196)},
     {"gunblade", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in gunblade's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues181, std::size(kValues181), kPatches181, std::size(kPatches181)},
     {"gunblade", "country", "COUNTRY", "Set COUNTRY in gunblade's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues182, std::size(kValues182), kPatches182, std::size(kPatches182)},
     {"gunblade", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in gunblade's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "4_8", kValues183, std::size(kValues183), kPatches183, std::size(kPatches183)},
