@@ -302,7 +302,8 @@ Lightgun e Mouse restano da provare manualmente.
   Service Menu prima del primo frame. Imposta quindi Country/Nation su USA,
   oppure Export se USA non è disponibile, e i valori offline necessari per
   evitare attese di cabinet collegati. Come scelta specifica del core, la
-  famiglia Daytona riceve inoltre Cabinet=Deluxe. Il setup automatico non sostituisce i
+  famiglia Daytona riceve inoltre Cabinet=Deluxe e Super GT 24h riceve I/O
+  Type=C, coerente con l'I/O emulato. Il setup automatico non sostituisce i
   salvataggi esistenti; le normali scritture del gioco continuano a persistere.
   Eliminando i dati di salvataggio del gioco si rigenera il setup.
 - Core Option v2 generale `NVRAM Settings`, Disabled per default come nel core
@@ -315,7 +316,7 @@ Lightgun e Mouse restano da provare manualmente.
   Dead: RetroPad East/LB, Mouse destro e Lightgun Reload; attiva per default.
 - Core Option `Show Crosshair`, disabilitata per default, con selezione P1, P2
   o entrambi e composizione coerente nei percorsi Software, Vulkan e OpenGL.
-- 196 impostazioni operatore verificate per 35 parent. Oltre ai primi nove,
+- 197 impostazioni operatore verificate per 35 parent. Oltre ai primi nove,
   sono coperti `airwlkrs`, `bel`, `dynabb`, `dynabb97`, `dynamcop`, `hotd`, `hpyagu98`, `indy500`,
   `gunblade`, `lastbrnx`, `manxtt`, `motoraid`, `overrev`, `rchase2`, `segawski`,
   `pltkids`, `sgt24h`, `skisuprg`, `skytargt`, `srallyc`, `stcc`, `topskatr`, `von`, `waverunr`,
@@ -510,6 +511,13 @@ sono rimasti identici. Un secondo avvio con `NVRAM Settings=Disabled` ha
 ricaricato lo stesso `.srm` e mantenuto invariati tutti i campi selezionati.
 Questa verifica copre avvio e persistenza NVRAM: non attribuisce a ogni opzione
 un effetto di gameplay, audio o rete.
+
+Il 15 settembre 2026 un avvio pulito di Super GT 24h in RetroArch Nightly
+1.22.2 ha verificato il nuovo default specifico. Con `Automatic Initial NVRAM
+Setup=Enabled` e `NVRAM Settings=Disabled`, il core ha applicato il campione
+prima del primo frame e ha salvato I/O Type C (`0x00` all'offset backup RAM
+`0x0a`) in un contenitore `.srm` con checksum valido. La sessione è terminata
+con exit code 0 e ha prodotto audio non silenzioso e una schermata di gioco.
 
 La prova di Gunblade NY ha eseguito la ROM reale fino all’attract mode con le
 cinque Core Options approvate: Advertise Sound, Country, Game Difficulty,

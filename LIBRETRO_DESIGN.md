@@ -200,8 +200,9 @@ Questo non equivale ai save state.
 `Automatic Initial NVRAM Setup` è Enabled per default. In assenza sia del `.srm`
 sia di NVRAM native valide, i parent supportati ricevono un campione completo
 validato prima del primo frame; il core vi applica Country/Nation USA o Export e
-i valori offline necessari; il core imposta inoltre Daytona su Cabinet=Deluxe,
-senza attribuire questo valore al default originale del gioco. Il campione
+i valori offline necessari; il core imposta inoltre Daytona su Cabinet=Deluxe e
+Super GT 24h su I/O Type=C, senza attribuire questo valore al default originale
+del gioco. Il campione
 stabilisce subito un layout integro e
 non richiede una modifica tardiva seguita da riavvio. I salvataggi esistenti
 restano sempre prioritari; le successive scritture ordinarie del gioco

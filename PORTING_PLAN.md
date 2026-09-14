@@ -305,12 +305,13 @@ rigenerazione dei campioni iniziali.
 
 Stato: persistenza e matrice dei parent implementate. `RETRO_MEMORY_SAVE_RAM`
 contiene backup RAM ed EEPROM in formato versionato; import frontend, fallback
-nativo e 196 impostazioni operatore per 35 parent sono coperti da test senza
+nativo e 197 impostazioni operatore per 35 parent sono coperti da test senza
 ROM e da avvii reali consecutivi in RetroArch. `Automatic Initial NVRAM Setup`
 carica per questi parent un campione completo validato prima del primo frame,
 soltanto in assenza di `.srm` e NVRAM native valide, quindi applica Country/Nation
-USA o Export e i valori offline necessari. Restano la validazione esplicita dei
-dati di calibrazione e i casi di errore del frontend sulle piattaforme target.
+USA o Export, i valori offline necessari e I/O Type C per Super GT 24h. Restano
+la validazione esplicita dei dati di calibrazione e i casi di errore del frontend
+sulle piattaforme target.
 
 - Verificare riavvio, separazione per gioco, file mancanti, invalidi e directory
   non scrivibili; preservare i salvataggi esistenti.
