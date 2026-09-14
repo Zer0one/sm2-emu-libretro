@@ -69,6 +69,7 @@
 namespace sm2::hw {
 
 class Model2Video;
+class M2CommTransport;
 class SoundBoard;
 
 /// Copy a set's shipped power-on image over battery-backed storage.
@@ -209,6 +210,10 @@ public:
     /// Audio produced by the machine, independent of the host audio device.
     /// Drain and clear pending samples once per frame; use the board's own rate.
     [[nodiscard]] virtual SoundBoard& sound_board() = 0;
+
+    /// Select the wire used by the Model 2 communication board. A null pointer
+    /// restores the board's default in-process single-cabinet loopback.
+    virtual void set_communication_transport(M2CommTransport* transport) = 0;
 
     // -- persistence -----------------------------------------------------------
 

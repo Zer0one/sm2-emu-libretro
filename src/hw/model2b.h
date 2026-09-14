@@ -209,6 +209,10 @@ public:
     [[nodiscard]] Model2Sound& sound() { return m_sound; }
     [[nodiscard]] const Model2Sound& sound() const { return m_sound; }
     [[nodiscard]] SoundBoard& sound_board() override { return m_sound; }
+    void set_communication_transport(M2CommTransport* transport) override
+    {
+        m_comm.set_transport(transport);
+    }
 
     [[nodiscard]] const I8251& uart() const { return m_uart; }
 

@@ -162,6 +162,10 @@ public:
     [[nodiscard]] M1Audio& sound() { return m_m1audio; }
     [[nodiscard]] const M1Audio& sound() const { return m_m1audio; }
     [[nodiscard]] SoundBoard& sound_board() override { return m_m1audio; }
+    void set_communication_transport(M2CommTransport* transport) override
+    {
+        m_comm.set_transport(transport);
+    }
 
     [[nodiscard]] const RenderList& render_list() const override { return m_render_list; }
 

@@ -18,7 +18,7 @@
 // Dynamite Baseball, Pilot Kids, Zero Gunner, Over Rev, Ski Super G, Manx TT and
 // Daytona USA from ever reaching a 3D scene.
 //
-// -- why a loopback rather than a socket -----------------------------------
+// -- default loopback and optional external transport ---------------------
 //
 // MAME opens a listening socket on comm_localhost:comm_localport and connects to
 // comm_remotehost:comm_remoteport, whose defaults are 0.0.0.0:15112 and
@@ -31,7 +31,8 @@
 //
 // Reproducing that outcome needs no networking, only the loopback the defaults
 // happen to describe, so the two sockets are replaced by an in-process frame
-// queue. Nothing is sent to or received from the network.
+// queue. A frontend can replace that queue with M2CommTransport to link real
+// emulator instances; the Model 2 protocol remains here either way.
 #pragma once
 
 #include "core/types.h"
@@ -42,6 +43,21 @@
 #include <vector>
 
 namespace sm2::hw {
+
+/// Host transport for a physical communication-board frame.
+///
+/// M2Comm owns the Model 2 ring protocol. A frontend adapter may provide the
+/// wire between cabinets without making the emulation layer depend on sockets
+/// or Libretro. When no transport is attached, M2Comm retains MAME's default
+/// one-cabinet loopback behaviour.
+class M2CommTransport {
+public:
+    virtual ~M2CommTransport() = default;
+
+    [[nodiscard]] virtual bool ready() const = 0;
+    [[nodiscard]] virtual bool send(std::span<const u8> frame) = 0;
+    [[nodiscard]] virtual bool receive(std::vector<u8>& frame) = 0;
+};
 
 class M2Comm {
 public:
@@ -58,6 +74,11 @@ public:
 
     void attach_shared(std::span<u8> shared) { m_shared = shared; }
     void set_frame_offset(u16 offset) { m_frame_offset = offset; }
+    void set_transport(M2CommTransport* transport)
+    {
+        m_transport = transport;
+        m_loopback.clear();
+    }
 
     /// `comm_framesync`. MAME defaults it off, so the board does not make the
     /// host wait for the ring before finishing a frame.
@@ -91,14 +112,15 @@ private:
     void tick();
     void read_fg();
 
-    /// Pops one frame from the loopback. Returns the byte count, which is zero
-    /// when there is nothing queued.
+    /// Pops one complete frame from the selected transport. Returns the byte
+    /// count, which is zero when there is nothing queued.
     ///
     /// MAME reads a byte stream and reassembles a partial frame across calls.
     /// Here every frame arrives whole because it was queued whole, so that path
     /// cannot be reached. Neither can its connection-lost branch: a real socket
     /// reports end-of-file by returning zero bytes with no error, while an empty
-    /// receive queue reports would-block, and the loopback never closes.
+    /// receive queue reports would-block. Both transports used here preserve
+    /// complete frame boundaries.
     int  read_frame(int data_size);
     void send_frame(int data_size);
     void send_data(u8 frame_type, int frame_start, int frame_size, int data_size);
@@ -113,6 +135,7 @@ private:
     }
 
     std::span<u8> m_shared;
+    M2CommTransport* m_transport = nullptr;
 
     u8 m_zfg = 0;  ///< Z80 flip gate. Bit 0 also selects the Z80's RAM bank.
     u8 m_cn  = 0;
