@@ -84,7 +84,7 @@ inline void build_option_definitions()
 {
     if (!registered_definitions.empty()) return;
     const auto all = nvram::all_options();
-    registered_definitions.reserve(all.size() + 18);
+    registered_definitions.reserve(all.size() + 19);
 
     retro_core_option_v2_definition initial_nvram{};
     initial_nvram.key = "sm2_initial_nvram_setup";
@@ -129,6 +129,16 @@ inline void build_option_definitions()
         definition.default_value = option.default_value;
         registered_definitions.push_back(definition);
     }
+
+    retro_core_option_v2_definition linked_cabinets{};
+    linked_cabinets.key = "sm2_linked_cabinets";
+    linked_cabinets.desc = "Linked Cabinets (Restart Required)";
+    linked_cabinets.info = "Single Cabinet preserves the standalone one-node loopback. 2 Cabinets carries the Model 2 communication-board ring through RetroArch Netplay. Currently validated only for the Daytona USA family. Both instances must use the same ROM and core; configure the host as Master and the client as Slave through Daytona's Link ID NVRAM setting, then restart content.";
+    linked_cabinets.category_key = "system";
+    linked_cabinets.values[0] = {"1", "Single Cabinet (Default)"};
+    linked_cabinets.values[1] = {"2", "2 Cabinets (Experimental)"};
+    linked_cabinets.default_value = "1";
+    registered_definitions.push_back(linked_cabinets);
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
     retro_core_option_v2_definition renderer{};
     renderer.key = "sm2_renderer";
@@ -478,6 +488,14 @@ inline bool offscreen_reload_shortcut_enabled()
     retro_variable option{"sm2_offscreen_reload_shortcut", nullptr};
     return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
              && option.value && std::strcmp(option.value, "disabled") == 0);
+}
+
+inline unsigned linked_cabinets()
+{
+    retro_variable option{"sm2_linked_cabinets", nullptr};
+    return option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+            && option.value && std::strcmp(option.value, "2") == 0
+        ? 2u : 1u;
 }
 
 inline bool update_option_visibility()

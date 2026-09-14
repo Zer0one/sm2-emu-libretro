@@ -5,6 +5,7 @@
 #include "crosshair.h"
 #include "initial_nvram.h"
 #include "input.h"
+#include "netpacket.h"
 #include "save_ram.h"
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
 #include "gpu.h"
@@ -49,6 +50,7 @@ struct Content {
     rom::GameSpec game;
     libretro::ControllerConfiguration controllers;
     libretro::InputRuntime input_runtime;
+    libretro::NetpacketTransport network;
     std::unique_ptr<hw::Model2MachineBase> machine;
     hw::SoftRenderer renderer;
     std::vector<u32> frame = std::vector<u32>(width * height);
@@ -477,9 +479,16 @@ void retro_init()
     log_cb = nullptr;
     retro_log_callback logger{};
     if (environment && environment(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logger)) log_cb = logger.log;
+    if (!libretro::register_netpacket_interface(environment, log_cb))
+        message(RETRO_LOG_WARN, "Libretro Netpacket is unavailable; linked cabinets are disabled");
     devices.fill(RETRO_DEVICE_JOYPAD);
 }
-void retro_deinit() { unload(); log_cb = nullptr; }
+void retro_deinit()
+{
+    unload();
+    libretro::shutdown_netpacket_interface();
+    log_cb = nullptr;
+}
 void retro_get_system_info(retro_system_info* info)
 {
     if (info) *info = {"SM2-Emu", "0.9.4-libretro-dev", "zip|7z", true, true};
@@ -525,6 +534,23 @@ bool retro_load_game(const retro_game_info* game)
         next->game = loaded->game;
         next->machine = hw::create_machine(next->game, std::move(loaded->roms));
         if (!next->machine) throw std::runtime_error("Machine initialization failed");
+        const bool daytona_family = next->game.name == "daytona"
+            || next->game.parent == "daytona";
+        if (libretro::linked_cabinets() == 2) {
+            if (!daytona_family) {
+                message(RETRO_LOG_WARN,
+                        "Linked Cabinets currently applies only to the Daytona USA family");
+            } else {
+                next->network.configure(next->game.name, 2);
+                next->machine->set_communication_transport(&next->network);
+                if (!libretro::netpacket_interface_supported())
+                    message(RETRO_LOG_WARN,
+                            "2 Cabinets selected but the frontend has no Netpacket support");
+                else
+                    message(RETRO_LOG_INFO,
+                            "Daytona USA 2-cabinet communication enabled through RetroArch Netplay");
+            }
+        }
         next->native_nvram_available = native_nvram_available(save_path, next->game.name);
         next->machine->set_nvram_directory(save_path.string());
         next->machine->load_nvram();
