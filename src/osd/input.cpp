@@ -83,6 +83,7 @@ constexpr ControlBinding kControlBindings[] = {
     {rom::AnalogControl::Gun1Y,     HostAxis::PadLeftY},
     {rom::AnalogControl::Pitch,     HostAxis::PadLeftY},
     {rom::AnalogControl::Swing,     HostAxis::PadLeftY},
+    {rom::AnalogControl::Elevation, HostAxis::PadLeftY},
 
     {rom::AnalogControl::Gun2X,     HostAxis::Pad2LeftX},
     {rom::AnalogControl::Gun2Y,     HostAxis::Pad2LeftY},

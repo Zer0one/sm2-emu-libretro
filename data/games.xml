@@ -1175,6 +1175,13 @@
       <input type="buttons3"/>
     </inputs>
 
+    <!-- Analogue mux wiring, from MAME's model2o_state::desert. -->
+    <analog>
+      <channel index="0" control="steer" rest="0x80"/>
+      <channel index="1" control="accel" rest="0x00"/>
+      <channel index="2" control="elevation" rest="0x80"/>
+    </analog>
+
     <!-- Model 1 I/O board Z80 firmware. Bundled into this archive (the
          ioboard region below), so no separate device set is needed. -->
     <roms>
@@ -2140,6 +2147,7 @@
 
   <game name="hotd" board="model2c" preliminary="true">
     <title>The House of the Dead</title>
+    <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
     <year>1997</year>
 
@@ -3549,6 +3557,7 @@
 
   <game name="rchase2" board="model2b" motion_base="true" preliminary="true">
     <title>Rail Chase 2</title>
+    <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
     <year>1994</year>
 
@@ -3940,8 +3949,8 @@
 
     <!-- Analogue mux wiring, from MAME's model2c_state::skisuprg. -->
     <analog>
-      <channel index="0" control="swing" rest="0x80"/>
-      <channel index="1" control="inclining" rest="0x80"/>
+      <channel index="0" control="inclining" rest="0x80"/>
+      <channel index="1" control="swing" rest="0x80"/>
     </analog>
 
     <roms>

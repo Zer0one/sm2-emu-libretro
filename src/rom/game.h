@@ -98,6 +98,7 @@ enum class AnalogControl : u8 {
     Curving,
     Swing,
     Inclining,
+    Elevation,  ///< Desert Tank centred turret-elevation axis.
     Bat1,       ///< Dynamite Baseball bat swing.
     Bat2,
 };

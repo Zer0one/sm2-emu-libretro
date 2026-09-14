@@ -160,6 +160,7 @@ namespace {
         {"curving",   AnalogControl::Curving},
         {"swing",     AnalogControl::Swing},
         {"inclining", AnalogControl::Inclining},
+        {"elevation", AnalogControl::Elevation},
         {"bat1",      AnalogControl::Bat1},
         {"bat2",      AnalogControl::Bat2},
     };
@@ -437,8 +438,7 @@ bool GameDatabase::load(const std::string& path)
                 return false;
             }
 
-            // A pedal rests released and everything else rests centred, matching
-            // the default values in MAME's PORT_BIT declarations.
+            // Pedals and bat levers rest released; everything else rests centred.
             const bool pedal = channel.control == AnalogControl::Accel
                             || channel.control == AnalogControl::Brake
                             || channel.control == AnalogControl::Bat1
