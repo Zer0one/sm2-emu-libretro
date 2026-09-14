@@ -19,6 +19,11 @@ import struct
 import subprocess
 import wave
 
+RETRO_DEVICE_JOYPAD = 1
+RETRO_DEVICE_MOUSE = 2
+RETRO_DEVICE_LIGHTGUN = 4
+RETRO_DEVICE_ANALOG = 5
+
 
 def read_recording(path):
     """Preserve and decode the known padded WAV header in RetroArch 1.22.2.
@@ -37,7 +42,7 @@ def read_recording(path):
         assert struct.unpack_from('<I',data,24)[0]==16
         tag,channels,rate,byte_rate,block,bits=struct.unpack_from('<HHIIHH',data,28)
         size=struct.unpack_from('<I',data,52)[0]
-        assert tag==1 and channels==2 and rate==44100 and bits==16 and block==4
+        assert tag==1 and channels==2 and rate>0 and bits==16 and block==4
         assert byte_rate==rate*block and size==len(data)-56 and size%block==0
         assert struct.unpack_from('<I',data,8)[0]==len(data)-12
         pcm=data[56:]
@@ -53,6 +58,31 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     for name in ['retroarch','core','system','rom','output']:
         p.add_argument('--'+name,type=Path,required=True)
+    p.add_argument('--set-name',default='vf2',help='ROM set name used for save and capture files')
+    p.add_argument('--driving-inputs',action='store_true',
+                   help='Add steering, pedals and four-speed gate input to the replay')
+    p.add_argument('--sequential-inputs',action='store_true',
+                   help='Add steering, pedals, View 1/2 and sequential shift input to the replay')
+    p.add_argument('--analog-joystick-inputs',action='store_true',
+                   help='Add left-stick X/Y and Sky Target action buttons to the replay')
+    p.add_argument('--desert-inputs',action='store_true',
+                   help='Add Desert Tank steering, elevation, accelerator, weapons, Shift and VR inputs')
+    p.add_argument('--desert-elevation-control',choices=['relative','absolute'],default='relative')
+    p.add_argument('--desert-elevation-speed',choices=[str(value) for value in range(10,201,10)],default='100')
+    p.add_argument('--desert-elevation-axis',choices=['normal','inverted'],default='normal')
+    p.add_argument('--ski-super-g-swing-axis',choices=['inverted','normal'],default='inverted')
+    p.add_argument('--water-ski-slide-axis',choices=['inverted','normal'],default='inverted')
+    p.add_argument('--top-skater-curving-axis',choices=['inverted','normal'],default='inverted')
+    p.add_argument('--bel-inputs',action='store_true',
+                   help='Add left-stick gun aim plus Shot and Missile to the replay')
+    p.add_argument('--gun-inputs',action='store_true',
+                   help='Add left-stick gun aim and Shot to the replay')
+    p.add_argument('--gun-secondary',choices=['none','reload','missile'],default='none',
+                   help='Optional East action for --gun-inputs')
+    p.add_argument('--offscreen-reload-shortcut',choices=['enabled','disabled'],default='enabled',
+                   help='Core option for explicit RetroPad, Mouse and Lightgun reload inputs')
+    p.add_argument('--crosshairs',choices=['0','1','2','3'],default='0',
+                   help='Crosshair mask: disabled, P1, P2, or both players')
     p.add_argument('--timeout',type=int,default=180)
     p.add_argument('--renderer',choices=['software','vulkan','opengl'],default='software')
     p.add_argument('--opengl-driver',choices=['gl','glcore'],default='glcore',
@@ -60,6 +90,7 @@ def main():
     p.add_argument('--scale',type=int,choices=range(1,5),default=1)
     p.add_argument('--av-timing',choices=['native','60hz'],default='native')
     p.add_argument('--timing-overlay',choices=['disabled','enabled'],default='disabled')
+    p.add_argument('--initial-nvram-setup',choices=['enabled','disabled'],default='enabled')
     p.add_argument('--nvram-settings',choices=['disabled','enabled'],default='disabled')
     p.add_argument('--vf2-country',choices=['japan','usa','export'],default='japan')
     p.add_argument('--vf2-drink',choices=['ok','ng'],default='ok')
@@ -72,11 +103,16 @@ def main():
     p.add_argument('--input-driver', default='cocoa' if platform.system()=='Darwin' else 'x')
     p.add_argument('--moltenvk',type=Path,help='Optional macOS MoltenVK library, used only by the test process')
     a=p.parse_args()
+    gun_inputs=a.gun_inputs or a.bel_inputs
+    input_modes=(a.driving_inputs,a.sequential_inputs,a.analog_joystick_inputs,
+                 a.desert_inputs,gun_inputs)
+    if sum(input_modes)>1:
+        p.error('input replay modes are mutually exclusive')
     out=a.output.resolve();out.mkdir(parents=True,exist_ok=False)
     for directory in ['saves','states','screenshots','playlists','config']:
         (out/directory).mkdir()
     if a.initial_srm:
-        (out/'saves'/'vf2.srm').write_bytes(a.initial_srm.resolve(strict=True).read_bytes())
+        (out/'saves'/f'{a.set_name}.srm').write_bytes(a.initial_srm.resolve(strict=True).read_bytes())
     movie=bytearray(struct.pack('<6I',0x42535632,1,0,0,1,0))
     # RetroArch 1.22.2 bsv_movie_reset_playback reads 40 bytes and only
     # seeks back to byte 24 when a v1 save state exists. This core has none.
@@ -87,12 +123,71 @@ def main():
         if 800<=frame<810 or 820<=frame<830:pressed.add(2)  # Select / coin
         if 870<=frame<880 or 950<=frame<960 or 1050<=frame<1060:pressed.add(3)
         if frame>1100:
-            if frame%30<8:pressed.update([0,8,1])  # South, East, West
-            if frame%120<60:pressed.add(7)  # Right
-        movie+=struct.pack('<BH',0,32)
+            if a.driving_inputs:
+                if frame<1110:pressed.add(1)  # West / Neutral before engaging the gate
+            elif a.sequential_inputs:
+                if frame%480<120:pressed.add(4)  # D-Pad Up / View 1
+                elif frame%480<240:pressed.add(5)  # D-Pad Down / View 2
+                if frame%360<12:pressed.add(10)  # L1 / Shift Down
+                elif frame%360<24:pressed.add(11)  # R1 / Shift Up
+            elif a.analog_joystick_inputs:
+                if frame%90<12:pressed.add(0)  # South / Machine Gun
+                if frame%360<12:pressed.add(8)  # East / Missile
+                if frame%480<12:pressed.add(9)  # North / View Change
+            elif a.desert_inputs:
+                if frame%90<12:pressed.add(0)  # South / Machine Gun
+                if frame%180<12:pressed.add(8)  # East / Cannon
+                if frame%480<12:pressed.add(1)  # West / Shift toggle
+                if frame%600<12:pressed.add(4)  # D-Pad Up / VR3 (Red)
+                elif frame%600<24:pressed.add(5)  # D-Pad Down / VR1 (Blue)
+                elif frame%600<36:pressed.add(6)  # D-Pad Left / VR2 (Green)
+            elif gun_inputs:
+                if frame%90<12:pressed.add(0)  # South / Shot
+                if (a.bel_inputs or a.gun_secondary!='none') and frame%360<12:
+                    pressed.add(8)  # East / Reload Offscreen or Missile
+            else:
+                if frame%30<8:pressed.update([0,8,1])  # South, East, West
+                if frame%120<60:pressed.add(7)  # Right
+        analog_axes={(port,index,axis):0 for port in range(2)
+                     for index in range(2) for axis in range(2)}
+        analog_buttons={(port,button):0 for port in range(2) for button in range(16)}
+        if (a.driving_inputs or a.sequential_inputs) and frame>1100:
+            analog_axes[(0,0,0)]=-18000 if (frame//180)%2==0 else 18000
+            analog_buttons[(0,13)]=0 if frame%180<20 else 32767  # R2 / Accelerator
+            if frame%360<30:analog_buttons[(0,12)]=24576  # L2 / Brake
+        if a.analog_joystick_inputs and frame>1100:
+            analog_axes[(0,0,0)]=-18000 if (frame//180)%2==0 else 18000
+            analog_axes[(0,0,1)]=-14000 if (frame//240)%2==0 else 14000
+        if a.desert_inputs and frame>1100:
+            analog_axes[(0,0,0)]=-18000 if (frame//180)%2==0 else 18000
+            elevation_phase=(frame//180)%3
+            elevation_value=(-24000,0,24000)[elevation_phase]
+            elevation_stick=0 if (frame//540)%2==0 else 1
+            analog_axes[(0,elevation_stick,1)]=elevation_value
+            analog_buttons[(0,13)]=0 if frame%180<20 else 32767  # R2 / Accelerator
+        if gun_inputs and frame>1100:
+            analog_axes[(0,0,0)]=-22000 if (frame//180)%2==0 else 22000
+            analog_axes[(0,0,1)]=-18000 if (frame//240)%2==0 else 18000
+        if a.driving_inputs and frame>1100:
+            quadrant=(frame//240)%4
+            analog_axes[(0,1,0)]=(-20000,-20000,20000,20000)[quadrant]
+            analog_axes[(0,1,1)]=(-20000,20000,-20000,20000)[quadrant]
+        movie+=struct.pack('<BH',0,96)
         for port in range(2):
             for button in range(16):
-                movie+=struct.pack('<4BHh',port,1,0,0,button,int(port==0 and button in pressed))
+                movie+=struct.pack('<4BHh',port,RETRO_DEVICE_JOYPAD,0,0,button,
+                                   int(port==0 and button in pressed))
+            for index in range(2):
+                for axis in range(2):
+                    movie+=struct.pack('<4BHh',port,RETRO_DEVICE_ANALOG,index,0,axis,
+                                       analog_axes[(port,index,axis)])
+            for button in range(16):
+                movie+=struct.pack('<4BHh',port,RETRO_DEVICE_ANALOG,2,0,button,
+                                   analog_buttons[(port,button)])
+            for mouse_id in range(4):
+                movie+=struct.pack('<4BHh',port,RETRO_DEVICE_MOUSE,0,0,mouse_id,0)
+            for lightgun_id in (2,3,6,7,13,14,15,16):
+                movie+=struct.pack('<4BHh',port,RETRO_DEVICE_LIGHTGUN,0,0,lightgun_id,0)
         movie+=b'f'
     replay=out/'vf2-inputs.replay';replay.write_bytes(movie)
     hardware=a.renderer!='software'
@@ -118,6 +213,16 @@ def main():
         f'sm2_renderer = "{a.renderer}"\nsm2_internal_resolution = "{a.scale}"\n'
         f'sm2_av_timing = "{a.av_timing}"\n'
         f'sm2_timing_overlay = "{a.timing_overlay}"\n'
+        f'sm2_gun_input = "{"analog" if gun_inputs else "hybrid"}"\n'
+        f'sm2_offscreen_reload_shortcut = "{a.offscreen_reload_shortcut}"\n'
+        f'sm2_crosshairs = "{a.crosshairs}"\n'
+        f'sm2_desert_elevation_control = "{a.desert_elevation_control}"\n'
+        f'sm2_desert_elevation_speed = "{a.desert_elevation_speed}"\n'
+        f'sm2_desert_elevation_axis = "{a.desert_elevation_axis}"\n'
+        f'sm2_ski_super_g_swing_axis = "{a.ski_super_g_swing_axis}"\n'
+        f'sm2_water_ski_slide_axis = "{a.water_ski_slide_axis}"\n'
+        f'sm2_top_skater_curving_axis = "{a.top_skater_curving_axis}"\n'
+        f'sm2_initial_nvram_setup = "{a.initial_nvram_setup}"\n'
         f'sm2_nvram_settings = "{a.nvram_settings}"\n'
         f'sm2_nvram_vf2_country = "{a.vf2_country}"\n'
         f'sm2_nvram_vf2_drink = "{a.vf2_drink}"\n')
@@ -137,7 +242,8 @@ def main():
     config.write_text(''.join(f'{k} = "{v}"\n' for k,v in cfg.items()))
     command=[str(a.retroarch.resolve()),'-v','-c',str(config),'-L',str(a.core.resolve()),
              '-P',str(replay),'--max-frames','2300','--max-frames-ss',
-             '--max-frames-ss-path',str(out/'vf2-gameplay.png'),'-r',str(out/'vf2.wav'),str(a.rom.resolve())]
+             '--max-frames-ss-path',str(out/f'{a.set_name}-gameplay.png'),
+             '-r',str(out/f'{a.set_name}.wav'),str(a.rom.resolve())]
     (out/'command.json').write_text(json.dumps(command,indent=2)+'\n')
     started=time.monotonic()
     with (out/'run.log').open('w') as log:
@@ -158,29 +264,32 @@ def main():
         assert '[libretro ERROR]' not in run_log
     else:
         assert '[SM2 GPU] Ready:' not in run_log
-    png=(out/'vf2-gameplay.png').read_bytes();assert png.startswith(b'\x89PNG\r\n\x1a\n')
-    params,pcm,recording_format=read_recording(out/'vf2.wav')
-    assert params.nchannels==2 and params.sampwidth==2 and params.framerate==44100
+    png=(out/f'{a.set_name}-gameplay.png').read_bytes();assert png.startswith(b'\x89PNG\r\n\x1a\n')
+    params,pcm,recording_format=read_recording(out/f'{a.set_name}.wav')
+    assert params.nchannels==2 and params.sampwidth==2 and params.framerate>0
     peak=max(map(abs,array.array('h',pcm)))
     assert peak>0 and params.nframes>44100*20
-    srm=(out/'saves'/'vf2.srm').read_bytes()
+    srm=(out/'saves'/f'{a.set_name}.srm').read_bytes()
     assert len(srm)==64+16384+128 and srm[:8]==b'SM2SRAM\0'
-    country=srm[64+0x3350]
-    expected={'japan':0,'usa':1,'export':2}[a.vf2_country]
-    if a.nvram_settings=='enabled': assert country==expected
-    drink_ng=bool(srm[64+0x3351]&0x08)
-    expected_drink={'ok':False,'ng':True}[a.vf2_drink]
-    if a.nvram_settings=='enabled': assert drink_ng==expected_drink
-    difficulty=srm[64+0x3342]
-    expected_difficulty={'easy':0,'normal':1,'hard':2,'hardest':3}[a.vf2_difficulty]
-    display_crt=bool(srm[64+0x3351]&0x04)
-    if a.nvram_settings=='enabled':
-        assert difficulty==expected_difficulty
-        assert display_crt==(a.vf2_display_type=='crt')
-    report={'recording_format':recording_format,'renderer':a.renderer,'internal_scale':a.scale,'av_timing':a.av_timing,'timing_overlay':a.timing_overlay,'vf2_country':country,'vf2_drink':'NG' if drink_ng else 'OK','vf2_difficulty':difficulty,'vf2_display_type':'C.R.T.' if display_crt else 'Projector','save_ram_size':len(srm),'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,
+    report={'set_name':a.set_name,'recording_format':recording_format,'renderer':a.renderer,'internal_scale':a.scale,'av_timing':a.av_timing,'timing_overlay':a.timing_overlay,'crosshairs':a.crosshairs,'save_ram_size':len(srm),'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,
             'audio_peak':peak,'audio_sha256':hashlib.sha256(pcm).hexdigest(),
             'screenshot_sha256':hashlib.sha256(png).hexdigest(),
             'note':'Inspect screenshot for gameplay; audible quality and physical devices require manual validation.'}
+    if a.set_name=='vf2':
+        country=srm[64+0x3350]
+        expected={'japan':0,'usa':1,'export':2}[a.vf2_country]
+        drink_ng=bool(srm[64+0x3351]&0x08)
+        difficulty=srm[64+0x3342]
+        expected_difficulty={'easy':0,'normal':1,'hard':2,'hardest':3}[a.vf2_difficulty]
+        display_crt=bool(srm[64+0x3351]&0x04)
+        if a.nvram_settings=='enabled':
+            assert country==expected
+            assert drink_ng=={'ok':False,'ng':True}[a.vf2_drink]
+            assert difficulty==expected_difficulty
+            assert display_crt==(a.vf2_display_type=='crt')
+        report.update({'vf2_country':country,'vf2_drink':'NG' if drink_ng else 'OK',
+                       'vf2_difficulty':difficulty,
+                       'vf2_display_type':'C.R.T.' if display_crt else 'Projector'})
     (out/'result.json').write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report,indent=2))
 if __name__=='__main__':main()

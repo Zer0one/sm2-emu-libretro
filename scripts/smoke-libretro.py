@@ -173,13 +173,21 @@ def main():
     (out/'software_frame.ppm').write_bytes(ppm)
     with wave.open(str(out/'audio.wav'),'wb') as w:
         w.setparams((2,2,int(av.timing.rate),0,'NONE','not compressed')); w.writeframes(pcm)
+    save_size=lib.retro_get_memory_size(0)
+    save_data=C.string_at(lib.retro_get_memory_data(0),save_size)
+    assert save_size==16576 and save_data[:8]==b'SM2SRAM\0'
     lib.retro_unload_game()
-    nvram_dirs=list(saves.glob('*/*')); assert len(nvram_dirs)==1
+    (saves/f'{args.rom.stem}.srm').write_bytes(save_data)
+    assert not any(path.is_dir() for path in saves.iterdir())
+    payload=save_data[64:]
+    nvram={f'{args.rom.stem}.nv':sha(payload[:16384]),
+           f'{args.rom.stem}.eeprom':sha(payload[16384:])}
     report = {'frames':videos,'duplicated_frames':duplicates,'fps':av.timing.fps,
               'av_timing':args.av_timing,'timing_overlay':args.timing_overlay,
               'overlay_updates':len(overlays),'audio_rate':av.timing.rate,
               'audio_frames':len(pcm)//4,'video_sha256':sha(ppm),'audio_sha256':sha(pcm),
-              'nvram':files(nvram_dirs[0]),'abi_checks':True,'backpressure':args.backpressure}
+              'nvram':nvram,'save_layout':'frontend directory only',
+              'abi_checks':True,'backpressure':args.backpressure}
     if args.reference:
         assert args.av_timing=='native','Headless byte comparison requires native timing'
         reference=args.reference
@@ -188,7 +196,7 @@ def main():
             expected=w.readframes(w.getnframes())
         report['comparison']={'video':ppm==(reference/'software_frame.ppm').read_bytes(),
                               'audio':bytes(pcm)==expected,
-                              'nvram':files(nvram_dirs[0])==files(reference/'nvram')}
+                              'nvram':nvram==files(reference/'nvram')}
         assert all(report['comparison'].values()), report
     if args.exercise:
         before = videos

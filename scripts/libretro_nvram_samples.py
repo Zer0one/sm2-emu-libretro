@@ -894,13 +894,11 @@ def run_sample(
     if baseline_srm:
         shutil.copy2(baseline_srm, work / "saves" / f"{settings.game}.srm")
     if settings.standard_nvram:
-        destination = work / "saves" / "sm2-emu" / settings.game
-        destination.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(settings.standard_nvram, destination / f"{settings.game}.nv")
+        shutil.copy2(settings.standard_nvram,
+                     work / "saves" / f"{settings.game}.nv")
     if settings.standard_eeprom:
-        destination = work / "saves" / "sm2-emu" / settings.game
-        destination.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(settings.standard_eeprom, destination / f"{settings.game}.eeprom")
+        shutil.copy2(settings.standard_eeprom,
+                     work / "saves" / f"{settings.game}.eeprom")
 
     core_log = work / "logs" / f"{stem}.log"
     console_tmp = work / "logs" / f"{stem}.console.log"
