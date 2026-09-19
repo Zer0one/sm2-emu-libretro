@@ -35,6 +35,9 @@ AUDIO = C.CFUNCTYPE(None, C.c_int16, C.c_int16)
 BATCH = C.CFUNCTYPE(C.c_size_t, C.POINTER(C.c_int16), C.c_size_t)
 POLL = C.CFUNCTYPE(None)
 STATE = C.CFUNCTYPE(C.c_int16, C.c_uint, C.c_uint, C.c_uint, C.c_uint)
+RUMBLE = C.CFUNCTYPE(C.c_bool, C.c_uint, C.c_int, C.c_uint16)
+class RumbleInterface(C.Structure):
+    _fields_ = [('set_rumble_state', RUMBLE)]
 
 def sha(data): return hashlib.sha256(data).hexdigest()
 def files(path):
@@ -55,6 +58,13 @@ def main():
     parser.add_argument('--av-timing', choices=['native','60hz'], default='native')
     parser.add_argument('--timing-overlay', choices=['disabled','enabled'], default='disabled')
     parser.add_argument('--audio-balance', choices=['enabled','disabled'], default='enabled')
+    parser.add_argument('--aspect-ratio', choices=['auto','4_3','16_9'], default='auto')
+    parser.add_argument('--expect-aspect', choices=['4:3','16:9'], default='4:3')
+    parser.add_argument('--crosshairs', choices=['auto','0','1','2','3'], default='auto')
+    parser.add_argument('--crosshair-style', choices=['sm2','supermodel'], default='sm2')
+    parser.add_argument('--automatic-start-gear', choices=['enabled','disabled'], default='enabled')
+    parser.add_argument('--core-option', action='append', default=[], metavar='KEY=VALUE',
+                        help='Supply an additional Libretro core option')
     args = parser.parse_args()
     if args.frames <= 0: parser.error('--frames must be positive')
     out = args.output.resolve(); out.mkdir(parents=True, exist_ok=False)
@@ -62,7 +72,16 @@ def main():
     directories = {9: str(args.system.resolve()).encode(), 31: str(saves).encode()}
     option_values = {b'sm2_av_timing': args.av_timing.encode(),
                      b'sm2_timing_overlay': args.timing_overlay.encode(),
-                     b'sm2_audio_balance': args.audio_balance.encode()}
+                     b'sm2_audio_balance': args.audio_balance.encode(),
+                     b'sm2_aspect_ratio': args.aspect_ratio.encode(),
+                     b'sm2_crosshairs': args.crosshairs.encode(),
+                     b'sm2_crosshair_style': args.crosshair_style.encode(),
+                     b'sm2_automatic_start_gear': args.automatic_start_gear.encode()}
+    for assignment in args.core_option:
+        if '=' not in assignment: parser.error('--core-option requires KEY=VALUE')
+        key, value = assignment.split('=', 1)
+        if not key or not value: parser.error('--core-option requires non-empty KEY and VALUE')
+        option_values[key.encode()] = value.encode()
     lib = C.CDLL(str(args.core.resolve()))
     for name, arg in [('environment', ENV), ('video_refresh', VIDEO), ('audio_sample', AUDIO),
                       ('audio_sample_batch', BATCH), ('input_poll', POLL), ('input_state', STATE)]:
@@ -77,8 +96,16 @@ def main():
     lib.retro_get_memory_data.argtypes = [C.c_uint]; lib.retro_get_memory_data.restype = C.c_void_p
     lib.retro_set_controller_port_device.argtypes = [C.c_uint, C.c_uint]
     pixels = b''; pcm = bytearray(); frame = 0; videos = 0; polls = 0; batches = 0
-    duplicates = 0; statuses = []
+    duplicates = 0; statuses = []; geometry_updates = []
+    rumble_calls = 0; rumble_peak = [0, 0]
     errors = []; reject_pixel = False; shutdown = False
+    @RUMBLE
+    def rumble(port, effect, strength):
+        nonlocal rumble_calls
+        if port != 0 or effect not in (0, 1): return False
+        rumble_calls += 1
+        rumble_peak[effect] = max(rumble_peak[effect], strength)
+        return True
     @ENV
     def env(cmd, data):
         nonlocal shutdown
@@ -90,6 +117,12 @@ def main():
             var=C.cast(data,C.POINTER(Variable)).contents
             var.value=option_values.get(var.key); return var.value is not None
         if cmd == 17: C.cast(data, C.POINTER(C.c_bool))[0] = False; return True
+        if cmd == 23:
+            C.cast(data, C.POINTER(RumbleInterface)).contents.set_rumble_state = rumble
+            return True
+        if cmd == 37:
+            geometry_updates.append(C.cast(data, C.POINTER(Geometry)).contents.aspect)
+            return True
         if cmd == 60:
             statuses.append(C.cast(data,C.POINTER(MessageExt)).contents.msg.decode()); return True
         if cmd == 7: shutdown = True; return True
@@ -155,11 +188,13 @@ def main():
     native_fps=25000000/434600
     assert abs(av.timing.fps-(60.0 if args.av_timing=='60hz' else native_fps)) < 1e-9
     assert av.timing.rate in (44100,44642)
-    assert abs(av.geometry.aspect-4/3) < 1e-6
     for frame in range(args.frames):
         lib.retro_run()
         assert not shutdown, 'Core requested shutdown'
     assert videos == polls == args.frames and not errors
+    current_av = AV(); lib.retro_get_system_av_info(C.byref(current_av))
+    expected_aspect = 16/9 if args.expect_aspect == '16:9' else 4/3
+    assert abs(current_av.geometry.aspect-expected_aspect) < 1e-6
     if args.av_timing=='60hz':
         expected=args.frames*(1-native_fps/60)
         assert abs(duplicates-expected)<=1,(duplicates,expected)
@@ -187,6 +222,11 @@ def main():
     report = {'frames':videos,'duplicated_frames':duplicates,'fps':av.timing.fps,
               'av_timing':args.av_timing,'timing_overlay':args.timing_overlay,
               'audio_balance':args.audio_balance,
+              'aspect_ratio':args.aspect_ratio,'resolved_aspect':current_av.geometry.aspect,
+              'geometry_updates':geometry_updates,
+              'crosshairs':args.crosshairs,'crosshair_style':args.crosshair_style,
+              'automatic_start_gear':args.automatic_start_gear,
+              'rumble_calls':rumble_calls,'rumble_peak':rumble_peak,
               'overlay_updates':len(overlays),'audio_rate':av.timing.rate,
               'audio_frames':len(pcm)//4,'video_sha256':sha(ppm),'audio_sha256':sha(pcm),
               'nvram':nvram,'save_layout':'frontend directory only',

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
+#include "crosshair.h"
 #include "libretro.h"
 #include "input.h"
 #include "nvram_settings.h"
@@ -17,6 +18,7 @@
 
 namespace sm2::libretro {
 enum class AVTimingMode { Native, Compatibility60Hz };
+enum class AspectRatioMode { Automatic, FourThree, SixteenNine };
 
 inline retro_environment_t option_environment = nullptr;
 inline std::string option_game;
@@ -89,12 +91,28 @@ inline void build_option_definitions()
     retro_core_option_v2_definition initial_nvram{};
     initial_nvram.key = "sm2_initial_nvram_setup";
     initial_nvram.desc = "Automatic Initial NVRAM Setup";
-    initial_nvram.info = "When no frontend .srm or valid standalone .nv/.eeprom exists, initialize supported parent sets from their validated Service Menu sample before the first emulated frame, then apply the selected country, safe offline/link values and core defaults such as Daytona's Deluxe cabinet and Super GT 24h's I/O Type C. Automatic setup never replaces existing saves; normal game writes still persist. Delete the game's save data to regenerate the initial setup.";
+    initial_nvram.info = "When no frontend .srm or valid standalone .nv/.eeprom exists, initialize supported sets from a validated game sample or a byte-identical parent sample before the first emulated frame, then apply the selected country, safe offline/link values and core defaults such as Daytona's Deluxe cabinet and Super GT 24h's I/O Type C. Automatic setup never replaces existing saves; normal game writes still persist. Delete the game's save data to regenerate the initial setup.";
     initial_nvram.category_key = "system";
     initial_nvram.values[0] = {"enabled", "Enabled"};
     initial_nvram.values[1] = {"disabled", "Disabled"};
     initial_nvram.default_value = "enabled";
     registered_definitions.push_back(initial_nvram);
+
+    retro_core_option_v2_definition linked_cabinets{};
+    linked_cabinets.key = "sm2_linked_cabinets";
+    linked_cabinets.desc = "Linked Cabinets (Restart Required)";
+    linked_cabinets.info = "Set the total number of Model 2 cabinets expected in the RetroArch Netplay session. Disabled preserves the standalone one-node loopback. Two cabinets are currently validated for the Daytona USA family; larger sessions are reserved for the planned networking extension. Every instance must use the same ROM, core and value, then restart content.";
+    linked_cabinets.category_key = "system";
+    linked_cabinets.values[0] = {"disabled", "Disabled"};
+    linked_cabinets.values[1] = {"2", "2 Cabinets"};
+    linked_cabinets.values[2] = {"3", "3 Cabinets"};
+    linked_cabinets.values[3] = {"4", "4 Cabinets"};
+    linked_cabinets.values[4] = {"5", "5 Cabinets"};
+    linked_cabinets.values[5] = {"6", "6 Cabinets"};
+    linked_cabinets.values[6] = {"7", "7 Cabinets"};
+    linked_cabinets.values[7] = {"8", "8 Cabinets"};
+    linked_cabinets.default_value = "disabled";
+    registered_definitions.push_back(linked_cabinets);
 
     retro_core_option_v2_definition master{};
     master.key = "sm2_nvram_settings";
@@ -130,15 +148,6 @@ inline void build_option_definitions()
         registered_definitions.push_back(definition);
     }
 
-    retro_core_option_v2_definition linked_cabinets{};
-    linked_cabinets.key = "sm2_linked_cabinets";
-    linked_cabinets.desc = "Linked Cabinets (Restart Required)";
-    linked_cabinets.info = "Single Cabinet preserves the standalone one-node loopback. 2 Cabinets carries the Model 2 communication-board ring through RetroArch Netplay. Currently validated only for the Daytona USA family. Both instances must use the same ROM and core; configure the host as Master and the client as Slave through Daytona's Link ID NVRAM setting, then restart content.";
-    linked_cabinets.category_key = "system";
-    linked_cabinets.values[0] = {"1", "Single Cabinet (Default)"};
-    linked_cabinets.values[1] = {"2", "2 Cabinets (Experimental)"};
-    linked_cabinets.default_value = "1";
-    registered_definitions.push_back(linked_cabinets);
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
     retro_core_option_v2_definition renderer{};
     renderer.key = "sm2_renderer";
@@ -194,6 +203,17 @@ inline void build_option_definitions()
     registered_definitions.push_back(upscale_2d);
 #endif
 
+    retro_core_option_v2_definition aspect_ratio{};
+    aspect_ratio.key = "sm2_aspect_ratio";
+    aspect_ratio.desc = "Aspect Ratio";
+    aspect_ratio.info = "Automatic follows the original cabinet configuration stored in NVRAM: Twin cabinets use 4:3 and supported Deluxe cabinets use 16:9. The explicit values override the cabinet setting. Changes take effect immediately.";
+    aspect_ratio.category_key = "video";
+    aspect_ratio.values[0] = {"auto", "Auto"};
+    aspect_ratio.values[1] = {"4_3", "4:3"};
+    aspect_ratio.values[2] = {"16_9", "16:9"};
+    aspect_ratio.default_value = "auto";
+    registered_definitions.push_back(aspect_ratio);
+
     retro_core_option_v2_definition timing{};
     timing.key = "sm2_av_timing";
     timing.desc = "A/V Timing (Restart Required)";
@@ -227,14 +247,25 @@ inline void build_option_definitions()
     retro_core_option_v2_definition crosshair{};
     crosshair.key = "sm2_crosshairs";
     crosshair.desc = "Show Crosshair";
-    crosshair.info = "Select which native SM2-Emu vector crosshair is displayed in gun games. Changes take effect immediately.";
+    crosshair.info = "Automatic follows SM2-Emu: Player 1 in serial lightgun games and the game's own reticle in positional-gun games. Explicit player selections also enable the external crosshair for positional guns. Changes take effect immediately.";
     crosshair.category_key = "input";
-    crosshair.values[0] = {"0", "Disabled"};
-    crosshair.values[1] = {"1", "Player 1 Only"};
-    crosshair.values[2] = {"2", "Player 2 Only"};
-    crosshair.values[3] = {"3", "Players 1 & 2"};
-    crosshair.default_value = "0";
+    crosshair.values[0] = {"auto", "Automatic"};
+    crosshair.values[1] = {"0", "Disabled"};
+    crosshair.values[2] = {"1", "Player 1 Only"};
+    crosshair.values[3] = {"2", "Player 2 Only"};
+    crosshair.values[4] = {"3", "Players 1 & 2"};
+    crosshair.default_value = "auto";
     registered_definitions.push_back(crosshair);
+
+    retro_core_option_v2_definition crosshair_style{};
+    crosshair_style.key = "sm2_crosshair_style";
+    crosshair_style.desc = "Crosshair Style";
+    crosshair_style.info = "Choose the upstream SM2-Emu circle and cardinal lines or the Supermodel four-wedge vector reticle. Changes take effect immediately.";
+    crosshair_style.category_key = "input";
+    crosshair_style.values[0] = {"sm2", "SM2-Emu"};
+    crosshair_style.values[1] = {"supermodel", "Supermodel"};
+    crosshair_style.default_value = "sm2";
+    registered_definitions.push_back(crosshair_style);
 
     retro_core_option_v2_definition gun_input{};
     gun_input.key = "sm2_gun_input";
@@ -278,6 +309,16 @@ inline void build_option_definitions()
     shifter.values[1] = {"standard", "Standard"};
     shifter.default_value = "h_gate";
     registered_definitions.push_back(shifter);
+
+    retro_core_option_v2_definition automatic_start_gear{};
+    automatic_start_gear.key = "sm2_automatic_start_gear";
+    automatic_start_gear.desc = "Automatic Start Gear (Restart Required)";
+    automatic_start_gear.info = "Use the initial gear declared by SM2-Emu for rolling starts. Enabled starts the Daytona USA family in fourth gear; Disabled starts four-speed games in first gear. Reload content after changing this option.";
+    automatic_start_gear.category_key = "input";
+    automatic_start_gear.values[0] = {"enabled", "Enabled"};
+    automatic_start_gear.values[1] = {"disabled", "Disabled"};
+    automatic_start_gear.default_value = "enabled";
+    registered_definitions.push_back(automatic_start_gear);
 
     retro_core_option_v2_definition desert_elevation_control{};
     desert_elevation_control.key = "sm2_desert_elevation_control";
@@ -388,6 +429,17 @@ inline AVTimingMode av_timing_mode()
                : AVTimingMode::Native;
 }
 
+inline AspectRatioMode aspect_ratio_mode()
+{
+    retro_variable option{"sm2_aspect_ratio", nullptr};
+    if (!(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option))
+        || !option.value)
+        return AspectRatioMode::Automatic;
+    if (std::strcmp(option.value, "4_3") == 0) return AspectRatioMode::FourThree;
+    if (std::strcmp(option.value, "16_9") == 0) return AspectRatioMode::SixteenNine;
+    return AspectRatioMode::Automatic;
+}
+
 inline bool timing_overlay_enabled()
 {
     retro_variable option{"sm2_timing_overlay", nullptr};
@@ -395,16 +447,28 @@ inline bool timing_overlay_enabled()
            option.value && std::strcmp(option.value, "enabled") == 0;
 }
 
-inline unsigned crosshair_mask()
+inline unsigned crosshair_mask(const rom::GameSpec& game)
 {
     retro_variable option{"sm2_crosshairs", nullptr};
     if (!(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option))
         || !option.value)
-        return 0;
-    if (std::strcmp(option.value, "enabled") == 0) return 3;
-    if (std::strcmp(option.value, "disabled") == 0) return 0;
-    return option.value[0] >= '0' && option.value[0] <= '3' && option.value[1] == '\0'
-        ? static_cast<unsigned>(option.value[0] - '0') : 0;
+        return game.lightgun.present ? 1u : 0u;
+    if (std::strcmp(option.value, "auto") == 0)
+        return game.lightgun.present ? 1u : 0u;
+    if (std::strcmp(option.value, "0") == 0) return 0;
+    if (std::strcmp(option.value, "1") == 0) return 1;
+    if (std::strcmp(option.value, "2") == 0) return 2;
+    if (std::strcmp(option.value, "3") == 0) return 3;
+    return game.lightgun.present ? 1u : 0u;
+}
+
+inline CrosshairStyle crosshair_style()
+{
+    retro_variable option{"sm2_crosshair_style", nullptr};
+    return option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+               && option.value && std::strcmp(option.value, "supermodel") == 0
+           ? CrosshairStyle::Supermodel
+           : CrosshairStyle::Sm2;
 }
 
 inline bool initial_nvram_setup_enabled()
@@ -419,6 +483,13 @@ inline bool four_speed_h_gate()
     retro_variable option{"sm2_four_speed_shifter", nullptr};
     return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
              && option.value && std::strcmp(option.value, "standard") == 0);
+}
+
+inline bool automatic_start_gear_enabled()
+{
+    retro_variable option{"sm2_automatic_start_gear", nullptr};
+    return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+             && option.value && std::strcmp(option.value, "disabled") == 0);
 }
 
 inline bool gamepad_rumble_enabled()
@@ -521,9 +592,11 @@ inline bool offscreen_reload_shortcut_enabled()
 inline unsigned linked_cabinets()
 {
     retro_variable option{"sm2_linked_cabinets", nullptr};
-    return option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
-            && option.value && std::strcmp(option.value, "2") == 0
-        ? 2u : 1u;
+    if (!option_environment || !option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+        || !option.value || std::strcmp(option.value, "disabled") == 0)
+        return 1;
+    const unsigned cabinets = static_cast<unsigned>(option.value[0] - '0');
+    return cabinets >= 2 && cabinets <= 8 && option.value[1] == '\0' ? cabinets : 1;
 }
 
 inline bool update_option_visibility()

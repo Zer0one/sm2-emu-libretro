@@ -314,6 +314,22 @@ public:
     /// command, low nibble the level.
     [[nodiscard]] virtual u8 drive_board_force() const { return 0; }
 
+    /// Bytes written to the force-feedback drive board since the previous
+    /// frontend update, in write order. Some games emit multiple bytes per frame.
+    struct DriveBoardWrites {
+        std::array<u8, 16> bytes{};
+        usize count = 0;
+
+        [[nodiscard]] std::span<const u8> view() const { return {bytes.data(), count}; }
+    };
+
+    [[nodiscard]] DriveBoardWrites take_drive_board_writes()
+    {
+        const DriveBoardWrites writes = m_drive_board_writes;
+        m_drive_board_writes.count = 0;
+        return writes;
+    }
+
     /// Log every access that lands outside a mapped region. Off by default.
     virtual void set_log_unmapped(bool enable) = 0;
 
@@ -321,6 +337,16 @@ public:
     virtual void log_burst_summary() const    = 0;
 
 protected:
+    void record_drive_board_write(u8 value)
+    {
+        if (m_drive_board_writes.count < m_drive_board_writes.bytes.size())
+            m_drive_board_writes.bytes[m_drive_board_writes.count++] = value;
+        else
+            m_drive_board_writes.bytes.back() = value;
+    }
+
+    DriveBoardWrites m_drive_board_writes;
+
     /// Per-core wall-clock accumulators, filled by each board's run_frame().
     /// See set_core_profiling() above for why this is gated rather than always
     /// measured.

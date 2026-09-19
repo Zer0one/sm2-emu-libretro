@@ -65,7 +65,7 @@ esempio, Ski Super G a Ski Champ o le motociclette al profilo Harley-Davidson.
 - **Driving:** Steering sullo stick sinistro X, Brake su L2, Accelerator su R2,
   Shift Down/Up su L/R; per quattro marce, stesso H-Gate/Standard sullo stick
   destro e Neutral su West. Daytona usa VR1 Red/Down, VR2 Blue/Left,
-  VR3 Yellow/Right, VR4 Green/Up. Sega Rally usa VR1 su Up e porta
+  VR3 Yellow/Right, VR4 Green/Up. Sega Rally usa VR1 su Down e porta
   `Handbrake (Analog)` su South, traducendolo negli estremi 0x00/0xFF di IN2.
 - **Gun:** riusare il nome di famiglia `Gun`; `Gun (Lightgun)`, `Gun (Mouse)`,
   `Gun (Mouse + Analog Stick)` e `Gun (Analog Sticks)` indicano la sorgente

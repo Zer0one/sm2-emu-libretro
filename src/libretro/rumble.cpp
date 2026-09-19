@@ -6,8 +6,6 @@
 
 namespace sm2::libretro {
 namespace {
-constexpr int kMinSteps = 1;
-constexpr int kFullSteps = 7;
 constexpr int kSteeringDeadzone = 7000;
 constexpr int kHoldFrames = 12;
 }
@@ -41,6 +39,7 @@ void GamepadRumble::clear_state()
     m_level = 0;
     m_direction = 0;
     m_hold = 0;
+    m_drive_command = {};
 }
 
 void GamepadRumble::stop()
@@ -54,9 +53,18 @@ void GamepadRumble::stop()
     clear_state();
 }
 
-void GamepadRumble::update(const rom::GameSpec& game, u8 drive_force, s16 steering,
-                           bool enabled)
+void GamepadRumble::update(const rom::GameSpec& game, std::span<const u8> drive_writes,
+                           s16 steering, bool enabled)
 {
+    for (const u8 value : drive_writes) {
+        const osd::DriveCommand command = osd::decode_drive_command(game.drive_protocol, value);
+        if (command.effect == osd::DriveCommand::Effect::Other) continue;
+        if (command.effect == osd::DriveCommand::Effect::Spring && !command.held
+            && m_drive_command.held)
+            continue;
+        m_drive_command = command;
+    }
+
     constexpr int ceiling = 65535;
     const bool active = enabled && game.has_steering();
     if (!active) {
@@ -65,19 +73,21 @@ void GamepadRumble::update(const rom::GameSpec& game, u8 drive_force, s16 steeri
         return;
     }
 
-    // Upstream 0.9.7: directional drive-board commands become short jolts.
+    // Short directional pushes and vibration commands become gamepad jolts.
     int impact = 0;
-    const int command = drive_force & 0xf0;
-    const int steps = drive_force & 0x0f;
-    if ((command == 0x50 || command == 0x60) && steps >= kMinSteps) {
+    if (m_drive_command.strength > 0 && !m_drive_command.held
+        && (m_drive_command.is_push()
+            || m_drive_command.effect == osd::DriveCommand::Effect::Vibrate)) {
         const int minimum_felt = ceiling / 4;
-        const int reach = std::min(steps, kFullSteps) - kMinSteps;
         impact = minimum_felt
-               + (ceiling - minimum_felt) * reach / (kFullSteps - kMinSteps);
-        const int direction = command == 0x50 ? -1 : 1;
-        if (direction != m_direction) {
-            impact = std::min(impact * 3 / 2, 65535);
-            m_direction = direction;
+               + (ceiling - minimum_felt) * m_drive_command.strength / osd::kDriveFull;
+        if (m_drive_command.is_push()) {
+            const int direction =
+                m_drive_command.effect == osd::DriveCommand::Effect::PushLeft ? 1 : -1;
+            if (direction != m_direction) {
+                impact = std::min(impact * 3 / 2, 65535);
+                m_direction = direction;
+            }
         }
     }
 

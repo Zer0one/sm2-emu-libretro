@@ -7,9 +7,14 @@
 namespace sm2::libretro {
 namespace {
 
-constexpr std::array<std::uint32_t, 2> kColours = {
+constexpr std::array<std::uint32_t, 2> kSupermodelColours = {
     0x00ff0000u, // Player 1: red, matching Supermodel's vector crosshair.
     0x0000ff00u, // Player 2: green.
+};
+
+constexpr std::array<std::uint32_t, 2> kSm2Colours = {
+    0x0000ff00u, // Player 1: green, matching upstream SM2-Emu.
+    0x0000c8ffu, // Player 2: cyan.
 };
 
 void add_clipped(CrosshairGeometry& geometry, int x, int y, int width, int height,
@@ -23,12 +28,79 @@ void add_clipped(CrosshairGeometry& geometry, int x, int y, int width, int heigh
     geometry.rectangles[geometry.count++] = {x0, y0, x1 - x0, y1 - y0, colour};
 }
 
+void add_sm2_crosshair(CrosshairGeometry& geometry, int cx, int cy, int scale,
+                       unsigned frame_width, unsigned frame_height,
+                       std::uint32_t colour)
+{
+    // Upstream draws an eight-pixel radius circle with four cardinal lines.
+    // Scale it with the core's internal raster so it retains the same apparent
+    // size after the frontend presents an upscaled frame.
+    const int radius = 8 * scale;
+    const int thickness = 2 * scale;
+    const int outer = radius + thickness / 2;
+    const int inner = std::max(0, radius - (thickness + 1) / 2);
+    for (int dy = -outer; dy <= outer; ++dy) {
+        const int outer_x = static_cast<int>(std::floor(std::sqrt(
+            static_cast<double>(outer * outer - dy * dy))));
+        int inner_x = -1;
+        if (std::abs(dy) < inner) {
+            inner_x = static_cast<int>(std::floor(std::sqrt(
+                static_cast<double>(inner * inner - dy * dy))));
+        }
+        if (inner_x < 0) {
+            add_clipped(geometry, cx - outer_x, cy + dy, 2 * outer_x + 1, 1,
+                        frame_width, frame_height, colour);
+        } else {
+            add_clipped(geometry, cx - outer_x, cy + dy, outer_x - inner_x, 1,
+                        frame_width, frame_height, colour);
+            add_clipped(geometry, cx + inner_x + 1, cy + dy, outer_x - inner_x, 1,
+                        frame_width, frame_height, colour);
+        }
+    }
+
+    const int near = (radius * 2) / 5;
+    const int far = (radius * 8) / 5;
+    const int half = thickness / 2;
+    add_clipped(geometry, cx - far, cy - half, far - near, thickness,
+                frame_width, frame_height, colour);
+    add_clipped(geometry, cx + near, cy - half, far - near, thickness,
+                frame_width, frame_height, colour);
+    add_clipped(geometry, cx - half, cy - far, thickness, far - near,
+                frame_width, frame_height, colour);
+    add_clipped(geometry, cx - half, cy + near, thickness, far - near,
+                frame_width, frame_height, colour);
+}
+
+void add_supermodel_crosshair(CrosshairGeometry& geometry, int cx, int cy, int scale,
+                              unsigned frame_width, unsigned frame_height,
+                              std::uint32_t colour)
+{
+    constexpr int layers = 8;
+    constexpr int base_half_width = 3;
+    const int gap = 2 * scale;
+    for (int layer = 0; layer < layers; ++layer) {
+        const int distance = gap + layer * scale;
+        const int half_width = std::max(scale,
+            ((layer + 1) * base_half_width * scale + layers - 1) / layers);
+        const int span = 2 * half_width + 1;
+        add_clipped(geometry, cx - half_width, cy - distance - scale + 1,
+                    span, scale, frame_width, frame_height, colour);
+        add_clipped(geometry, cx - half_width, cy + distance,
+                    span, scale, frame_width, frame_height, colour);
+        add_clipped(geometry, cx - distance - scale + 1, cy - half_width,
+                    scale, span, frame_width, frame_height, colour);
+        add_clipped(geometry, cx + distance, cy - half_width,
+                    scale, span, frame_width, frame_height, colour);
+    }
+}
+
 }  // namespace
 
 CrosshairState crosshair_state(const rom::GameSpec& game, const InputRuntime& runtime,
-                               unsigned mask)
+                               unsigned mask, CrosshairStyle style)
 {
     CrosshairState state{};
+    state.style = style;
     const InputProfile profile = recognize_profile(game);
     if (profile != InputProfile::Gun && profile != InputProfile::GunBehindEnemyLines)
         return state;
@@ -50,10 +122,6 @@ CrosshairGeometry crosshair_geometry(const CrosshairState& state, unsigned width
     if (!width || !height) return geometry;
     const int scale = std::max(1, std::min(static_cast<int>(width / 496u),
                                            static_cast<int>(height / 384u)));
-    constexpr int layers = 8;
-    constexpr int base_half_width = 3;
-    const int gap = 2 * scale;
-
     for (unsigned player = 0; player < state.aims.size(); ++player) {
         const auto& aim = state.aims[player];
         if (!aim.active) continue;
@@ -61,20 +129,12 @@ CrosshairGeometry crosshair_geometry(const CrosshairState& state, unsigned width
             std::clamp(aim.x, 0.0f, 1.0f) * static_cast<float>(width - 1)));
         const int cy = static_cast<int>(std::lround(
             std::clamp(aim.y, 0.0f, 1.0f) * static_cast<float>(height - 1)));
-        for (int layer = 0; layer < layers; ++layer) {
-            const int distance = gap + layer * scale;
-            const int half_width = std::max(scale,
-                ((layer + 1) * base_half_width * scale + layers - 1) / layers);
-            const int span = 2 * half_width + 1;
-            add_clipped(geometry, cx - half_width, cy - distance - scale + 1,
-                        span, scale, width, height, kColours[player]);
-            add_clipped(geometry, cx - half_width, cy + distance,
-                        span, scale, width, height, kColours[player]);
-            add_clipped(geometry, cx - distance - scale + 1, cy - half_width,
-                        scale, span, width, height, kColours[player]);
-            add_clipped(geometry, cx + distance, cy - half_width,
-                        scale, span, width, height, kColours[player]);
-        }
+        if (state.style == CrosshairStyle::Sm2)
+            add_sm2_crosshair(geometry, cx, cy, scale, width, height,
+                              kSm2Colours[player]);
+        else
+            add_supermodel_crosshair(geometry, cx, cy, scale, width, height,
+                                     kSupermodelColours[player]);
     }
     return geometry;
 }

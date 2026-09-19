@@ -10,7 +10,7 @@
   ======
 
   <game name= parent= board= preliminary= start1= protection= key=
-        gearbox= drive_board=>
+        gearbox= start_gear= drive_board= drive_protocol=>
     <title/> <version/> <manufacturer/> <year/>
     <inputs> <input type="..."/> ... </inputs>
     <analog>   <channel index= control= min= max= rest= reverse=/> ... </analog>
@@ -78,8 +78,10 @@
   Axis order is the board's own mux order, P1 Y, P1 X, P2 Y, P2 X.
 
   `gearbox="true"` marks a title whose IN1 bits 0x70 read a gear selector
-  rather than buttons (MAME's daytona_gearbox_r). `drive_board="true"` marks
-  one that latches force-feedback commands on port E.
+  rather than buttons (MAME's daytona_gearbox_r). `start_gear` selects the
+  initial gate position, from 0 (neutral) to 4. `drive_board="true"` marks one
+  that latches force-feedback commands on port E. `drive_protocol` says how to
+  read them: "daytona" (the default), "stcc" or "rally".
 
   `shift_buttons="true"` marks a title that shifts with two momentary buttons,
   Shift Up on IN1 0x10 and Shift Down on IN1 0x20, rather than the 0x70 gate
@@ -840,8 +842,9 @@
   </game>
 
 
-  <game name="daytona" gearbox="true" drive_board="true" vr_buttons="in0:0x20,in0:0x40,in0:0x80,in1:0x01" board="model2">
+  <game name="daytona" gearbox="true" start_gear="4" drive_board="true" vr_buttons="in0:0x20,in0:0x40,in0:0x80,in1:0x01" board="model2">
     <title>Daytona USA</title>
+    <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
     <year>1994</year>
 
@@ -940,8 +943,9 @@
     </roms>
   </game>
 
-  <game name="daytona93" gearbox="true" drive_board="true" parent="daytona" board="model2" preliminary="true">
+  <game name="daytona93" gearbox="true" start_gear="4" drive_board="true" parent="daytona" board="model2" preliminary="true">
     <title>Daytona USA</title>
+    <version>1993, Deluxe</version>
     <manufacturer>Sega</manufacturer>
     <year>1993</year>
 
@@ -1019,7 +1023,7 @@
     </roms>
   </game>
 
-  <game name="daytonas" gearbox="true" drive_board="true" parent="daytona" board="model2" preliminary="true">
+  <game name="daytonas" gearbox="true" start_gear="4" drive_board="true" parent="daytona" board="model2" preliminary="true">
     <title>Daytona USA</title>
     <version>with Saturn advertisements</version>
     <manufacturer>Sega</manufacturer>
@@ -1094,7 +1098,7 @@
     </roms>
   </game>
 
-  <game name="daytonase" gearbox="true" drive_board="true" parent="daytona" board="model2" preliminary="true">
+  <game name="daytonase" gearbox="true" start_gear="4" drive_board="true" parent="daytona" board="model2" preliminary="true">
     <title>Daytona USA Special Edition</title>
     <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
@@ -1164,7 +1168,7 @@
   </game>
 
 
-  <game name="daytonam" gearbox="true" drive_board="true" parent="daytona" board="model2" protection="daytona-maxx" vr_buttons="in0:0x20,in0:0x40,in0:0x80,in1:0x01">
+  <game name="daytonam" gearbox="true" start_gear="4" drive_board="true" parent="daytona" board="model2" protection="daytona-maxx" vr_buttons="in0:0x20,in0:0x40,in0:0x80,in1:0x01">
     <title>Daytona USA (To The MAXX)</title>
     <manufacturer>hack (Kyle Hodgetts)</manufacturer>
     <year>2001</year>
@@ -3372,7 +3376,7 @@
     </roms>
   </game>
 
-  <game name="overrevb" drive_board="true" parent="overrev" board="model2b">
+  <game name="overrevb" parent="overrev" board="model2b">
     <title>Over Rev</title>
     <version>Model 2B, Revision B</version>
     <manufacturer>Jaleco</manufacturer>
@@ -3423,7 +3427,7 @@
     </roms>
   </game>
 
-  <game name="overrevba" drive_board="true" parent="overrev" board="model2b">
+  <game name="overrevba" parent="overrev" board="model2b">
     <title>Over Rev</title>
     <version>Model 2B, Revision A</version>
     <manufacturer>Jaleco</manufacturer>
@@ -3980,7 +3984,7 @@
   </game>
 
 
-  <game name="sgt24h" drive_board="true" shift_buttons="true" board="model2b" start1="0x40" vr_buttons="in1:0x01">
+  <game name="sgt24h" shift_buttons="true" board="model2b" start1="0x40" vr_buttons="in1:0x01">
     <title>Super GT 24h</title>
     <manufacturer>Jaleco</manufacturer>
     <year>1996</year>
@@ -4085,7 +4089,7 @@
   </game>
 
 
-  <game name="srallyc" gearbox="true" drive_board="true" vr_buttons="in0:0x20" board="model2a" start1="0x40">
+  <game name="srallyc" gearbox="true" drive_board="true" drive_protocol="rally" vr_buttons="in0:0x20" board="model2a" start1="0x40">
     <title>Sega Rally Championship - Twin/DX</title>
     <manufacturer>Sega</manufacturer>
     <year>1995</year>
@@ -4452,8 +4456,9 @@
   </game>
 
 
-  <game name="stcc" board="model2c" start1="0x40" shift_buttons="true">
+  <game name="stcc" drive_board="true" drive_protocol="stcc" board="model2c" start1="0x40" shift_buttons="true">
     <title>Sega Touring Car Championship</title>
+    <version>Newer</version>
     <manufacturer>Sega</manufacturer>
     <year>1996</year>
 
@@ -4726,6 +4731,7 @@
 
   <game name="stcco" parent="stcc" board="model2c">
     <title>Sega Touring Car Championship</title>
+    <version>Original</version>
     <manufacturer>Sega</manufacturer>
     <year>1996</year>
 
@@ -5414,6 +5420,7 @@
 
   <game name="vstriker" board="model2b">
     <title>Virtua Striker</title>
+    <version>Revision A</version>
     <manufacturer>Sega</manufacturer>
     <year>1994</year>
 
@@ -5463,6 +5470,7 @@
 
   <game name="vstrikero" parent="vstriker" board="model2b">
     <title>Virtua Striker</title>
+    <version>Original</version>
     <manufacturer>Sega</manufacturer>
     <year>1994</year>
 

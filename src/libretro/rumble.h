@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #pragma once
 #include "libretro.h"
+#include "osd/drive_command.h"
 #include "rom/game.h"
+
+#include <span>
 
 namespace sm2::libretro {
 
@@ -10,7 +13,8 @@ namespace sm2::libretro {
 class GamepadRumble {
 public:
     [[nodiscard]] bool init(retro_environment_t environment);
-    void update(const rom::GameSpec& game, u8 drive_force, s16 steering, bool enabled);
+    void update(const rom::GameSpec& game, std::span<const u8> drive_writes,
+                s16 steering, bool enabled);
     void stop();
 
 private:
@@ -23,6 +27,7 @@ private:
     int m_hold = 0;
     u16 m_strong = 0;
     u16 m_weak = 0;
+    osd::DriveCommand m_drive_command;
 };
 
 }  // namespace sm2::libretro

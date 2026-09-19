@@ -769,7 +769,7 @@ std::vector<retro_input_descriptor> descriptors(
                 add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "VR3 (Yellow)");
                 add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "VR4 (Green)");
             } else {
-                add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "VR1");
+                add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "VR1");
                 add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Handbrake (Analog)");
             }
             continue;
@@ -778,7 +778,10 @@ std::vector<retro_input_descriptor> descriptors(
             || profile == InputProfile::DrivingSequentialVR1) {
             add(RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
                 RETRO_DEVICE_ID_ANALOG_X, "Steering");
-            add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP,
+            add(RETRO_DEVICE_JOYPAD, 0,
+                profile == InputProfile::DrivingSequentialVR1
+                    ? RETRO_DEVICE_ID_JOYPAD_DOWN
+                    : RETRO_DEVICE_ID_JOYPAD_UP,
                 profile == InputProfile::DrivingSequentialVR1 ? "VR1" : "View 1");
             if (profile == InputProfile::DrivingSequentialVR2)
                 add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "View 2");
@@ -817,7 +820,8 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 bool h_gate_shifter, retro_input_state_t state,
                 GunInputMode gun_mode, bool offscreen_reload_shortcut,
                 DrivingAnalogOptions driving_options,
-                DesertElevationOptions desert_elevation_options)
+                DesertElevationOptions desert_elevation_options,
+                bool automatic_start_gear)
 {
     inputs.in0 = inputs.in1 = inputs.in2 = 0xff;
     const auto profile = recognize_profile(game);
@@ -1130,6 +1134,10 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
         if (profile == InputProfile::Driving4SpeedVR4
             || profile == InputProfile::Driving4SpeedVR1Handbrake) {
             if (p != 0) continue;
+            if (!runtime.gear_initialized) {
+                runtime.gear = automatic_start_gear ? game.start_gear : 1;
+                runtime.gear_initialized = true;
+            }
             const auto analog = [&](unsigned index, unsigned id) {
                 return state(0, RETRO_DEVICE_ANALOG, index, id);
             };
@@ -1154,7 +1162,7 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 if (pressed(RETRO_DEVICE_ID_JOYPAD_RIGHT)) press_wheel_button(2);
                 if (pressed(RETRO_DEVICE_ID_JOYPAD_UP)) press_wheel_button(3);
             } else {
-                if (pressed(RETRO_DEVICE_ID_JOYPAD_UP)) press_wheel_button(0);
+                if (pressed(RETRO_DEVICE_ID_JOYPAD_DOWN)) press_wheel_button(0);
                 if (pressed(RETRO_DEVICE_ID_JOYPAD_B)) inputs.in2 = 0xff;
             }
 
@@ -1205,7 +1213,10 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 const auto [port, bit] = game.wheel_button_bits[index];
                 if (port < std::size(ports)) clear(*ports[port], bit);
             };
-            if (pressed(RETRO_DEVICE_ID_JOYPAD_UP)) press_wheel_button(0);
+            if (pressed(profile == InputProfile::DrivingSequentialVR1
+                            ? RETRO_DEVICE_ID_JOYPAD_DOWN
+                            : RETRO_DEVICE_ID_JOYPAD_UP))
+                press_wheel_button(0);
             if (profile == InputProfile::DrivingSequentialVR2
                 && pressed(RETRO_DEVICE_ID_JOYPAD_DOWN))
                 press_wheel_button(1);

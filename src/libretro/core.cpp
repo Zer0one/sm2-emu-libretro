@@ -78,6 +78,7 @@ struct Content {
     bool can_dupe = false;
     bool timing_overlay = false;
     bool timing_overlay_visible = false;
+    float aspect_ratio = 4.0f / 3.0f;
     std::chrono::steady_clock::time_point previous_run_start{};
     bool have_previous_run_start = false;
     double timing_machine_ms = 0;
@@ -99,6 +100,41 @@ struct Content {
 std::unique_ptr<Content> content;
 
 void message(enum retro_log_level level, const char* text);
+
+bool automatic_widescreen(const Content& c)
+{
+    const auto eeprom = c.machine->settings_eeprom();
+    if (eeprom.size() <= 0x17) return false;
+    const std::string_view family = c.game.parent.empty() ? c.game.name : c.game.parent;
+    if (family == "indy500")
+        return eeprom[0x17] == 0x01;
+    if (family == "stcc")
+        return (eeprom[0x10] & 0x08) != 0;
+    return false;
+}
+
+float selected_aspect_ratio(const Content& c)
+{
+    switch (libretro::aspect_ratio_mode()) {
+        case libretro::AspectRatioMode::FourThree: return 4.0f / 3.0f;
+        case libretro::AspectRatioMode::SixteenNine: return 16.0f / 9.0f;
+        case libretro::AspectRatioMode::Automatic:
+            return automatic_widescreen(c) ? 16.0f / 9.0f : 4.0f / 3.0f;
+    }
+    return 4.0f / 3.0f;
+}
+
+void update_aspect_ratio(Content& c)
+{
+    const float aspect_ratio = selected_aspect_ratio(c);
+    if (aspect_ratio == c.aspect_ratio) return;
+    c.aspect_ratio = aspect_ratio;
+    retro_game_geometry geometry{
+        width * c.scale, height * c.scale, width * c.scale, height * c.scale,
+        c.aspect_ratio};
+    if (environment)
+        environment(RETRO_ENVIRONMENT_SET_GEOMETRY, &geometry);
+}
 
 double elapsed_ms(std::chrono::steady_clock::time_point begin,
                   std::chrono::steady_clock::time_point end)
@@ -199,26 +235,31 @@ void initialize_frontend_save(Content& c)
             message(RETRO_LOG_WARN, "Ignored invalid or mismatched frontend save RAM");
         bool seeded = false;
         if (!c.native_nvram_available && libretro::initial_nvram_setup_enabled()) {
-            const std::string_view seed_game = libretro::initial_nvram::has_template(c.game.name)
-                ? std::string_view(c.game.name) : std::string_view(c.game.parent);
-            const auto seeded_result = libretro::initial_nvram::seed(
-                seed_game, c.machine->backup_ram(), c.machine->settings_eeprom());
-            if (seeded_result == libretro::initial_nvram::SeedResult::InvalidTemplate)
-                throw std::runtime_error("Invalid embedded initial NVRAM template");
-            if (seeded_result == libretro::initial_nvram::SeedResult::Loaded) {
-                if (!c.nvram_game.empty()) {
-                    const auto initial = libretro::nvram::initial_values(c.nvram_game);
-                    const auto applied = libretro::nvram::apply(
-                        c.nvram_game, c.machine->backup_ram(), c.machine->settings_eeprom(), initial);
-                    if (applied == libretro::nvram::ApplyResult::Unsupported
-                        || applied == libretro::nvram::ApplyResult::LayoutNotReady)
-                        throw std::runtime_error("Embedded initial NVRAM template has an unsupported layout");
+            std::string_view seed_game;
+            if (libretro::initial_nvram::has_template(c.game.name))
+                seed_game = c.game.name;
+            else if (libretro::initial_nvram::can_use_parent_template(c.game.name))
+                seed_game = c.game.parent;
+            if (!seed_game.empty()) {
+                const auto seeded_result = libretro::initial_nvram::seed(
+                    seed_game, c.machine->backup_ram(), c.machine->settings_eeprom());
+                if (seeded_result == libretro::initial_nvram::SeedResult::InvalidTemplate)
+                    throw std::runtime_error("Invalid embedded initial NVRAM template");
+                if (seeded_result == libretro::initial_nvram::SeedResult::Loaded) {
+                    if (!c.nvram_game.empty()) {
+                        const auto initial = libretro::nvram::initial_values(c.nvram_game);
+                        const auto applied = libretro::nvram::apply(
+                            c.nvram_game, c.machine->backup_ram(), c.machine->settings_eeprom(), initial);
+                        if (applied == libretro::nvram::ApplyResult::Unsupported
+                            || applied == libretro::nvram::ApplyResult::LayoutNotReady)
+                            throw std::runtime_error("Embedded initial NVRAM template has an unsupported layout");
+                    }
+                    c.machine->reset();
+                    c.machine->sound_board().clear_pending_samples();
+                    c.audio.clear();
+                    seeded = true;
+                    message(RETRO_LOG_INFO, "Applied automatic initial NVRAM setup before the first frame");
                 }
-                c.machine->reset();
-                c.machine->sound_board().clear_pending_samples();
-                c.audio.clear();
-                seeded = true;
-                message(RETRO_LOG_INFO, "Applied automatic initial NVRAM setup before the first frame");
             }
         }
         if (!seeded)
@@ -497,12 +538,13 @@ void retro_deinit()
 }
 void retro_get_system_info(retro_system_info* info)
 {
-    if (info) *info = {"SM2-Emu", "0.9.7-libretro-dev", "zip|7z", true, true};
+    if (info) *info = {"SM2-Emu", "0.9.9-libretro-dev", "zip|7z", true, true};
 }
 void retro_get_system_av_info(retro_system_av_info* info)
 {
     const unsigned scale = content ? content->scale : 1;
-    if (info) *info = {{width * scale, height * scale, width * scale, height * scale, 4.0f / 3.0f},
+    const float aspect_ratio = content ? content->aspect_ratio : 4.0f / 3.0f;
+    if (info) *info = {{width * scale, height * scale, width * scale, height * scale, aspect_ratio},
                       {content ? content->fps : board_fps<hw::Model2>(),
                        content ? static_cast<double>(content->rate) : 44100.0}};
 }
@@ -546,17 +588,21 @@ bool retro_load_game(const retro_game_info* game)
             libretro::audio_balance_enabled());
         const bool daytona_family = next->game.name == "daytona"
             || next->game.parent == "daytona";
-        if (libretro::linked_cabinets() == 2) {
+        const unsigned linked_cabinets = libretro::linked_cabinets();
+        if (linked_cabinets > 1) {
             if (!daytona_family) {
                 message(RETRO_LOG_WARN,
                         "Linked Cabinets currently applies only to the Daytona USA family");
+            } else if (linked_cabinets > 2) {
+                message(RETRO_LOG_WARN,
+                        "Linked Cabinets sessions larger than two cabinets are not implemented yet");
             } else {
                 auto network = std::make_unique<libretro::NetpacketTransport>();
-                network->configure(next->game.name, 2);
+                network->configure(next->game.name, linked_cabinets);
                 next->machine->comm().set_transport(std::move(network));
                 if (!libretro::netpacket_interface_supported())
                     message(RETRO_LOG_WARN,
-                            "2 Cabinets selected but the frontend has no Netpacket support");
+                            "Linked Cabinets is enabled but the frontend has no Netpacket support");
                 else
                     message(RETRO_LOG_INFO,
                             "Daytona USA 2-cabinet communication enabled through RetroArch Netplay");
@@ -582,6 +628,8 @@ bool retro_load_game(const retro_game_info* game)
         next->audio.reserve(static_cast<size_t>(next->rate) * 2);
         const bool rumble_ready = next->rumble.init(environment);
         content = std::move(next);
+        if (libretro::aspect_ratio_mode() == libretro::AspectRatioMode::SixteenNine)
+            content->aspect_ratio = 16.0f / 9.0f;
         libretro::set_option_game(content->nvram_game);
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
         select_renderer(*content);
@@ -668,6 +716,7 @@ void retro_run()
         }
         if (!content->save_ram_initialized) initialize_frontend_save(*content);
         apply_pending_option(*content);
+        update_aspect_ratio(*content);
         if (input_poll_cb) input_poll_cb();
         s16 rumble_steering = 0;
         if (input_state_cb && devices[0] != RETRO_DEVICE_NONE)
@@ -685,11 +734,14 @@ void retro_run()
                                  input_state_cb, libretro::gun_input_mode(),
                                  libretro::offscreen_reload_shortcut_enabled(),
                                  libretro::driving_analog_options(),
-                                 libretro::desert_elevation_options());
+                                 libretro::desert_elevation_options(),
+                                 libretro::automatic_start_gear_enabled());
             const auto machine_start = std::chrono::steady_clock::now();
             content->machine->run_frame();
-            content->rumble.update(content->game, content->machine->drive_board_force(),
-                                   rumble_steering, libretro::gamepad_rumble_enabled());
+            update_aspect_ratio(*content);
+            const auto drive_writes = content->machine->take_drive_board_writes();
+            content->rumble.update(content->game, drive_writes.view(), rumble_steering,
+                                   libretro::gamepad_rumble_enabled());
             const auto machine_end = std::chrono::steady_clock::now();
             content->timing_machine_ms += elapsed_ms(machine_start, machine_end);
             ++content->timing_machine_frames;
@@ -712,7 +764,8 @@ void retro_run()
                     if (!content->gpu) throw std::runtime_error("Frontend Vulkan context is not ready");
                     content->gpu->render(*content->machine, video_cb,
                         libretro::crosshair_state(content->game, content->input_runtime,
-                                                  libretro::crosshair_mask()),
+                                                  libretro::crosshair_mask(content->game),
+                                                  libretro::crosshair_style()),
                         libretro::texture_filter_quality(), libretro::upscale_2d_mode());
 #else
                     throw std::runtime_error("This core was built without Vulkan support");
@@ -722,7 +775,8 @@ void retro_run()
                     if (!content->gl) throw std::runtime_error("Frontend OpenGL context is not ready");
                     content->gl->render(*content->machine, video_cb,
                         libretro::crosshair_state(content->game, content->input_runtime,
-                                                  libretro::crosshair_mask()),
+                                                  libretro::crosshair_mask(content->game),
+                                                  libretro::crosshair_style()),
                         libretro::texture_filter_quality(), libretro::upscale_2d_mode());
 #else
                     throw std::runtime_error("This core was built without OpenGL support");
@@ -742,7 +796,8 @@ void retro_run()
                     pixel = ((pixel & 0xffu) << 16) | (pixel & 0xff00u) | ((pixel >> 16) & 0xffu);
                 libretro::draw_crosshairs(content->frame, width, height,
                     libretro::crosshair_state(content->game, content->input_runtime,
-                                              libretro::crosshair_mask()));
+                                              libretro::crosshair_mask(content->game),
+                                              libretro::crosshair_style()));
             }
             if (video_cb) {
                 if (!advance_machine && content->can_dupe) video_cb(nullptr, width, height, 0);

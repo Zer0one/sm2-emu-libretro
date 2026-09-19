@@ -142,6 +142,13 @@ struct LightgunSpec {
     bool p2_trigger_on_in2 = false;
 };
 
+/// Which command set a title's force-feedback drive board speaks.
+enum class DriveProtocol : u8 {
+    Daytona,
+    Stcc,
+    Rally,
+};
+
 /// A protection chip a title's main board needs. One value per chip/mode
 /// combination rather than a child element, since so far every title needing
 /// one needs exactly one fixed configuration of it apart from the 315-5881's
@@ -293,6 +300,9 @@ struct GameSpec {
     /// Sega Rally's and Daytona's do through MAME's daytona_gearbox_r.
     bool gearbox = false;
 
+    /// Initial gate position: 0 is neutral and 1..4 are the four gears.
+    u32 start_gear = 1;
+
     /// True when shifting is two momentary buttons (shift up / shift down) on
     /// IN1 bits 0x10 and 0x20 rather than the 0x70 sequential gate. Indy 500 and
     /// Manx TT and everything inheriting from them wire it this way. The GearUp/
@@ -302,6 +312,9 @@ struct GameSpec {
     /// True when the title latches bytes to a force-feedback drive board on the
     /// I/O controller's port E.
     bool drive_board = false;
+
+    /// How to interpret bytes latched to the drive board.
+    DriveProtocol drive_protocol = DriveProtocol::Daytona;
 
     /// True when the positional-gun cabinet has a separate Missile button
     /// (Behind Enemy Lines: P1 on IN1 bit 0x10, P2 on 0x20) rather than an

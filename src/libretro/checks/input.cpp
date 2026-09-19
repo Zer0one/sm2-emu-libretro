@@ -420,7 +420,19 @@ int main()
 
     const auto* daytona = database.find("daytona");
     const auto* srally = database.find("srallyc");
-    check(daytona && srally, "Four-speed parent sets exist");
+    const auto* stcc_metadata = database.find("stcc");
+    const auto* sgt24h_metadata = database.find("sgt24h");
+    const auto* overrevb = database.find("overrevb");
+    check(daytona && srally && stcc_metadata && sgt24h_metadata && overrevb,
+          "Updated driving metadata sets exist");
+    check(daytona->start_gear == 4 && srally->start_gear == 1,
+          "Daytona starts in fourth while Sega Rally retains first gear");
+    check(srally->drive_board && srally->drive_protocol == rom::DriveProtocol::Rally
+              && stcc_metadata->drive_board
+              && stcc_metadata->drive_protocol == rom::DriveProtocol::Stcc,
+          "Sega Rally and STCC retain their upstream drive-board protocols");
+    check(!sgt24h_metadata->drive_board && !overrevb->drive_board,
+          "Unsupported Super GT and Over Rev drive boards remain disabled");
     check(std::string_view(libretro::profile_name(libretro::recognize_profile(*daytona)))
               == "Driving: 4-Speed + VR4",
           "Daytona profile name must match the approved workbook");
@@ -449,10 +461,23 @@ int main()
           "Daytona descriptions must match the approved workbook");
     driving_desc = libretro::descriptors(*srally, devices);
     check(has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
-                         RETRO_DEVICE_ID_JOYPAD_UP, "VR1")
+                         RETRO_DEVICE_ID_JOYPAD_DOWN, "VR1")
               && has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
                                 RETRO_DEVICE_ID_JOYPAD_B, "Handbrake (Analog)"),
           "Sega Rally descriptions must match the approved workbook");
+
+    pressed = {};
+    axes = {};
+    analog_buttons = {};
+    runtime = {};
+    libretro::poll_input(inputs, *daytona, devices, runtime, true, state);
+    check(inputs.gears == 0x10, "Daytona hands its rolling start to fourth gear");
+
+    runtime = {};
+    libretro::poll_input(inputs, *daytona, devices, runtime, true, state,
+                         libretro::GunInputMode::Hybrid, true, {}, {}, false);
+    check(inputs.gears == 0x02,
+          "Disabling Automatic Start Gear starts Daytona in first gear");
 
     pressed = {(1u << RETRO_DEVICE_ID_JOYPAD_UP)
                    | (1u << RETRO_DEVICE_ID_JOYPAD_DOWN)
@@ -559,7 +584,7 @@ int main()
     libretro::poll_input(inputs, *daytona, devices, runtime, false, state);
     check(inputs.gears == 0x10, "Standard shifter Right selects fourth gear");
 
-    pressed = {(1u << RETRO_DEVICE_ID_JOYPAD_UP) | (1u << RETRO_DEVICE_ID_JOYPAD_B), 0};
+    pressed = {(1u << RETRO_DEVICE_ID_JOYPAD_DOWN) | (1u << RETRO_DEVICE_ID_JOYPAD_B), 0};
     axes = {};
     runtime = {};
     libretro::poll_input(inputs, *srally, devices, runtime, true, state);
@@ -654,7 +679,7 @@ int main()
           "Sequential VR1 exposes the approved service variants");
     driving_desc = libretro::descriptors(*sgt24h, devices);
     check(has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
-                         RETRO_DEVICE_ID_JOYPAD_UP, "VR1")
+                         RETRO_DEVICE_ID_JOYPAD_DOWN, "VR1")
               && has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
                                 RETRO_DEVICE_ID_JOYPAD_L, "Shift Down")
               && has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
@@ -668,10 +693,9 @@ int main()
                                 RETRO_DEVICE_ID_ANALOG_X, "Steering"),
           "Sequential VR1 descriptions match the approved workbook");
     check(!has_descriptor_id(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
-                             RETRO_DEVICE_ID_JOYPAD_DOWN),
+                             RETRO_DEVICE_ID_JOYPAD_UP),
           "Sequential VR1 does not expose an unapproved second View command");
-    pressed = {(1u << RETRO_DEVICE_ID_JOYPAD_UP)
-                   | (1u << RETRO_DEVICE_ID_JOYPAD_DOWN)
+    pressed = {(1u << RETRO_DEVICE_ID_JOYPAD_DOWN)
                    | (1u << RETRO_DEVICE_ID_JOYPAD_L)
                    | (1u << RETRO_DEVICE_ID_JOYPAD_R), 0};
     axes = {};
@@ -1725,16 +1749,28 @@ int main()
     const auto both_crosshairs = libretro::crosshair_state(*vcop, runtime, 3);
     std::vector<u32> crosshair_frame(496 * 384);
     libretro::draw_crosshairs(crosshair_frame, 496, 384, both_crosshairs);
+    check(std::count(crosshair_frame.begin(), crosshair_frame.end(), 0x0000ff00u) > 0
+              && std::count(crosshair_frame.begin(), crosshair_frame.end(), 0x0000c8ffu) > 0,
+          "Default serial-gun crosshair draws upstream SM2-Emu colours");
+    const auto supermodel_crosshairs = libretro::crosshair_state(
+        *vcop, runtime, 3, libretro::CrosshairStyle::Supermodel);
+    std::fill(crosshair_frame.begin(), crosshair_frame.end(), 0);
+    libretro::draw_crosshairs(crosshair_frame, 496, 384, supermodel_crosshairs);
     check(std::count(crosshair_frame.begin(), crosshair_frame.end(), 0x00ff0000u) > 0
               && std::count(crosshair_frame.begin(), crosshair_frame.end(), 0x0000ff00u) > 0,
-          "Serial gun crosshair draws distinct Supermodel colours for both players");
+          "Optional serial-gun crosshair draws Supermodel colours");
     runtime.gun_aim_offscreen[0] = true;
     const auto hidden_offscreen = libretro::crosshair_state(*vcop, runtime, 1);
     check(!hidden_offscreen.aims[0].active,
           "Crosshair hides while player one aims or reloads off screen");
     runtime.gun_aim_offscreen = {};
-    const auto positional_crosshair = libretro::crosshair_state(*gunblade, runtime, 3);
-    check(positional_crosshair.aims[0].active && positional_crosshair.aims[1].active,
-          "Positional gun games expose the same native crosshairs as Supermodel");
+    const auto hidden_positional_crosshair = libretro::crosshair_state(*gunblade, runtime, 0);
+    check(!hidden_positional_crosshair.aims[0].active
+              && !hidden_positional_crosshair.aims[1].active,
+          "Automatic positional-gun mask retains the in-game reticle");
+    const auto selected_positional_crosshair = libretro::crosshair_state(*gunblade, runtime, 1);
+    check(selected_positional_crosshair.aims[0].active
+              && !selected_positional_crosshair.aims[1].active,
+          "Explicit selection enables an external positional-gun crosshair");
     std::puts("Input profile checks passed");
 }

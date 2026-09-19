@@ -572,6 +572,7 @@ void Model2Original::lamp_output_w(u8 value)
 void Model2Original::drive_board_write(u8 value)
 {
     m_drive_board_latch = value;
+    record_drive_board_write(value);
 }
 
 u8 Model2Original::gearbox_in1() const

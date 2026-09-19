@@ -2,6 +2,7 @@
 #include "rumble.h"
 
 #include <array>
+#include <span>
 #include <cstdlib>
 #include <cstdio>
 
@@ -47,31 +48,63 @@ int main()
     expect(rumble.init(environment), "frontend rumble interface is acquired");
     auto driving = driving_game();
 
-    rumble.update(driving, 0x57, 0, true);
+    const std::array<u8, 1> daytona_push{0x57};
+    const std::array<u8, 1> daytona_release{0x50};
+    rumble.update(driving, daytona_push, 0, true);
     expect(motors[RETRO_RUMBLE_STRONG] == 65535
                && motors[RETRO_RUMBLE_WEAK] == 32767,
            "upstream directional jolt drives strong and weak motors");
 
-    rumble.update(driving, 0, 32767, true);
+    rumble.update(driving, daytona_release, 32767, true);
     expect(motors[RETRO_RUMBLE_STRONG] == 26214
                && motors[RETRO_RUMBLE_WEAK] == 13107,
            "a current steering load replaces the previous drive-board jolt");
-    for (int frame = 0; frame < 12; ++frame) rumble.update(driving, 0, 0, true);
+    rumble.update(driving, daytona_release, 0, true);
+    for (int frame = 0; frame < 12; ++frame) rumble.update(driving, {}, 0, true);
     expect(motors[RETRO_RUMBLE_STRONG] == 0 && motors[RETRO_RUMBLE_WEAK] == 0,
            "jolt ends after the upstream hold interval");
 
-    rumble.update(driving, 0, 32767, true);
+    rumble.update(driving, {}, 32767, true);
     expect(motors[RETRO_RUMBLE_STRONG] == 26214
                && motors[RETRO_RUMBLE_WEAK] == 13107,
            "full steering deflection produces the upstream cornering vibration");
-    rumble.update(driving, 0, 32767, false);
+    rumble.update(driving, {}, 32767, false);
     expect(motors[RETRO_RUMBLE_STRONG] == 0 && motors[RETRO_RUMBLE_WEAK] == 0,
            "disabling rumble stops both motors immediately");
 
     rom::GameSpec non_driving;
     const unsigned before = calls;
-    rumble.update(non_driving, 0x57, 32767, true);
+    rumble.update(non_driving, daytona_push, 32767, true);
     expect(calls == before, "non-driving games remain silent");
+
+    rumble.stop();
+    driving.drive_protocol = rom::DriveProtocol::Stcc;
+    const std::array<u8, 1> stcc_force{0x57};
+    rumble.update(driving, stcc_force, 0, true);
+    expect(motors[RETRO_RUMBLE_STRONG] == 0 && motors[RETRO_RUMBLE_WEAK] == 0,
+           "STCC continuous centring force is not misread as a gamepad impact");
+
+    rumble.stop();
+    driving.drive_protocol = rom::DriveProtocol::Rally;
+    const std::array<u8, 1> rally_force{0x9f};
+    rumble.update(driving, rally_force, 0, true);
+    expect(motors[RETRO_RUMBLE_STRONG] == 0 && motors[RETRO_RUMBLE_WEAK] == 0,
+           "Sega Rally streamed torque is not misread as a Daytona impact");
+
+    rumble.stop();
+    driving.drive_protocol = rom::DriveProtocol::Daytona;
+    const std::array<u8, 3> indy_sequence{0x57, 0xb0, 0xa0};
+    rumble.update(driving, indy_sequence, 0, true);
+    expect(motors[RETRO_RUMBLE_STRONG] == 65535
+               && motors[RETRO_RUMBLE_WEAK] == 32767,
+           "Indy 500 parameter bytes retain the preceding impact command");
+
+    rumble.stop();
+    const std::array<u8, 1> vibration{0x47};
+    rumble.update(driving, vibration, 0, true);
+    expect(motors[RETRO_RUMBLE_STRONG] == 65535
+               && motors[RETRO_RUMBLE_WEAK] == 32767,
+           "Daytona vibration command drives both gamepad motors");
 
     rumble.stop();
     expect(motors[RETRO_RUMBLE_STRONG] == 0 && motors[RETRO_RUMBLE_WEAK] == 0,

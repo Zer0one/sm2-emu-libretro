@@ -846,6 +846,7 @@ void Model2C::lightgun_mux_write(u8 value)
 void Model2C::drive_board_write(u8 value)
 {
     m_drive_board_latch = value;
+    record_drive_board_write(value);
 }
 
 // ---------------------------------------------------------------------------

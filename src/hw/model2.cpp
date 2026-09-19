@@ -710,6 +710,7 @@ void Model2::drive_board_write(u8 value)
     // side reads the latch back, so accepting the write is the whole
     // requirement for the games that reach gameplay without one.
     m_drive_board_latch = value;
+    record_drive_board_write(value);
 }
 
 void Model2::lamp_output_w(u8 value)

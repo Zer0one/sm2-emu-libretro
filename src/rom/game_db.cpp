@@ -174,6 +174,14 @@ namespace {
     return false;
 }
 
+[[nodiscard]] bool parse_drive_protocol(std::string_view text, DriveProtocol* out)
+{
+    if (text == "daytona") { *out = DriveProtocol::Daytona; return true; }
+    if (text == "stcc")    { *out = DriveProtocol::Stcc;    return true; }
+    if (text == "rally")   { *out = DriveProtocol::Rally;   return true; }
+    return false;
+}
+
 /// Reads MAME's PORT_MINMAX/rest/PORT_REVERSE attributes off one element.
 [[nodiscard]] bool parse_analog_range(const pugi::xml_node& node, u32 default_rest,
                                       u32 default_max, u32* minimum, u32* maximum,
@@ -346,6 +354,14 @@ bool GameDatabase::load(const std::string& path)
             return false;
         }
 
+        const pugi::xml_attribute drive_protocol = game_node.attribute("drive_protocol");
+        if (drive_protocol
+            && !parse_drive_protocol(drive_protocol.value(), &game.drive_protocol)) {
+            SM2_ERROR("%s: unrecognised drive_protocol '%s'", context.c_str(),
+                      drive_protocol.value());
+            return false;
+        }
+
         if (!attribute_integer(game_node, "key", 0, &game.protection_key, context.c_str())) {
             return false;
         }
@@ -370,7 +386,14 @@ bool GameDatabase::load(const std::string& path)
             || !attribute_bool(game_node, "motion_base", false, &game.motion_base,
                                context.c_str())
             || !attribute_bool(game_node, "gun_missile", false, &game.gun_missile,
-                               context.c_str())) {
+                               context.c_str())
+            || !attribute_integer(game_node, "start_gear", 1, &game.start_gear,
+                                  context.c_str())) {
+            return false;
+        }
+        if (game.start_gear > 4) {
+            SM2_ERROR("%s: start_gear %u is not a gate position (0 = N, 1..4)",
+                      context.c_str(), game.start_gear);
             return false;
         }
 
@@ -715,8 +738,12 @@ bool GameDatabase::merge_clones(const std::set<std::string>& board_inherited)
         if (!declares_analog)          { game.analog = parent.analog; }
         if (!game.lightgun.present)    { game.lightgun = parent.lightgun; }
         if (!game.gearbox)             { game.gearbox = parent.gearbox; }
+        if (game.start_gear == 1)      { game.start_gear = parent.start_gear; }
         if (!game.shift_buttons)       { game.shift_buttons = parent.shift_buttons; }
         if (!game.drive_board)         { game.drive_board = parent.drive_board; }
+        if (game.drive_protocol == DriveProtocol::Daytona) {
+            game.drive_protocol = parent.drive_protocol;
+        }
         if (!game.motion_base)         { game.motion_base = parent.motion_base; }
         if (game.device_sets.empty())  { game.device_sets = parent.device_sets; }
         // A clone cannot be more validated than its parent unless it has been

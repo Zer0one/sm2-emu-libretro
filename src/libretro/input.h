@@ -72,6 +72,7 @@ struct DrivingAnalogOptions {
 
 struct InputRuntime {
     unsigned gear = 0;
+    bool gear_initialized = false;
     bool shift_up_held = false;
     bool shift_down_held = false;
     bool desert_shift = false;
@@ -109,5 +110,6 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 GunInputMode gun_mode = GunInputMode::Hybrid,
                 bool offscreen_reload_shortcut = true,
                 DrivingAnalogOptions driving_options = {},
-                DesertElevationOptions desert_elevation_options = {});
+                DesertElevationOptions desert_elevation_options = {},
+                bool automatic_start_gear = true);
 }

@@ -708,6 +708,7 @@ void Model2B::lamp_output_w(u8 /*value*/) {}
 void Model2B::drive_board_write(u8 value)
 {
     m_drive_board_latch = value;
+    record_drive_board_write(value);
 }
 
 u8 Model2B::motion_base_read() const

@@ -124,6 +124,7 @@ int main()
     const auto* difficulty = find_definition("sm2_nvram_daytona_difficulty");
     const auto* cabinet = find_definition("sm2_nvram_daytona_cabinet");
     const auto* manxtt_cabinet = find_definition("sm2_nvram_manxtt_cabinet_type");
+    const auto* stcc_cabinet = find_definition("sm2_nvram_stcc_cabinet_type");
     const auto* sgt24h_io_type = find_definition("sm2_nvram_sgt24h_io_type");
     const auto* steering_response = find_definition("sm2_steering_response");
     const auto* steering_range = find_definition("sm2_steering_output_range");
@@ -131,6 +132,9 @@ int main()
     const auto* brake_range = find_definition("sm2_brake_output_range");
     const auto* gamepad_rumble = find_definition("sm2_gamepad_rumble");
     const auto* audio_balance = find_definition("sm2_audio_balance");
+    const auto* crosshairs = find_definition("sm2_crosshairs");
+    const auto* linked_cabinets = find_definition("sm2_linked_cabinets");
+    const auto* nvram_settings = find_definition("sm2_nvram_settings");
     expect(difficulty && std::string_view(difficulty->values[0].label) == "Normal (Default)"
                && std::string_view(difficulty->values[1].label) == "Hard",
            "registered NVRAM values use RetroArch title case without changing keys");
@@ -140,6 +144,9 @@ int main()
     expect(manxtt_cabinet && std::string_view(manxtt_cabinet->default_value) == "twin"
                && std::string_view(manxtt_cabinet->values[1].label) == "Twin (Default)",
            "Manx TT Cabinet Type core option defaults to Twin");
+    expect(stcc_cabinet && std::string_view(stcc_cabinet->values[1].value) == "delux"
+               && std::string_view(stcc_cabinet->values[1].label) == "Deluxe",
+           "STCC displays Deluxe without changing its native NVRAM key");
     expect(sgt24h_io_type && std::string_view(sgt24h_io_type->desc) == "I/O Type"
                && std::string_view(sgt24h_io_type->default_value) == "c"
                && std::string_view(sgt24h_io_type->values[2].label) == "C (Default)",
@@ -164,11 +171,41 @@ int main()
                && std::string_view(gamepad_rumble->desc) == "Gamepad Rumble"
                && std::string_view(gamepad_rumble->default_value) == "enabled",
            "Gamepad rumble is enabled by default");
+    const auto* automatic_start_gear = find_definition("sm2_automatic_start_gear");
+    expect(automatic_start_gear
+               && std::string_view(automatic_start_gear->desc)
+                    == "Automatic Start Gear (Restart Required)"
+               && std::string_view(automatic_start_gear->default_value) == "enabled"
+               && std::string_view(automatic_start_gear->values[0].label) == "Enabled"
+               && std::string_view(automatic_start_gear->values[1].label) == "Disabled",
+           "Automatic Start Gear exposes the upstream rolling-start behaviour");
     expect(audio_balance
                && std::string_view(audio_balance->desc) == "Enhanced Audio Balance"
                && std::string_view(audio_balance->default_value) == "enabled"
                && std::string_view(audio_balance->category_key) == "audio",
            "upstream audio balance is enabled globally by default in Audio");
+    expect(crosshairs && std::string_view(crosshairs->default_value) == "auto"
+               && std::string_view(crosshairs->values[0].label) == "Automatic",
+           "crosshair option uses one game-aware Automatic default");
+    expect(linked_cabinets && nvram_settings && linked_cabinets < nvram_settings
+               && std::string_view(linked_cabinets->default_value) == "disabled"
+               && std::string_view(linked_cabinets->values[0].value) == "disabled"
+               && std::string_view(linked_cabinets->values[0].label) == "Disabled"
+               && std::string_view(linked_cabinets->values[1].value) == "2"
+               && std::string_view(linked_cabinets->values[1].label) == "2 Cabinets"
+               && std::string_view(linked_cabinets->values[7].value) == "8"
+               && std::string_view(linked_cabinets->values[7].label) == "8 Cabinets",
+           "Linked Cabinets precedes NVRAM Settings and reserves two to eight cabinets");
+    option_values["sm2_linked_cabinets"] = "2";
+    expect(libretro::linked_cabinets() == 2,
+           "Linked Cabinets reads the validated two-cabinet value");
+    option_values["sm2_linked_cabinets"] = "8";
+    expect(libretro::linked_cabinets() == 8,
+           "Linked Cabinets reads the reserved eight-cabinet value");
+    option_values["sm2_linked_cabinets"] = "enabled";
+    expect(libretro::linked_cabinets() == 1,
+           "Linked Cabinets rejects the obsolete Enabled value");
+    option_values.erase("sm2_linked_cabinets");
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
     const auto* texture_filter = find_definition("sm2_texture_filter");
     const auto* upscale_2d = find_definition("sm2_upscale_2d");
@@ -230,10 +267,30 @@ int main()
             expect(option_visibility[definition->key],
                    "all non-NVRAM options remain visible for Daytona");
     }
+    expect(option_visibility["sm2_linked_cabinets"],
+           "Linked Cabinets is visible for the supported Daytona family");
+    option_values["sm2_nvram_settings"] = "disabled";
+    std::set<std::string> nvram_games;
+    for (const auto& option : libretro::nvram::all_options())
+        nvram_games.emplace(option.game);
+    for (const auto& game : nvram_games) {
+        option_visibility.clear();
+        libretro::set_option_game(game);
+        for (const auto* definition = definitions; definition->key; ++definition) {
+            const std::string_view key = definition->key;
+            if (key.starts_with("sm2_nvram_") && key != "sm2_nvram_settings")
+                expect_game(!option_visibility[definition->key], game,
+                            "NVRAM child option is hidden when NVRAM Settings is disabled");
+        }
+        expect_game(option_visibility["sm2_linked_cabinets"], game,
+                    "Linked Cabinets follows the always-visible non-NVRAM convention");
+    }
+    option_values.clear();
+    libretro::set_option_game("daytona");
     {
         const auto options = libretro::nvram::all_options();
         std::set<std::string> keys;
-        expect(options.size() == 197, "reviewed NVRAM option catalog has 197 entries");
+        expect(options.size() == 289, "reviewed NVRAM option catalog has 289 entries");
         for (const auto& option : options) {
             const std::string key = std::string(option.game) + ":" + option.suffix;
             expect(keys.insert(key).second, "NVRAM option keys are unique");
@@ -256,20 +313,49 @@ int main()
                "Hanguk Pro Yagu 98 exposes the reviewed option set");
         expect(libretro::nvram::options_for_game("pltkids").size() == 3,
                "Pilot Kids exposes the reviewed option set");
+        expect(libretro::nvram::options_for_game("daytona93").size() == 4,
+               "Daytona USA '93 exposes its reduced Game System menu");
+        expect(libretro::nvram::options_for_game("daytonas").size() == 9,
+               "Daytona USA Saturn advertisement exposes Promote Saturn");
+        expect(libretro::nvram::options_for_game("stccb").size() == 9,
+               "STCC revision B exposes its clone-specific Country layout");
+        expect(libretro::nvram::options_for_game("stcca").size() == 8,
+               "STCC revision A omits Default View from the parent option set");
+        expect(libretro::nvram::options_for_game("stcco").size() == 8,
+               "STCC older revision omits Default View from the parent option set");
+        expect(libretro::nvram::options_for_game("dyndeka2").size() == 3
+                   && libretro::nvram::options_for_game("dyndeka2b").size() == 3,
+               "Dynamite Deka 2 revisions expose the three reviewed editable settings");
+        expect(libretro::nvram::options_for_game("motoraiddx").size() == 8,
+               "Motor Raid Deluxe omits read-only Engine Volume and adds Cabinet Type");
+        expect(libretro::nvram::options_for_game("srallycdxa").size() == 4,
+               "Sega Rally Deluxe revision A exposes its reduced Game Assignments menu");
+        expect(libretro::nvram::options_for_game("hotdp").size() == 4,
+               "House of the Dead prototype exposes its reviewed option subset");
 
         std::set<std::string> games;
         for (const auto& option : options) games.insert(option.game);
-        expect(games.size() == 35, "initial NVRAM catalog covers 35 reviewed parents");
+        expect(games.size() == 49, "initial NVRAM catalog covers 49 reviewed sets");
         const std::set<std::pair<std::string, std::string>> offline = {
-            {"daytona", "link_id"}, {"manxtt", "link_type"},
+            {"daytona", "link_id"}, {"daytonas", "link_id"},
+            {"manxtt", "link_type"}, {"motoraiddx", "network_type"}, {"indy500d", "network_type"},
             {"overrev", "link_max"}, {"sgt24h", "link_type"},
-            {"sgt24h", "link_max"}, {"srallyc", "link_type"},
-            {"stcc", "link_type"}, {"von", "network_link_attribute"},
+            {"srallyc", "link_type"}, {"stcc", "link_type"},
+            {"stcca", "link_type"}, {"stccb", "link_type"},
+            {"stcco", "link_type"},
+            {"von", "network_link_attribute"},
         };
         const std::set<std::pair<std::string, std::string>> title_defaults = {
-            {"daytona", "cabinet"},
+            {"daytona", "cabinet"}, {"daytona93", "cabinet"},
+            {"daytonas", "cabinet"},
             {"manxtt", "cabinet_type"},
             {"sgt24h", "io_type"},
+        };
+        const std::set<std::pair<std::string, std::string>> compound_defaults = {
+            // The visible native default is C.R.T.; selecting it also writes the
+            // captured companion calibration fields, so byte identity is not a
+            // valid default check for this option.
+            {"lastbrnx", "display_type"},
         };
         for (const auto& game : games) {
             expect_game(libretro::initial_nvram::has_template(game), game,
@@ -290,13 +376,27 @@ int main()
                     || title_defaults.contains({game, suffix});
                 expect(selected[i].empty() != expected,
                        "initial NVRAM changes only country, offline and explicit core-default fields");
+                if (!expected && !compound_defaults.contains({game, suffix})) {
+                    auto default_backup = initial_backup;
+                    auto default_eeprom = initial_eeprom;
+                    std::vector<std::string> default_selection(game_options.size());
+                    default_selection[i] = game_options[i].default_value;
+                    const std::string default_description =
+                        "Core Option default matches native NVRAM: " + suffix;
+                    expect_game(libretro::nvram::apply(
+                                    game, default_backup, default_eeprom,
+                                    default_selection) ==
+                                    libretro::nvram::ApplyResult::Unchanged,
+                                game,
+                                default_description.c_str());
+                }
             }
             const auto applied = libretro::nvram::apply(
                 game, initial_backup, initial_eeprom, selected);
             expect_game(applied == libretro::nvram::ApplyResult::Changed
                             || applied == libretro::nvram::ApplyResult::Unchanged,
                         game, "initial NVRAM defaults apply before the first frame");
-            if (game == "daytona") {
+            if (game == "daytona" || game == "daytona93" || game == "daytonas") {
                 expect(initial_backup[0x1a] == 0 && initial_backup[0x9a] == 0,
                        "Daytona initial NVRAM applies DELUXE to both settings banks");
                 expect(initial_eeprom[0x1a] == initial_backup[0x1b]
@@ -317,8 +417,237 @@ int main()
                        && roundtrip_eeprom == initial_eeprom,
                    "initial NVRAM persists through the frontend save container");
         }
-        expect(!libretro::initial_nvram::has_template("vcopa"),
-               "unverified clone does not reuse a parent template implicitly");
+        const std::set<std::string_view> compatible_clones = {
+            "daytonam", "fvipersa", "fvipersb", "hotdo", "lastbrnxj", "lastbrnxu",
+            "overrevb", "overrevba", "pltkidsa", "rchase2a", "srallycb", "srallycc",
+            "topskatrj", "topskatru", "topskatruo", "vcopa", "vonj", "vonr", "vonu",
+            "zerogunaj", "zerogunj",
+        };
+        for (const auto game : compatible_clones)
+            expect_game(libretro::initial_nvram::can_use_parent_template(game), game,
+                        "byte-identical clone may inherit its parent template");
+
+        static constexpr std::pair<std::string_view, std::string_view> parent_catalog_clones[] = {
+            {"daytonam", "daytona"}, {"fvipersa", "fvipers"},
+            {"fvipersb", "fvipers"}, {"hotdo", "hotd"},
+            {"lastbrnxj", "lastbrnx"}, {"lastbrnxu", "lastbrnx"},
+            {"overrevb", "overrev"}, {"overrevba", "overrev"},
+            {"pltkidsa", "pltkids"}, {"rchase2a", "rchase2"},
+            {"srallycb", "srallyc"}, {"srallycc", "srallyc"},
+            {"topskatrj", "topskatr"}, {"topskatru", "topskatr"},
+            {"topskatruo", "topskatr"}, {"vcopa", "vcop"},
+            {"vonj", "von"}, {"vonr", "von"}, {"vonu", "von"},
+            {"zerogunaj", "zeroguna"}, {"zerogunj", "zerogun"},
+            {"daytonase", "daytona"}, {"indy500to", "indy500"},
+            {"manxttc", "manxtt"}, {"sfight", "schamp"},
+            {"srallycdx", "srallyc"}, {"doaa", "doa"},
+            {"doaab", "doa"}, {"doaae", "doa"}, {"doab", "doa"},
+            {"dynamcopb", "dynamcop"}, {"dynamcopc", "dynamcop"},
+            {"manxttdx", "manxtt"}, {"vf2b", "vf2"},
+        };
+        expect(std::size(parent_catalog_clones) == 34,
+               "34 clone Service Menus reuse the reviewed parent catalog");
+        for (const auto& [clone, parent] : parent_catalog_clones) {
+            expect_game(libretro::nvram::options_for_game(clone).empty(), clone,
+                        "parent-compatible clone does not shadow the parent catalog");
+            expect_game(!libretro::nvram::options_for_game(parent).empty(), clone,
+                        "parent-compatible clone resolves to a reviewed parent catalog");
+        }
+
+        static constexpr std::string_view clone_specific_catalogs[] = {
+            "daytona93", "daytonas", "dyndeka2", "dyndeka2b", "hotdp",
+            "indy500d", "motoraiddx", "srallycdxa", "stcca", "stccb",
+            "stcco", "vf2a", "vf2o", "vstrikero",
+        };
+        expect(std::size(clone_specific_catalogs) == 14,
+               "14 clone Service Menus use a reviewed clone-specific catalog");
+        for (const auto clone : clone_specific_catalogs)
+            expect_game(!libretro::nvram::options_for_game(clone).empty(), clone,
+                        "clone-specific catalog is available");
+
+        static constexpr std::pair<std::string_view, std::string_view> clone_templates[] = {
+            {"daytonase", "daytona"}, {"indy500to", "indy500"},
+            {"manxttc", "manxtt"}, {"sfight", "schamp"},
+            {"srallycdx", "srallyc"},
+            {"doaa", "doa"}, {"doaab", "doa"}, {"doaae", "doa"}, {"doab", "doa"},
+            {"dynamcopb", "dynamcop"}, {"dynamcopc", "dynamcop"},
+            {"dyndeka2", "dyndeka2"}, {"dyndeka2b", "dyndeka2b"},
+            {"manxttdx", "manxtt"}, {"motoraiddx", "motoraiddx"},
+            {"stcca", "stcca"}, {"stcco", "stcco"}, {"vf2b", "vf2"},
+            {"daytona93", "daytona93"}, {"daytonas", "daytonas"},
+            {"stccb", "stccb"}, {"vf2a", "vf2a"}, {"vf2o", "vf2o"},
+            {"indy500d", "indy500d"}, {"vstrikero", "vstrikero"},
+            {"srallycdxa", "srallycdxa"}, {"hotdp", "hotdp"},
+        };
+        for (const auto& [clone, parent] : clone_templates) {
+            expect_game(libretro::initial_nvram::has_template(clone), clone,
+                        "validated clone has a dedicated initial NVRAM template");
+            std::array<u8, libretro::kBackupRamSize> clone_backup{};
+            std::array<u8, libretro::kEepromSize> clone_eeprom{};
+            expect_game(libretro::initial_nvram::seed(clone, clone_backup, clone_eeprom) ==
+                            libretro::initial_nvram::SeedResult::Loaded,
+                        clone, "dedicated clone template decodes");
+            const auto parent_options = libretro::nvram::options_for_game(parent);
+            const auto initial = libretro::nvram::initial_values(parent);
+            const auto initial_result = libretro::nvram::apply(
+                parent, clone_backup, clone_eeprom, initial);
+            expect_game(initial_result == libretro::nvram::ApplyResult::Changed
+                            || initial_result == libretro::nvram::ApplyResult::Unchanged,
+                        clone, "parent initial defaults apply to clone template");
+            expect_game(libretro::nvram::apply(parent, clone_backup, clone_eeprom, initial) ==
+                            libretro::nvram::ApplyResult::Unchanged,
+                        clone, "clone retains parent initial defaults");
+            for (size_t option_index = 0; option_index < parent_options.size(); ++option_index) {
+                for (size_t value_index = 0;
+                     value_index < parent_options[option_index].value_count; ++value_index) {
+                    expect_game(libretro::initial_nvram::seed(
+                                    clone, clone_backup, clone_eeprom) ==
+                                    libretro::initial_nvram::SeedResult::Loaded,
+                                clone, "clone template resets before option value check");
+                    std::vector<std::string> selection(parent_options.size());
+                    selection[option_index] = parent_options[option_index].values[value_index].key;
+                    const auto write = libretro::nvram::apply(
+                        parent, clone_backup, clone_eeprom, selection);
+                    expect_game(write == libretro::nvram::ApplyResult::Changed
+                                    || write == libretro::nvram::ApplyResult::Unchanged,
+                                clone, "every parent option value applies to clone template");
+                    if (clone == "vf2a" || clone == "vf2o")
+                        expect_game(clone_backup[0x3001] == 0xff
+                                        && clone_backup[0x3306] == (clone == "vf2a" ? 0x13 : 0x12)
+                                        && clone_backup[0x3318] == 0x2f,
+                                    clone, "option writes preserve the clone revision bytes");
+                    expect_game(libretro::nvram::apply(
+                                    parent, clone_backup, clone_eeprom,
+                                    std::vector<std::string>(parent_options.size())) ==
+                                    libretro::nvram::ApplyResult::Unchanged,
+                                clone, "clone integrity remains valid after parent option write");
+                }
+            }
+            if (clone == "vf2a" || clone == "vf2o") {
+                clone_backup[0x3318] = 0xce;
+                clone_backup[0x3319] = 0x0b;
+                expect_game(libretro::nvram::apply(
+                                parent, clone_backup, clone_eeprom,
+                                std::vector<std::string>(parent_options.size())) ==
+                                libretro::nvram::ApplyResult::Unchanged,
+                            clone, "runtime header data is not a fixed revision marker");
+            }
+            if (clone == "vstrikero") {
+                expect_game(clone_backup[0x06] == 0x01, clone,
+                            "original revision identifier is preserved");
+                expect_game(clone_backup[0x21] == 0x02 && clone_backup[0x0a] == 0x00,
+                            clone, "native fields outside the selected clone catalog are preserved");
+                expect_game(clone_backup[0x08] == 0x0a && clone_backup[0x09] == 0x00,
+                            clone, "fixed original-revision integrity marker is preserved");
+                expect_game(std::equal(clone_backup.begin(), clone_backup.begin() + 0x80,
+                                       clone_backup.begin() + 0x80),
+                            clone, "original-revision settings mirror remains synchronized");
+                expect_game(parent_options.size() == 9, clone,
+                            "original revision omits One Match Mode from Core Options");
+
+                expect_game(libretro::initial_nvram::seed(
+                                clone, clone_backup, clone_eeprom) ==
+                                libretro::initial_nvram::SeedResult::Loaded,
+                            clone, "original revision resets before offset check");
+                std::vector<std::string> advertise_selection(parent_options.size());
+                const auto advertise = std::find_if(
+                    parent_options.begin(), parent_options.end(), [](const auto& option) {
+                        return std::string_view(option.suffix) == "advertise_sound";
+                    });
+                expect_game(advertise != parent_options.end(), clone,
+                            "Advertise Sound is exposed");
+                if (advertise != parent_options.end())
+                    advertise_selection[static_cast<size_t>(
+                        advertise - parent_options.begin())] = "off";
+                expect_game(libretro::nvram::apply(
+                                clone, clone_backup, clone_eeprom,
+                                advertise_selection) == libretro::nvram::ApplyResult::Changed,
+                            clone, "Advertise Sound applies to the clone layout");
+                expect_game(clone_backup[0x17] == 1 && clone_backup[0x97] == 1
+                                && clone_backup[0x19] == 0 && clone_backup[0x99] == 0,
+                            clone, "Advertise Sound uses the older revision offset only");
+            }
+            if (clone == "indy500d") {
+                std::array<u8, libretro::kBackupRamSize> parent_backup{};
+                std::array<u8, libretro::kEepromSize> parent_eeprom{};
+                expect(libretro::initial_nvram::seed("indy500", parent_backup, parent_eeprom) ==
+                           libretro::initial_nvram::SeedResult::Loaded,
+                       "parent comparison template decodes");
+                expect_game(libretro::nvram::apply(
+                                clone, parent_backup, parent_eeprom,
+                                std::vector<std::string>(parent_options.size())) ==
+                                libretro::nvram::ApplyResult::LayoutNotReady,
+                            clone, "Deluxe rejects the parent's 36-byte bank");
+                expect_game(parent_options.size() == 7, clone,
+                            "Deluxe omits Engine Volume and Default View");
+            }
+            if (clone == "srallycdxa") {
+                expect_game(clone_eeprom[2] == 0x2c && clone_eeprom[3] == 0,
+                            clone, "Deluxe revision A preserves its 44-byte layout");
+                expect_game(parent_options.size() == 4, clone,
+                            "Deluxe revision A omits Cabinet Type and Link Type");
+                expect_game(clone_eeprom[0x0a] == 0 && clone_eeprom[0x0b] == 0,
+                            clone, "fields absent from the menu remain at native values");
+            }
+            if (clone == "hotdp") {
+                expect_game(parent_options.size() == 4, clone,
+                            "prototype exposes only the four reviewed Core Options");
+                const auto blood = std::find_if(
+                    parent_options.begin(), parent_options.end(), [](const auto& option) {
+                        return std::string_view(option.suffix) == "blood_color";
+                    });
+                expect_game(blood != parent_options.end() && blood->value_count == 2,
+                            clone, "prototype Blood Color exposes only Red and Green");
+                expect_game(clone_eeprom[0x1a] == 0 && clone_eeprom[0x1d] == 9
+                                && clone_eeprom[0x1f] == 1,
+                            clone, "excluded Cabinet, Life and Blowback fields retain native defaults");
+                expect_game(std::equal(clone_eeprom.begin() + 0x08,
+                                       clone_eeprom.begin() + 0x20,
+                                       clone_eeprom.begin() + 0x20),
+                            clone, "prototype 24-byte settings bank remains mirrored");
+            }
+            libretro::SaveRam clone_save{};
+            libretro::export_save_ram(clone, clone_backup, clone_eeprom, clone_save);
+            expect_game(libretro::import_save_ram(clone, clone_save,
+                            clone_backup, clone_eeprom) == libretro::SaveImportResult::Loaded,
+                        clone, "dedicated clone NVRAM persists in its own save container");
+        }
+
+        {
+            std::array<u8, libretro::kBackupRamSize> clone_backup{};
+            std::array<u8, libretro::kEepromSize> clone_eeprom{};
+            expect_game(libretro::initial_nvram::seed(
+                            "motoraiddx", clone_backup, clone_eeprom) ==
+                            libretro::initial_nvram::SeedResult::Loaded,
+                        "motoraiddx", "dedicated template decodes for cabinet test");
+            const auto motor_options = libretro::nvram::options_for_game("motoraiddx");
+            std::vector<std::string> selections(motor_options.size());
+            const auto cabinet_option = std::find_if(
+                motor_options.begin(), motor_options.end(),
+                [](const auto& option) {
+                    return std::string_view(option.suffix) == "cabinet_type";
+                });
+            expect_game(cabinet_option != motor_options.end(), "motoraiddx",
+                        "Cabinet Type is exposed");
+            if (cabinet_option != motor_options.end())
+                selections[static_cast<size_t>(
+                    cabinet_option - motor_options.begin())] = "twin";
+            expect_game(libretro::nvram::apply(
+                            "motoraiddx", clone_backup, clone_eeprom, selections) ==
+                            libretro::nvram::ApplyResult::Changed,
+                        "motoraiddx", "Twin applies to the clone layout");
+            expect((clone_eeprom[0x0c] & 0x03) == 0x02
+                       && clone_eeprom[0x17] == 0x00
+                       && (clone_eeprom[0x30] & 0x03) == 0x02
+                       && clone_eeprom[0x3b] == 0x00,
+                   "Motor Raid Deluxe Twin matches the acquired compound encoding");
+            expect_game(libretro::nvram::apply(
+                            "motoraiddx", clone_backup, clone_eeprom,
+                            std::vector<std::string>(motor_options.size())) ==
+                            libretro::nvram::ApplyResult::Unchanged,
+                        "motoraiddx", "Twin keeps checksum and mirror valid");
+        }
+
     }
 
     std::array<u8, libretro::kBackupRamSize> backup{};
@@ -373,7 +702,7 @@ int main()
     expect(libretro::nvram::apply("vf2", invalid, eeprom, vf2_selections) ==
            libretro::nvram::ApplyResult::LayoutNotReady, "unknown VF2 layout is not modified");
     expect(libretro::nvram::apply("vf2a", backup, eeprom, vf2_selections) ==
-           libretro::nvram::ApplyResult::Unsupported, "options are restricted to the parent set");
+           libretro::nvram::ApplyResult::LayoutNotReady, "VF2 revision rejects a mismatched parent header");
 
     {
         std::array<u8, libretro::kBackupRamSize> settings_backup{};
@@ -459,9 +788,9 @@ int main()
         expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
                                      selections) == libretro::nvram::ApplyResult::Changed,
                "Super GT 24h defaults apply to valid native layouts");
-        expect(settings_eeprom[0x19] == 2 && settings_eeprom[0x1a] == 1 &&
+        expect(settings_eeprom[0x19] == 1 && settings_eeprom[0x1a] == 1 &&
                settings_eeprom[0x1b] == 1 && settings_eeprom[0x1c] == 0,
-               "Super GT 24h defaults to NOT LINK with Link Max 2");
+               "Super GT 24h NOT LINK retains the required internal Link Max sentinel");
         expect(settings_backup[0x1a] == 1, "Super GT 24h defaults to USA");
         expect(settings_backup[0x14] == 0 && settings_backup[0x1c] == 0 &&
                settings_backup[0x1e] == 0 && settings_backup[0x20] == 0,
@@ -480,6 +809,17 @@ int main()
                           settings_eeprom.begin() + 0x28,
                           settings_eeprom.begin() + 0x28),
                "Super GT 24h EEPROM mirror is synchronized");
+        selections[0] = "car_no1_master";
+        expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Changed
+                   && settings_eeprom[0x19] == 2 && settings_eeprom[0x1a] == 0
+                   && settings_eeprom[0x1b] == 1 && settings_eeprom[0x1c] == 0,
+               "Super GT 24h applies Link Max 2 only for CAR NO1 Master");
+        selections[0] = "not_link";
+        expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
+                                     selections) == libretro::nvram::ApplyResult::Changed
+                   && settings_eeprom[0x19] == 1,
+               "Super GT 24h restores the NOT LINK sentinel after leaving master mode");
         selections.back() = "a";
         expect(libretro::nvram::apply("sgt24h", settings_backup, settings_eeprom,
                                      selections) == libretro::nvram::ApplyResult::Changed
