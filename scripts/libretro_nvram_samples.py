@@ -84,6 +84,7 @@ class Settings:
     rom_dir: Path
     system_assets: Path
     base_config: Path | None
+    core_options: dict[str, str]
     game: str
     baseline_sample: str | None
     standard_srm: Path | None
@@ -397,6 +398,13 @@ def load_campaign(args: argparse.Namespace) -> tuple[Settings, list[Sample]]:
     )
     output_dir = args.output.expanduser().resolve() if args.output else config_path(configured_output, base)
 
+    core_options = data.get("core_options", {})
+    if not isinstance(core_options, dict) or any(
+        not isinstance(key, str) or not SUFFIX_RE.fullmatch(key)
+        or not isinstance(value, str) or "\n" in value or "\r" in value
+        for key, value in core_options.items()
+    ):
+        raise ValueError("core_options must contain valid keys and single-line string values")
     base_config_value = retroarch.get("base_config")
 
     settings = Settings(
@@ -406,6 +414,7 @@ def load_campaign(args: argparse.Namespace) -> tuple[Settings, list[Sample]]:
         rom_dir=config_path(retroarch.get("rom_dir", ""), base),
         system_assets=config_path(retroarch.get("system_assets", "../build-libretro/libretro/system/sm2-emu"), base),
         base_config=config_path(base_config_value, base) if base_config_value else None,
+        core_options=core_options,
         game=game,
         baseline_sample=baseline_sample,
         standard_srm=standard_srm,
@@ -567,10 +576,10 @@ def write_isolated_config(
             shutil.copy2(asset, work / "system" / "sm2-emu" / asset.name)
 
     core_options = work / "config" / "core-options.cfg"
-    # Leave core options untouched for compatibility across Vulkan/Software builds.
-    # If a future workflow needs a fixed renderer, add it explicitly in the
-    # campaign's base_config file.
-    core_options.write_text("", encoding="utf-8")
+    # Optional explicit options isolate diagnostic campaigns from core defaults.
+    core_options.write_text(
+        "".join(f"{key} = {json.dumps(value)}\n"
+                for key, value in settings.core_options.items()), encoding="utf-8")
 
     overrides = {
         "config_save_on_exit": "false",

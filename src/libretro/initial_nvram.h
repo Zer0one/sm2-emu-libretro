@@ -13,5 +13,6 @@ enum class SeedResult { Unsupported, InvalidTemplate, Loaded };
 [[nodiscard]] SeedResult seed(std::string_view game, std::span<u8> backup,
                               std::span<u8> eeprom);
 [[nodiscard]] bool has_template(std::string_view game);
+[[nodiscard]] bool can_use_parent_template(std::string_view game);
 
 }  // namespace sm2::libretro::initial_nvram

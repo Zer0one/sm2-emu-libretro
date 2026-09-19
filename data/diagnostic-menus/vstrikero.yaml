@@ -1,0 +1,61 @@
+schema_version: 1
+
+game:
+  set: vstrikero
+  parent: vstriker
+  title: Virtua Striker
+  revision: older
+  board: model2b
+  declared_manufacturer: Sega
+
+classification:
+  gameplay_type: soccer
+  control_family: dual_player_joystick_three_buttons
+  observed_menu_family: sega_model2_green_game_system_128_byte_backup_bank
+  evidence: [clone_native_baseline, menu_screenshots, isolated_option_steps]
+
+verification:
+  status: verified
+  date: "2026-09-19"
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    persistent_script: scripts/libretro_nvram_samples.vstrikero.toml
+    baseline: build-libretro-gpu/validation/clone-nvram-campaign/run-current-2026-09-15/sets/vstrikero/vstrikero.nv
+    final_field_samples: build-libretro-gpu/validation/vstrikero-final-fields-20260919
+    validated: [menu_structure, native_defaults, selected_offsets, value_coding, mirrored_settings_bank]
+
+controls: {profile: sega_service_l3_r3, test: R3, service: L3}
+
+nvram_layout:
+  storage: backup_ram
+  settings_banks:
+    first: {offset: 0x00, size: 128}
+    mirror: {offset: 0x80, size: 128}
+  integrity:
+    fixed_marker: {offset: 0x08, bytes: [0x0a, 0x00]}
+    algorithm: none_observed
+    behavior: service_menu_keeps_banks_identical
+
+menus:
+  game_system:
+    root_position: {initial_item: EXIT, service_presses: 2}
+    initial_item: EXIT
+    editable_option_count: 10
+    parent_difference: ONE MATCH MODE is absent
+    options:
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, values: ["ON", "OFF"], default: "ON", core_option: true, nvram: {offset: 0x17, mirror_offset: 0x97, values: [0, 1]}}
+      - {key: country, label: COUNTRY, position: 2, values: [JPN, EXP, USA], default: JPN, core_default: USA, core_option: true, nvram: {offset: 0x1b, mirror_offset: 0x9b, values: [1, 2, 0]}}
+      - {key: monitor, label: MONITOR, position: 3, values: [CRT, PROJECTER], default: CRT, core_option: true, nvram: {offset: 0x1a, mirror_offset: 0x9a, values: [1, 0]}}
+      - {key: difficulty, label: DIFFICULTY, position: 4, values: [NORMAL, HARD, HARDEST, EASY], default: NORMAL, core_option: true, nvram: {offset: 0x20, mirror_offset: 0xa0, values: [1, 2, 3, 0]}}
+      - {key: time_set, label: TIME SET, position: 5, default: "2:00", core_option: false, nvram: {offset: 0x21, native_value: 2}}
+      - {key: v_goal_system, label: V GOAL SYSTEM, position: 6, values: ["OFF", "ON"], default: "OFF", core_option: true, nvram: {offset: 0x1c, mirror_offset: 0x9c, values: [1, 0]}}
+      - {key: v_goal_time_set, label: V GOAL TIME SET, position: 7, values: ["0:15", "0:30", "0:45", "1:00", "TIME FREE"], default: "0:15", core_option: true, nvram: {offset: 0x22, mirror_offset: 0xa2, values: [0, 1, 2, 3, 4]}}
+      - {key: pk_system, label: PK SYSTEM, position: 8, values: ["OFF", "ON"], default: "OFF", core_option: true, nvram: {offset: 0x1d, mirror_offset: 0x9d, values: [1, 0]}}
+      - {key: pk_member_set, label: PK MEMBER SET, position: 9, values: [3, 4, 5, "REAL PK"], default: 3, core_option: true, nvram: {offset: 0x1e, mirror_offset: 0x9e, values: [0, 1, 2, 3]}}
+      - {key: billboard, label: BILLBOARD, position: 10, values: ["ON", "OFF"], default: "ON", core_option: true, nvram: {offset: 0x1f, mirror_offset: 0x9f, values: [0, 1]}}
+    commands: [{label: EXIT, position: 0}]
+
+notes:
+  - The clone keeps its native defaults; only the established core Country rule changes JPN to USA during automatic setup.
+  - TIME SET remains native and is intentionally not exposed as a Core Option.
+  - Bytes changed by the service menu outside the selected fields are runtime bookkeeping and are not patched by the core.

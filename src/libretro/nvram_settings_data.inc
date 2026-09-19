@@ -947,6 +947,13 @@ static constexpr Value kValues61[] = {
     {"off", "OFF", kDesired61 + 2},
 };
 
+// Virtua Striker (older) stores ADVERTISE SOUND two bytes earlier than the
+// parent. The remaining selected fields retain the parent's coding/offsets.
+static constexpr Patch kVstrikeroAdvertiseSoundPatches[] = {
+    {23, 0x01},
+    {151, 0x01},
+};
+
 static constexpr Patch kPatches62[] = {
     {10, 0x01},
     {138, 0x01},
@@ -2662,7 +2669,7 @@ static constexpr u8 kDesired144[] = {
 };
 static constexpr Value kValues144[] = {
     {"twin", "TWIN", kDesired144 + 0},
-    {"delux", "DELUX", kDesired144 + 1},
+    {"delux", "DELUXE", kDesired144 + 1},
 };
 
 static constexpr Patch kPatches145[] = {
@@ -3552,6 +3559,179 @@ static constexpr Value kValues195[] = {
     {"off", "Off", kDesired195 + 2},
 };
 
+// Daytona USA '93 has a reduced Game System menu. Its cabinet field exposes
+// only Deluxe and Upright, using the same two mirrored bytes as the parent.
+static constexpr Patch kPatches197[] = {
+    {0x1a, 0x03},
+    {0x9a, 0x03},
+};
+static constexpr u8 kDesired197[] = {0x00, 0x00, 0x01, 0x01};
+static constexpr Value kValues197[] = {
+    {"deluxe", "DELUXE", kDesired197 + 0},
+    {"upright", "UPRIGHT", kDesired197 + 2},
+};
+
+// The Saturn-advertisement revision adds Special as a cabinet type and uses
+// code 3 for Upright. The other Daytona revisions use code 2 for Upright.
+static constexpr Patch kPatches198[] = {
+    {0x1a, 0x03},
+    {0x9a, 0x03},
+};
+static constexpr u8 kDesired198[] = {
+    0x01, 0x01, 0x02, 0x02, 0x03, 0x03, 0x00, 0x00,
+};
+static constexpr Value kValues198[] = {
+    {"twin", "TWIN", kDesired198 + 0},
+    {"special", "SPECIAL", kDesired198 + 2},
+    {"upright", "UPRIGHT", kDesired198 + 4},
+    {"deluxe", "DELUXE", kDesired198 + 6},
+};
+
+static constexpr Patch kPatches199[] = {
+    {0x1e, 0x03},
+    {0x9e, 0x03},
+};
+static constexpr u8 kDesired199[] = {
+    0x00, 0x00, 0x01, 0x01, 0x02, 0x02,
+};
+static constexpr Value kValues199[] = {
+    {"off", "OFF", kDesired199 + 0},
+    {"coming_soon", "COMING SOON", kDesired199 + 2},
+    {"available_now", "AVAILABLE NOW", kDesired199 + 4},
+};
+
+// STCC revision B keeps the country selector but stores its two companion
+// bytes four bytes earlier than the parent revision and adds a region flag.
+static constexpr Patch kPatches200[] = {
+    {0x0c, 0x01, MemoryKind::Eeprom},
+    {0x10, 0x06, MemoryKind::Eeprom},
+    {0x14, 0xff, MemoryKind::Eeprom},
+    {0x24, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired200[] = {
+    0x00, 0x00, 0x02, 0x09,
+    0x01, 0x02, 0x12, 0x18,
+    0x01, 0x04, 0x22, 0x09,
+};
+static constexpr Value kValues200[] = {
+    {"japan", "JAPAN", kDesired200 + 0},
+    {"usa", "USA", kDesired200 + 4},
+    {"export", "EXPORT", kDesired200 + 8},
+};
+
+// Motor Raid Deluxe adds a selectable cabinet field. The low two bits of
+// 0x0c identify the cabinet revision while 0x17 stores the menu selection;
+// both bytes are mirrored in the second 36-byte settings bank.
+static constexpr Patch kPatches201[] = {
+    {0x0c, 0x03, MemoryKind::Eeprom},
+    {0x17, 0xff, MemoryKind::Eeprom},
+    {0x30, 0x03, MemoryKind::Eeprom},
+    {0x3b, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kDesired201[] = {
+    0x01, 0x01, 0x01, 0x01,
+    0x02, 0x00, 0x02, 0x00,
+};
+static constexpr Value kValues201[] = {
+    {"deluxe", "DELUXE", kDesired201 + 0},
+    {"twin", "TWIN", kDesired201 + 4},
+};
+
+static constexpr Patch kIndy500dPatches82[] = {
+    {25, 0xff, MemoryKind::Eeprom},
+    {69, 0xff, MemoryKind::Eeprom},
+};
+
+static constexpr Patch kIndy500dPatches83[] = {
+    {24, 0xff, MemoryKind::Eeprom},
+    {68, 0xff, MemoryKind::Eeprom},
+};
+
+static constexpr Patch kIndy500dPatches84[] = {
+    {39, 0xff, MemoryKind::Eeprom},
+    {83, 0xff, MemoryKind::Eeprom},
+};
+
+static constexpr Patch kIndy500dPatches85[] = {
+    {22, 0xff, MemoryKind::Eeprom},
+    {66, 0xff, MemoryKind::Eeprom},
+};
+
+static constexpr Patch kIndy500dPatches86[] = {
+    {23, 0xff, MemoryKind::Eeprom},
+    {67, 0xff, MemoryKind::Eeprom},
+};
+
+static constexpr Patch kIndy500dPatches87[] = {
+    {40, 0xff, MemoryKind::Eeprom},
+    {84, 0xff, MemoryKind::Eeprom},
+};
+
+static constexpr Patch kIndy500dPatches88[] = {
+    {41, 0xff, MemoryKind::Eeprom},
+    {85, 0xff, MemoryKind::Eeprom},
+};
+
+static constexpr Patch kHotdpDifficultyPatches[] = {
+    {0x1b, 0xff, MemoryKind::Eeprom},
+    {0x33, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kHotdpDifficultyDesired[] = {
+    0x02, 0x02,
+    0x03, 0x03,
+    0x04, 0x04,
+    0x00, 0x00,
+    0x01, 0x01,
+};
+static constexpr Value kHotdpDifficultyValues[] = {
+    {"normal", "NORMAL", kHotdpDifficultyDesired + 0},
+    {"medium_hard", "MEDIUM HARD", kHotdpDifficultyDesired + 2},
+    {"very_hard", "VERY HARD", kHotdpDifficultyDesired + 4},
+    {"very_easy", "VERY EASY", kHotdpDifficultyDesired + 6},
+    {"medium_easy", "MEDIUM EASY", kHotdpDifficultyDesired + 8},
+};
+
+static constexpr Patch kHotdpBloodColorPatches[] = {
+    {0x1e, 0xff, MemoryKind::Eeprom},
+    {0x36, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kHotdpBloodColorDesired[] = {
+    0x00, 0x00,
+    0x01, 0x01,
+};
+static constexpr Value kHotdpBloodColorValues[] = {
+    {"red", "RED", kHotdpBloodColorDesired + 0},
+    {"green", "GREEN", kHotdpBloodColorDesired + 2},
+};
+
+static constexpr Patch kHotdpAdvertiseSoundPatches[] = {
+    {0x1c, 0xff, MemoryKind::Eeprom},
+    {0x34, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kHotdpAdvertiseSoundDesired[] = {
+    0x01, 0x01,
+    0x00, 0x00,
+};
+static constexpr Value kHotdpAdvertiseSoundValues[] = {
+    {"on", "ON", kHotdpAdvertiseSoundDesired + 0},
+    {"off", "OFF", kHotdpAdvertiseSoundDesired + 2},
+};
+
+static constexpr Patch kHotdpCountryPatches[] = {
+    {0x19, 0xff, MemoryKind::Eeprom},
+    {0x31, 0xff, MemoryKind::Eeprom},
+};
+static constexpr u8 kHotdpCountryDesired[] = {
+    0x00, 0x00,
+    0x01, 0x01,
+    0x02, 0x02,
+};
+static constexpr Value kHotdpCountryValues[] = {
+    {"japan", "JAPAN", kHotdpCountryDesired + 0},
+    {"usa", "USA", kHotdpCountryDesired + 2},
+    {"export", "EXPORT", kHotdpCountryDesired + 4},
+};
+
 static constexpr Option kOptions[] = {
     {"daytona", "link_id", "LINK ID", "Set LINK ID in daytona's operator NVRAM. The standalone value is the safe default when no peer cabinet is connected.", "single", kValues0, std::size(kValues0), kPatches0, std::size(kPatches0)},
     {"daytona", "car_number", "CAR NUMBER", "Set CAR NUMBER in daytona's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues1, std::size(kValues1), kPatches1, std::size(kPatches1)},
@@ -3561,6 +3741,19 @@ static constexpr Option kOptions[] = {
     {"daytona", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in daytona's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues5, std::size(kValues5), kPatches5, std::size(kPatches5)},
     {"daytona", "game_mode", "GAME MODE", "Set GAME MODE in daytona's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues6, std::size(kValues6), kPatches6, std::size(kPatches6)},
     {"daytona", "rival_arrow", "RIVAL ARROW", "Set RIVAL ARROW in daytona's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues7, std::size(kValues7), kPatches7, std::size(kPatches7)},
+    {"daytona93", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in daytona93's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues5, std::size(kValues5), kPatches5, std::size(kPatches5)},
+    {"daytona93", "country", "COUNTRY", "Set COUNTRY in daytona93's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues3, std::size(kValues3), kPatches3, std::size(kPatches3)},
+    {"daytona93", "cabinet", "CABINET", "Set CABINET in daytona93's operator NVRAM. This core defaults the Daytona family to Deluxe.", "deluxe", kValues197, std::size(kValues197), kPatches197, std::size(kPatches197)},
+    {"daytona93", "difficulty", "DIFFICULTY", "Set DIFFICULTY in daytona93's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues4, std::size(kValues4), kPatches4, std::size(kPatches4)},
+    {"daytonas", "link_id", "LINK ID", "Set LINK ID in daytonas's operator NVRAM. The standalone value is the safe default when no peer cabinet is connected.", "single", kValues0, std::size(kValues0), kPatches0, std::size(kPatches0)},
+    {"daytonas", "car_number", "CAR NUMBER", "Set CAR NUMBER in daytonas's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues1, std::size(kValues1), kPatches1, std::size(kPatches1)},
+    {"daytonas", "cabinet", "CABINET", "Set CABINET in daytonas's operator NVRAM. This core defaults the Daytona family to Deluxe.", "deluxe", kValues198, std::size(kValues198), kPatches198, std::size(kPatches198)},
+    {"daytonas", "country", "COUNTRY", "Set COUNTRY in daytonas's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues3, std::size(kValues3), kPatches3, std::size(kPatches3)},
+    {"daytonas", "difficulty", "DIFFICULTY", "Set DIFFICULTY in daytonas's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues4, std::size(kValues4), kPatches4, std::size(kPatches4)},
+    {"daytonas", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in daytonas's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues5, std::size(kValues5), kPatches5, std::size(kPatches5)},
+    {"daytonas", "game_mode", "GAME MODE", "Set GAME MODE in daytonas's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues6, std::size(kValues6), kPatches6, std::size(kPatches6)},
+    {"daytonas", "rival_arrow", "RIVAL ARROW", "Set RIVAL ARROW in daytonas's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues7, std::size(kValues7), kPatches7, std::size(kPatches7)},
+    {"daytonas", "promote_saturn", "PROMOTE SATURN", "Set PROMOTE SATURN in daytonas's operator NVRAM. This controls the Saturn-version advertisement shown by this revision.", "coming_soon", kValues199, std::size(kValues199), kPatches199, std::size(kPatches199)},
     {"desert", "country", "COUNTRY", "Set COUNTRY in desert's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "us", kValues8, std::size(kValues8), kPatches8, std::size(kPatches8)},
     {"desert", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in desert's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues9, std::size(kValues9), kPatches9, std::size(kPatches9)},
     {"desert", "difficulty_desert", "DIFFICULTY: DESERT", "Set DIFFICULTY: DESERT in desert's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "easy", kValues10, std::size(kValues10), kPatches10, std::size(kPatches10)},
@@ -3606,6 +3799,22 @@ static constexpr Option kOptions[] = {
     {"vf2", "display_type", "DISPLAY TYPE", "Set DISPLAY TYPE in vf2's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "projector", kValues50, std::size(kValues50), kPatches50, std::size(kPatches50)},
     {"vf2", "ranking_mode", "RANKING MODE", "Set RANKING MODE in vf2's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues51, std::size(kValues51), kPatches51, std::size(kPatches51)},
     {"vf2", "version", "VERSION", "Set VERSION in vf2's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues52, std::size(kValues52), kPatches52, std::size(kPatches52)},
+    {"vf2a", "difficulty", "DIFFICULTY", "Set DIFFICULTY in vf2a's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues45, std::size(kValues45), kPatches45, std::size(kPatches45)},
+    {"vf2a", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in vf2a's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues46, std::size(kValues46), kPatches46, std::size(kPatches46)},
+    {"vf2a", "continue", "CONTINUE", "Set CONTINUE in vf2a's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues47, std::size(kValues47), kPatches47, std::size(kPatches47)},
+    {"vf2a", "drink", "DRINK", "Set DRINK in vf2a's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "ok", kValues48, std::size(kValues48), kPatches48, std::size(kPatches48)},
+    {"vf2a", "country", "COUNTRY", "Set COUNTRY in vf2a's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues49, std::size(kValues49), kPatches49, std::size(kPatches49)},
+    {"vf2a", "display_type", "DISPLAY TYPE", "Set DISPLAY TYPE in vf2a's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "projector", kValues50, std::size(kValues50), kPatches50, std::size(kPatches50)},
+    {"vf2a", "ranking_mode", "RANKING MODE", "Set RANKING MODE in vf2a's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues51, std::size(kValues51), kPatches51, std::size(kPatches51)},
+    {"vf2a", "version", "VERSION", "Set VERSION in vf2a's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues52, std::size(kValues52), kPatches52, std::size(kPatches52)},
+    {"vf2o", "difficulty", "DIFFICULTY", "Set DIFFICULTY in vf2o's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues45, std::size(kValues45), kPatches45, std::size(kPatches45)},
+    {"vf2o", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in vf2o's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues46, std::size(kValues46), kPatches46, std::size(kPatches46)},
+    {"vf2o", "continue", "CONTINUE", "Set CONTINUE in vf2o's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues47, std::size(kValues47), kPatches47, std::size(kPatches47)},
+    {"vf2o", "drink", "DRINK", "Set DRINK in vf2o's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "ok", kValues48, std::size(kValues48), kPatches48, std::size(kPatches48)},
+    {"vf2o", "country", "COUNTRY", "Set COUNTRY in vf2o's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues49, std::size(kValues49), kPatches49, std::size(kPatches49)},
+    {"vf2o", "display_type", "DISPLAY TYPE", "Set DISPLAY TYPE in vf2o's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "projector", kValues50, std::size(kValues50), kPatches50, std::size(kPatches50)},
+    {"vf2o", "ranking_mode", "RANKING MODE", "Set RANKING MODE in vf2o's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues51, std::size(kValues51), kPatches51, std::size(kPatches51)},
+    {"vf2o", "version", "VERSION", "Set VERSION in vf2o's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues52, std::size(kValues52), kPatches52, std::size(kPatches52)},
     {"vstriker", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in vstriker's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues53, std::size(kValues53), kPatches53, std::size(kPatches53)},
     {"vstriker", "country", "COUNTRY", "Set COUNTRY in vstriker's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues54, std::size(kValues54), kPatches54, std::size(kPatches54)},
     {"vstriker", "monitor", "MONITOR", "Set MONITOR in vstriker's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "crt", kValues55, std::size(kValues55), kPatches55, std::size(kPatches55)},
@@ -3616,6 +3825,15 @@ static constexpr Option kOptions[] = {
     {"vstriker", "pk_member_set", "PK MEMBER SET", "Set PK MEMBER SET in vstriker's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "3", kValues60, std::size(kValues60), kPatches60, std::size(kPatches60)},
     {"vstriker", "billboard", "BILLBOARD", "Set BILLBOARD in vstriker's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues61, std::size(kValues61), kPatches61, std::size(kPatches61)},
     {"vstriker", "one_match_mode", "ONE MATCH MODE", "Set ONE MATCH MODE in vstriker's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues62, std::size(kValues62), kPatches62, std::size(kPatches62)},
+    {"vstrikero", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in vstrikero's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues53, std::size(kValues53), kVstrikeroAdvertiseSoundPatches, std::size(kVstrikeroAdvertiseSoundPatches)},
+    {"vstrikero", "country", "COUNTRY", "Set COUNTRY in vstrikero's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues54, std::size(kValues54), kPatches54, std::size(kPatches54)},
+    {"vstrikero", "monitor", "MONITOR", "Set MONITOR in vstrikero's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "crt", kValues55, std::size(kValues55), kPatches55, std::size(kPatches55)},
+    {"vstrikero", "difficulty", "DIFFICULTY", "Set DIFFICULTY in vstrikero's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues56, std::size(kValues56), kPatches56, std::size(kPatches56)},
+    {"vstrikero", "v_goal_system", "V GOAL SYSTEM", "Set V GOAL SYSTEM in vstrikero's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues57, std::size(kValues57), kPatches57, std::size(kPatches57)},
+    {"vstrikero", "v_goal_time_set", "V GOAL TIME SET", "Set V GOAL TIME SET in vstrikero's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "0_15", kValues58, std::size(kValues58), kPatches58, std::size(kPatches58)},
+    {"vstrikero", "pk_system", "PK SYSTEM", "Set PK SYSTEM in vstrikero's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues59, std::size(kValues59), kPatches59, std::size(kPatches59)},
+    {"vstrikero", "pk_member_set", "PK MEMBER SET", "Set PK MEMBER SET in vstrikero's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "3", kValues60, std::size(kValues60), kPatches60, std::size(kPatches60)},
+    {"vstrikero", "billboard", "BILLBOARD", "Set BILLBOARD in vstrikero's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues61, std::size(kValues61), kPatches61, std::size(kPatches61)},
 
     {"airwlkrs", "player_selection", "PLAYER SELECTION", "Set PLAYER SELECTION in airwlkrs's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "2p_simultaneous", kValues63, std::size(kValues63), kPatches63, std::size(kPatches63)},
     {"airwlkrs", "attract_sound", "ATTRACT SOUND", "Set ATTRACT SOUND in airwlkrs's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues64, std::size(kValues64), kPatches64, std::size(kPatches64)},
@@ -3632,10 +3850,20 @@ static constexpr Option kOptions[] = {
     {"dynamcop", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in dynamcop's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues75, std::size(kValues75), kPatches75, std::size(kPatches75)},
     {"dynamcop", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in dynamcop's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "3", kValues76, std::size(kValues76), kPatches76, std::size(kPatches76)},
     {"dynamcop", "violence_mode", "VIOLENCE MODE", "Set VIOLENCE MODE in dynamcop's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues77, std::size(kValues77), kPatches77, std::size(kPatches77)},
+    {"dyndeka2", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in dyndeka2's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues75, std::size(kValues75), kPatches75, std::size(kPatches75)},
+    {"dyndeka2", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in dyndeka2's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "3", kValues76, std::size(kValues76), kPatches76, std::size(kPatches76)},
+    {"dyndeka2", "violence_mode", "VIOLENCE MODE", "Set VIOLENCE MODE in dyndeka2's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues77, std::size(kValues77), kPatches77, std::size(kPatches77)},
+    {"dyndeka2b", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in dyndeka2b's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues75, std::size(kValues75), kPatches75, std::size(kPatches75)},
+    {"dyndeka2b", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in dyndeka2b's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "3", kValues76, std::size(kValues76), kPatches76, std::size(kPatches76)},
+    {"dyndeka2b", "violence_mode", "VIOLENCE MODE", "Set VIOLENCE MODE in dyndeka2b's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues77, std::size(kValues77), kPatches77, std::size(kPatches77)},
     {"hotd", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in hotd's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues78, std::size(kValues78), kPatches78, std::size(kPatches78)},
     {"hotd", "blood_color", "BLOOD COLOR", "Set BLOOD COLOR in hotd's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "green", kValues79, std::size(kValues79), kPatches79, std::size(kPatches79)},
     {"hotd", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in hotd's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues80, std::size(kValues80), kPatches80, std::size(kPatches80)},
     {"hotd", "country", "COUNTRY", "Set COUNTRY in hotd's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues81, std::size(kValues81), kPatches81, std::size(kPatches81)},
+    {"hotdp", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in hotdp's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kHotdpDifficultyValues, std::size(kHotdpDifficultyValues), kHotdpDifficultyPatches, std::size(kHotdpDifficultyPatches)},
+    {"hotdp", "blood_color", "BLOOD COLOR", "Set BLOOD COLOR in hotdp's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "red", kHotdpBloodColorValues, std::size(kHotdpBloodColorValues), kHotdpBloodColorPatches, std::size(kHotdpBloodColorPatches)},
+    {"hotdp", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in hotdp's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kHotdpAdvertiseSoundValues, std::size(kHotdpAdvertiseSoundValues), kHotdpAdvertiseSoundPatches, std::size(kHotdpAdvertiseSoundPatches)},
+    {"hotdp", "country", "COUNTRY", "Set COUNTRY in hotdp's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kHotdpCountryValues, std::size(kHotdpCountryValues), kHotdpCountryPatches, std::size(kHotdpCountryPatches)},
     {"indy500", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in indy500's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues82, std::size(kValues82), kPatches82, std::size(kPatches82)},
     {"indy500", "race_mode", "RACE MODE", "Set RACE MODE in indy500's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues83, std::size(kValues83), kPatches83, std::size(kPatches83)},
     {"indy500", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in indy500's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues84, std::size(kValues84), kPatches84, std::size(kPatches84)},
@@ -3643,14 +3871,21 @@ static constexpr Option kOptions[] = {
     {"indy500", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in indy500's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "twin", kValues86, std::size(kValues86), kPatches86, std::size(kPatches86)},
     {"indy500", "network_type", "NETWORK TYPE", "Set NETWORK TYPE in indy500's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "stand_alone", kValues87, std::size(kValues87), kPatches87, std::size(kPatches87)},
     {"indy500", "cabinet_id", "CABINET ID", "Set CABINET ID in indy500's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues88, std::size(kValues88), kPatches88, std::size(kPatches88)},
-    {"indy500", "engine_volume", "ENGINE VOLUME", "Set ENGINE VOLUME in indy500's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues89, std::size(kValues89), kPatches89, std::size(kPatches89)},
-    {"indy500", "default_view", "DEFAULT VIEW", "Set DEFAULT VIEW in indy500's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues90, std::size(kValues90), kPatches90, std::size(kPatches90)},
+    {"indy500", "engine_volume", "ENGINE VOLUME", "Set ENGINE VOLUME in indy500's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "3", kValues89, std::size(kValues89), kPatches89, std::size(kPatches89)},
+    {"indy500", "default_view", "DEFAULT VIEW", "Set DEFAULT VIEW in indy500's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "4", kValues90, std::size(kValues90), kPatches90, std::size(kPatches90)},
+    {"indy500d", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in indy500d's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues82, std::size(kValues82), kIndy500dPatches82, std::size(kIndy500dPatches82)},
+    {"indy500d", "race_mode", "RACE MODE", "Set RACE MODE in indy500d's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues83, std::size(kValues83), kIndy500dPatches83, std::size(kIndy500dPatches83)},
+    {"indy500d", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in indy500d's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues84, std::size(kValues84), kIndy500dPatches84, std::size(kIndy500dPatches84)},
+    {"indy500d", "country", "COUNTRY", "Set COUNTRY in indy500d's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues85, std::size(kValues85), kIndy500dPatches85, std::size(kIndy500dPatches85)},
+    {"indy500d", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in indy500d's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "deluxe", kValues86, std::size(kValues86), kIndy500dPatches86, std::size(kIndy500dPatches86)},
+    {"indy500d", "network_type", "NETWORK TYPE", "Set NETWORK TYPE in indy500d's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "stand_alone", kValues87, std::size(kValues87), kIndy500dPatches87, std::size(kIndy500dPatches87)},
+    {"indy500d", "cabinet_id", "CABINET ID", "Set CABINET ID in indy500d's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues88, std::size(kValues88), kIndy500dPatches88, std::size(kIndy500dPatches88)},
     {"lastbrnx", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in lastbrnx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1_normal", kValues91, std::size(kValues91), kPatches91, std::size(kPatches91)},
     {"lastbrnx", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in lastbrnx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues92, std::size(kValues92), kPatches92, std::size(kPatches92)},
     {"lastbrnx", "survival_mode", "SURVIVAL MODE", "Set SURVIVAL MODE in lastbrnx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues93, std::size(kValues93), kPatches93, std::size(kPatches93)},
     {"lastbrnx", "cut_cross_street", "CUT CROSS STREET", "Set CUT CROSS STREET in lastbrnx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues94, std::size(kValues94), kPatches94, std::size(kPatches94)},
     {"lastbrnx", "display_type", "DISPLAY TYPE", "Set DISPLAY TYPE in lastbrnx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "c_r_t", kValues95, std::size(kValues95), kPatches95, std::size(kPatches95)},
-    {"lastbrnx", "master_volume", "MASTER VOLUME", "Set MASTER VOLUME in lastbrnx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues96, std::size(kValues96), kPatches96, std::size(kPatches96)},
+    {"lastbrnx", "master_volume", "MASTER VOLUME", "Set MASTER VOLUME in lastbrnx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "3", kValues96, std::size(kValues96), kPatches96, std::size(kPatches96)},
     {"manxtt", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in manxtt's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues97, std::size(kValues97), kPatches97, std::size(kPatches97)},
     {"manxtt", "country", "COUNTRY", "Set COUNTRY in manxtt's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues98, std::size(kValues98), kPatches98, std::size(kPatches98)},
     {"manxtt", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in manxtt's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "twin", kValues99, std::size(kValues99), kPatches99, std::size(kPatches99)},
@@ -3667,6 +3902,14 @@ static constexpr Option kOptions[] = {
     {"motoraid", "country", "COUNTRY", "Set COUNTRY in motoraid's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues110, std::size(kValues110), kPatches110, std::size(kPatches110)},
     {"motoraid", "network_type", "NETWORK TYPE", "Set NETWORK TYPE in motoraid's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "stand_alone", kValues111, std::size(kValues111), kPatches111, std::size(kPatches111)},
     {"motoraid", "cabinet_id", "CABINET ID", "Set CABINET ID in motoraid's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues112, std::size(kValues112), kPatches112, std::size(kPatches112)},
+    {"motoraiddx", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in motoraiddx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues105, std::size(kValues105), kPatches105, std::size(kPatches105)},
+    {"motoraiddx", "race_mode", "RACE MODE", "Set RACE MODE in motoraiddx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "standard", kValues106, std::size(kValues106), kPatches106, std::size(kPatches106)},
+    {"motoraiddx", "enemy_level", "ENEMY LEVEL", "Set ENEMY LEVEL in motoraiddx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues107, std::size(kValues107), kPatches107, std::size(kPatches107)},
+    {"motoraiddx", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in motoraiddx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues109, std::size(kValues109), kPatches109, std::size(kPatches109)},
+    {"motoraiddx", "country", "COUNTRY", "Set COUNTRY in motoraiddx's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues110, std::size(kValues110), kPatches110, std::size(kPatches110)},
+    {"motoraiddx", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in motoraiddx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "deluxe", kValues201, std::size(kValues201), kPatches201, std::size(kPatches201)},
+    {"motoraiddx", "network_type", "NETWORK TYPE", "Set NETWORK TYPE in motoraiddx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "stand_alone", kValues111, std::size(kValues111), kPatches111, std::size(kPatches111)},
+    {"motoraiddx", "cabinet_id", "CABINET ID", "Set CABINET ID in motoraiddx's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues112, std::size(kValues112), kPatches112, std::size(kPatches112)},
     {"overrev", "country", "COUNTRY", "Set COUNTRY in overrev's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "u_s_a", kValues113, std::size(kValues113), kPatches113, std::size(kPatches113)},
     {"overrev", "hardware_type", "HARDWARE TYPE", "Set HARDWARE TYPE in overrev's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal_2in1", kValues114, std::size(kValues114), kPatches114, std::size(kPatches114)},
     {"overrev", "link_max", "LINK MAX", "Set LINK MAX in overrev's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "not_link", kValues115, std::size(kValues115), kPatches115, std::size(kPatches115)},
@@ -3676,8 +3919,8 @@ static constexpr Option kOptions[] = {
     {"overrev", "maximum_lap", "MAXIMUM LAP", "Set MAXIMUM LAP in overrev's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal_mode", kValues119, std::size(kValues119), kPatches119, std::size(kPatches119)},
     {"rchase2", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in rchase2's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues120, std::size(kValues120), kPatches120, std::size(kPatches120)},
     {"rchase2", "country", "COUNTRY", "Set COUNTRY in rchase2's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues121, std::size(kValues121), kPatches121, std::size(kPatches121)},
-    {"rchase2", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in rchase2's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1_8", kValues122, std::size(kValues122), kPatches122, std::size(kPatches122)},
-    {"rchase2", "shifting_difficulty", "SHIFTING DIFFICULTY", "Set SHIFTING DIFFICULTY in rchase2's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "10_sec_every", kValues123, std::size(kValues123), kPatches123, std::size(kPatches123)},
+    {"rchase2", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in rchase2's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "4_8", kValues122, std::size(kValues122), kPatches122, std::size(kPatches122)},
+    {"rchase2", "shifting_difficulty", "SHIFTING DIFFICULTY", "Set SHIFTING DIFFICULTY in rchase2's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "50_sec_every", kValues123, std::size(kValues123), kPatches123, std::size(kPatches123)},
     {"segawski", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in segawski's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues124, std::size(kValues124), kPatches124, std::size(kPatches124)},
     {"segawski", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in segawski's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "off", kValues125, std::size(kValues125), kPatches125, std::size(kPatches125)},
     {"skisuprg", "country", "COUNTRY", "Set COUNTRY in skisuprg's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues126, std::size(kValues126), kPatches126, std::size(kPatches126)},
@@ -3695,6 +3938,10 @@ static constexpr Option kOptions[] = {
     {"srallyc", "link_type", "LINK TYPE", "Set LINK TYPE in srallyc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "notlink", kValues138, std::size(kValues138), kPatches138, std::size(kPatches138)},
     {"srallyc", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in srallyc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues139, std::size(kValues139), kPatches139, std::size(kPatches139)},
     {"srallyc", "game_mode", "GAME MODE", "Set GAME MODE in srallyc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues140, std::size(kValues140), kPatches140, std::size(kPatches140)},
+    {"srallycdxa", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in srallycdxa's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues135, std::size(kValues135), kPatches135, std::size(kPatches135)},
+    {"srallycdxa", "country", "COUNTRY", "Set COUNTRY in srallycdxa's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues136, std::size(kValues136), kPatches136, std::size(kPatches136)},
+    {"srallycdxa", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in srallycdxa's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues139, std::size(kValues139), kPatches139, std::size(kPatches139)},
+    {"srallycdxa", "game_mode", "GAME MODE", "Set GAME MODE in srallycdxa's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues140, std::size(kValues140), kPatches140, std::size(kPatches140)},
     {"sgt24h", "link_type", "LINK TYPE", "Set LINK TYPE in sgt24h's operator NVRAM. NOT LINK is the safe default when no peer cabinet is connected.", "not_link", kValues174, std::size(kValues174), kPatches174, std::size(kPatches174)},
     {"sgt24h", "link_max", "LINK MAX", "Set LINK MAX in sgt24h's operator NVRAM. The game uses this value when CAR NO1 Master is selected.", "2", kValues175, std::size(kValues175), kPatches175, std::size(kPatches175)},
     {"sgt24h", "country", "COUNTRY", "Set COUNTRY in sgt24h's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues176, std::size(kValues176), kPatches176, std::size(kPatches176)},
@@ -3727,6 +3974,31 @@ static constexpr Option kOptions[] = {
     {"stcc", "game_mode", "GAME MODE", "Set GAME MODE in stcc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues147, std::size(kValues147), kPatches147, std::size(kPatches147)},
     {"stcc", "default_car", "DEFAULT CAR", "Set DEFAULT CAR in stcc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "random", kValues148, std::size(kValues148), kPatches148, std::size(kPatches148)},
     {"stcc", "default_view", "DEFAULT VIEW", "Set DEFAULT VIEW in stcc's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "bird_s", kValues149, std::size(kValues149), kPatches149, std::size(kPatches149)},
+    {"stcca", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in stcca's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues141, std::size(kValues141), kPatches141, std::size(kPatches141)},
+    {"stcca", "url_address", "URL ADDRESS", "Set URL ADDRESS in stcca's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues142, std::size(kValues142), kPatches142, std::size(kPatches142)},
+    {"stcca", "country", "COUNTRY", "Set COUNTRY in stcca's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues200, std::size(kValues200), kPatches200, std::size(kPatches200)},
+    {"stcca", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in stcca's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "twin", kValues144, std::size(kValues144), kPatches144, std::size(kPatches144)},
+    {"stcca", "link_type", "LINK TYPE", "Set LINK TYPE in stcca's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "stand_alone", kValues145, std::size(kValues145), kPatches145, std::size(kPatches145)},
+    {"stcca", "difficulty", "DIFFICULTY", "Set DIFFICULTY in stcca's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues146, std::size(kValues146), kPatches146, std::size(kPatches146)},
+    {"stcca", "game_mode", "GAME MODE", "Set GAME MODE in stcca's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues147, std::size(kValues147), kPatches147, std::size(kPatches147)},
+    {"stcca", "default_car", "DEFAULT CAR", "Set DEFAULT CAR in stcca's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "random", kValues148, std::size(kValues148), kPatches148, std::size(kPatches148)},
+    {"stccb", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in stccb's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues141, std::size(kValues141), kPatches141, std::size(kPatches141)},
+    {"stccb", "url_address", "URL ADDRESS", "Set URL ADDRESS in stccb's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues142, std::size(kValues142), kPatches142, std::size(kPatches142)},
+    {"stccb", "country", "COUNTRY", "Set COUNTRY in stccb's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues200, std::size(kValues200), kPatches200, std::size(kPatches200)},
+    {"stccb", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in stccb's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "twin", kValues144, std::size(kValues144), kPatches144, std::size(kPatches144)},
+    {"stccb", "link_type", "LINK TYPE", "Set LINK TYPE in stccb's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "stand_alone", kValues145, std::size(kValues145), kPatches145, std::size(kPatches145)},
+    {"stccb", "difficulty", "DIFFICULTY", "Set DIFFICULTY in stccb's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues146, std::size(kValues146), kPatches146, std::size(kPatches146)},
+    {"stccb", "game_mode", "GAME MODE", "Set GAME MODE in stccb's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues147, std::size(kValues147), kPatches147, std::size(kPatches147)},
+    {"stccb", "default_car", "DEFAULT CAR", "Set DEFAULT CAR in stccb's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "random", kValues148, std::size(kValues148), kPatches148, std::size(kPatches148)},
+    {"stccb", "default_view", "DEFAULT VIEW", "Set DEFAULT VIEW in stccb's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "driver_s", kValues149, std::size(kValues149), kPatches149, std::size(kPatches149)},
+    {"stcco", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in stcco's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues141, std::size(kValues141), kPatches141, std::size(kPatches141)},
+    {"stcco", "url_address", "URL ADDRESS", "Set URL ADDRESS in stcco's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues142, std::size(kValues142), kPatches142, std::size(kPatches142)},
+    {"stcco", "country", "COUNTRY", "Set COUNTRY in stcco's operator NVRAM. USA is the default when the game supports it; Export is the fallback.", "usa", kValues200, std::size(kValues200), kPatches200, std::size(kPatches200)},
+    {"stcco", "cabinet_type", "CABINET TYPE", "Set CABINET TYPE in stcco's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "twin", kValues144, std::size(kValues144), kPatches144, std::size(kPatches144)},
+    {"stcco", "link_type", "LINK TYPE", "Set LINK TYPE in stcco's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "stand_alone", kValues145, std::size(kValues145), kPatches145, std::size(kPatches145)},
+    {"stcco", "difficulty", "DIFFICULTY", "Set DIFFICULTY in stcco's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues146, std::size(kValues146), kPatches146, std::size(kPatches146)},
+    {"stcco", "game_mode", "GAME MODE", "Set GAME MODE in stcco's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues147, std::size(kValues147), kPatches147, std::size(kPatches147)},
+    {"stcco", "default_car", "DEFAULT CAR", "Set DEFAULT CAR in stcco's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "random", kValues148, std::size(kValues148), kPatches148, std::size(kPatches148)},
     {"topskatr", "advertise_sound", "ADVERTISE SOUND", "Set ADVERTISE SOUND in topskatr's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues150, std::size(kValues150), kPatches150, std::size(kPatches150)},
     {"topskatr", "game_difficulty", "GAME DIFFICULTY", "Set GAME DIFFICULTY in topskatr's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "4_8", kValues151, std::size(kValues151), kPatches151, std::size(kPatches151)},
     {"von", "network_link_attribute", "NETWORK LINK ATTRIBUTE", "Set NETWORK LINK ATTRIBUTE in von's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "no_link", kValues152, std::size(kValues152), kPatches152, std::size(kPatches152)},
@@ -3745,10 +4017,10 @@ static constexpr Option kOptions[] = {
     {"waverunr", "cabinet_id", "CABINET ID", "Set CABINET ID in waverunr's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1", kValues165, std::size(kValues165), kPatches165, std::size(kPatches165)},
     {"zerogun", "continue_mode", "Continue Mode", "Set Continue Mode in zerogun's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal_mode", kValues166, std::size(kValues166), kPatches166, std::size(kPatches166)},
     {"zerogun", "demo_sound", "Demo Sound", "Set Demo Sound in zerogun's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues167, std::size(kValues167), kPatches167, std::size(kPatches167)},
-    {"zerogun", "difficulty", "Difficulty", "Set Difficulty in zerogun's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "easy", kValues168, std::size(kValues168), kPatches168, std::size(kPatches168)},
-    {"zerogun", "fighters", "Fighters", "Set Fighters in zerogun's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1_fighter", kValues169, std::size(kValues169), kPatches169, std::size(kPatches169)},
+    {"zerogun", "difficulty", "Difficulty", "Set Difficulty in zerogun's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues168, std::size(kValues168), kPatches168, std::size(kPatches168)},
+    {"zerogun", "fighters", "Fighters", "Set Fighters in zerogun's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "3_fighters", kValues169, std::size(kValues169), kPatches169, std::size(kPatches169)},
     {"zeroguna", "continue_mode", "Continue Mode", "Set Continue Mode in zeroguna's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal_mode", kValues170, std::size(kValues170), kPatches170, std::size(kPatches170)},
     {"zeroguna", "demo_sound", "Demo Sound", "Set Demo Sound in zeroguna's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "on", kValues171, std::size(kValues171), kPatches171, std::size(kPatches171)},
-    {"zeroguna", "difficulty", "Difficulty", "Set Difficulty in zeroguna's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "easy", kValues172, std::size(kValues172), kPatches172, std::size(kPatches172)},
-    {"zeroguna", "fighters", "Fighters", "Set Fighters in zeroguna's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "1_fighter", kValues173, std::size(kValues173), kPatches173, std::size(kPatches173)},
+    {"zeroguna", "difficulty", "Difficulty", "Set Difficulty in zeroguna's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "normal", kValues172, std::size(kValues172), kPatches172, std::size(kPatches172)},
+    {"zeroguna", "fighters", "Fighters", "Set Fighters in zeroguna's operator NVRAM. Applied at startup when NVRAM Settings is enabled.", "3_fighters", kValues173, std::size(kValues173), kPatches173, std::size(kPatches173)},
 };

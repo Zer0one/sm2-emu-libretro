@@ -1,0 +1,171 @@
+# Dedicated clone campaign; reference: data/diagnostic-menus/indy500.yaml
+# Cycle suffixes identify button steps, not assumed parent default values.
+
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro-gpu/libretro/sm2_libretro.dylib"
+rom_dir = "/Volumes/MacBook External Drive/Retro/_Media/_Multi (MAME)/roms"
+system_assets = "../build-libretro-gpu/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "indy500to"
+baseline_sample = "base"
+output_dir = "../build-libretro-gpu/validation/nvram-campaigns/indy500to"
+startup_wait = 7.0
+button_hold = 0.1
+button_hold_long = 1.0
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[core_options]
+sm2_renderer = "software"
+sm2_initial_nvram_setup = "disabled"
+sm2_nvram_settings = "disabled"
+
+[macros]
+EnterGameAssignments = ["WAIT(12.0)", "R3", "WAIT(6.0)", "L3*7", "WAIT(1.0)", "R3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterGameAssignments", "SCREENSHOT(base)", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-001"
+sequence = ["@EnterGameAssignments", "L3*1", "SCREENSHOT(cycle-001)", "L3*10", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-002"
+sequence = ["@EnterGameAssignments", "L3*1", "R3*1", "SCREENSHOT(cycle-002)", "L3*10", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-003"
+sequence = ["@EnterGameAssignments", "L3*1", "R3*2", "SCREENSHOT(cycle-003)", "L3*10", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-004"
+sequence = ["@EnterGameAssignments", "L3*1", "R3*3", "SCREENSHOT(cycle-004)", "L3*10", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-005"
+sequence = ["@EnterGameAssignments", "L3*1", "R3*4", "SCREENSHOT(cycle-005)", "L3*10", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-006"
+sequence = ["@EnterGameAssignments", "L3*2", "SCREENSHOT(cycle-006)", "L3*9", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-007"
+sequence = ["@EnterGameAssignments", "L3*2", "R3*1", "SCREENSHOT(cycle-007)", "L3*9", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-008"
+sequence = ["@EnterGameAssignments", "L3*3", "SCREENSHOT(cycle-008)", "L3*8", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-009"
+sequence = ["@EnterGameAssignments", "L3*3", "R3*1", "SCREENSHOT(cycle-009)", "L3*8", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-010"
+sequence = ["@EnterGameAssignments", "L3*4", "SCREENSHOT(cycle-010)", "L3*7", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-011"
+sequence = ["@EnterGameAssignments", "L3*4", "R3*1", "SCREENSHOT(cycle-011)", "L3*7", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-012"
+sequence = ["@EnterGameAssignments", "L3*5", "SCREENSHOT(cycle-012)", "L3*6", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-013"
+sequence = ["@EnterGameAssignments", "L3*5", "R3*1", "SCREENSHOT(cycle-013)", "L3*6", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-014"
+sequence = ["@EnterGameAssignments", "L3*5", "R3*2", "SCREENSHOT(cycle-014)", "L3*6", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-015"
+sequence = ["@EnterGameAssignments", "L3*6", "SCREENSHOT(cycle-015)", "L3*5", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-016"
+sequence = ["@EnterGameAssignments", "L3*6", "R3*1", "SCREENSHOT(cycle-016)", "L3*5", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-017"
+sequence = ["@EnterGameAssignments", "L3*7", "SCREENSHOT(cycle-017)", "L3*4", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-018"
+sequence = ["@EnterGameAssignments", "L3*7", "R3*1", "SCREENSHOT(cycle-018)", "L3*4", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-019"
+sequence = ["@EnterGameAssignments", "L3*7", "R3*2", "SCREENSHOT(cycle-019)", "L3*4", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-020"
+sequence = ["@EnterGameAssignments", "L3*8", "SCREENSHOT(cycle-020)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-021"
+sequence = ["@EnterGameAssignments", "L3*8", "R3*1", "SCREENSHOT(cycle-021)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-022"
+sequence = ["@EnterGameAssignments", "L3*8", "R3*2", "SCREENSHOT(cycle-022)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-023"
+sequence = ["@EnterGameAssignments", "L3*8", "R3*3", "SCREENSHOT(cycle-023)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-024"
+sequence = ["@EnterGameAssignments", "L3*8", "R3*4", "SCREENSHOT(cycle-024)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-025"
+sequence = ["@EnterGameAssignments", "L3*8", "R3*5", "SCREENSHOT(cycle-025)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-026"
+sequence = ["@EnterGameAssignments", "L3*8", "R3*6", "SCREENSHOT(cycle-026)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-027"
+sequence = ["@EnterGameAssignments", "L3*8", "R3*7", "SCREENSHOT(cycle-027)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-028"
+sequence = ["@EnterGameAssignments", "L3*9", "SCREENSHOT(cycle-028)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-029"
+sequence = ["@EnterGameAssignments", "L3*9", "R3*1", "SCREENSHOT(cycle-029)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-030"
+sequence = ["@EnterGameAssignments", "L3*9", "R3*2", "SCREENSHOT(cycle-030)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-031"
+sequence = ["@EnterGameAssignments", "L3*10", "SCREENSHOT(cycle-031)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-032"
+sequence = ["@EnterGameAssignments", "L3*10", "R3*1", "SCREENSHOT(cycle-032)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-033"
+sequence = ["@EnterGameAssignments", "L3*10", "R3*2", "SCREENSHOT(cycle-033)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-034"
+sequence = ["@EnterGameAssignments", "L3*10", "R3*3", "SCREENSHOT(cycle-034)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]

@@ -1,0 +1,74 @@
+# Dedicated clone campaign; vstrikero omits One Match Mode and uses clone-specific offsets.
+
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro-gpu/libretro/sm2_libretro.dylib"
+rom_dir = "/Volumes/MacBook External Drive/Retro/_Media/_Multi (MAME)/roms"
+system_assets = "../build-libretro-gpu/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "vstrikero"
+baseline_sample = "base"
+output_dir = "../build-libretro-gpu/validation/nvram-campaigns/vstrikero"
+startup_wait = 12.0
+button_hold = 0.1
+button_hold_long = 1.0
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[core_options]
+sm2_renderer = "software"
+sm2_initial_nvram_setup = "disabled"
+sm2_nvram_settings = "disabled"
+
+[macros]
+Enter = ["R3", "WAIT(7.0)", "L3*2", "WAIT(1.0)", "R3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@Enter", "SCREENSHOT(base)", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-step-1"
+sequence = ["@Enter", "L3*1", "R3*1", "SCREENSHOT(advertise-sound-step-1)", "L3*10", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-step-1"
+sequence = ["@Enter", "L3*2", "R3*1", "SCREENSHOT(country-step-1)", "L3*9", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-step-2"
+sequence = ["@Enter", "L3*2", "R3*2", "SCREENSHOT(country-step-2)", "L3*9", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "monitor-step-1"
+sequence = ["@Enter", "L3*3", "R3*1", "SCREENSHOT(monitor-step-1)", "L3*8", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-step-1"
+sequence = ["@Enter", "L3*4", "R3*1", "SCREENSHOT(difficulty-step-1)", "L3*7", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "v-goal-system-step-1"
+sequence = ["@Enter", "L3*6", "R3*1", "SCREENSHOT(v-goal-system-step-1)", "L3*5", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "v-goal-time-set-step-1"
+sequence = ["@Enter", "L3*7", "R3*1", "SCREENSHOT(v-goal-time-set-step-1)", "L3*4", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "pk-system-step-1"
+sequence = ["@Enter", "L3*8", "R3*1", "SCREENSHOT(pk-system-step-1)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "pk-member-set-step-1"
+sequence = ["@Enter", "L3*9", "R3*1", "SCREENSHOT(pk-member-set-step-1)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "billboard-step-1"
+sequence = ["@Enter", "L3*10", "R3*1", "SCREENSHOT(billboard-step-1)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]

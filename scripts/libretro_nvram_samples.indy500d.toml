@@ -1,0 +1,143 @@
+# Dedicated clone campaign; reference: data/diagnostic-menus/indy500d.yaml
+# Cycle suffixes identify button steps, not assumed parent default values.
+
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro-gpu/libretro/sm2_libretro.dylib"
+rom_dir = "/Volumes/MacBook External Drive/Retro/_Media/_Multi (MAME)/roms"
+system_assets = "../build-libretro-gpu/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "indy500d"
+baseline_sample = "base"
+output_dir = "../build-libretro-gpu/validation/nvram-campaigns/indy500d"
+startup_wait = 7.0
+button_hold = 0.1
+button_hold_long = 1.0
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[core_options]
+sm2_renderer = "software"
+sm2_initial_nvram_setup = "disabled"
+sm2_nvram_settings = "disabled"
+
+[macros]
+Enter = ["WAIT(12.0)", "R3", "WAIT(6.0)", "L3*7", "WAIT(1.0)", "R3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@Enter", "WAIT(0.5)", "SCREENSHOT(base)", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-step-0"
+sequence = ["@Enter", "L3*1", "WAIT(0.5)", "SCREENSHOT(game-difficulty-step-0)", "L3*8", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-step-1"
+sequence = ["@Enter", "L3*1", "R3*1", "WAIT(0.5)", "SCREENSHOT(game-difficulty-step-1)", "L3*8", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-step-2"
+sequence = ["@Enter", "L3*1", "R3*2", "WAIT(0.5)", "SCREENSHOT(game-difficulty-step-2)", "L3*8", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-step-3"
+sequence = ["@Enter", "L3*1", "R3*3", "WAIT(0.5)", "SCREENSHOT(game-difficulty-step-3)", "L3*8", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "game-difficulty-step-4"
+sequence = ["@Enter", "L3*1", "R3*4", "WAIT(0.5)", "SCREENSHOT(game-difficulty-step-4)", "L3*8", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "race-mode-step-0"
+sequence = ["@Enter", "L3*2", "WAIT(0.5)", "SCREENSHOT(race-mode-step-0)", "L3*7", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "race-mode-step-1"
+sequence = ["@Enter", "L3*2", "R3*1", "WAIT(0.5)", "SCREENSHOT(race-mode-step-1)", "L3*7", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "handicap-step-0"
+sequence = ["@Enter", "L3*3", "WAIT(0.5)", "SCREENSHOT(handicap-step-0)", "L3*6", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "handicap-step-1"
+sequence = ["@Enter", "L3*3", "R3*1", "WAIT(0.5)", "SCREENSHOT(handicap-step-1)", "L3*6", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-step-0"
+sequence = ["@Enter", "L3*4", "WAIT(0.5)", "SCREENSHOT(advertise-sound-step-0)", "L3*5", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-step-1"
+sequence = ["@Enter", "L3*4", "R3*1", "WAIT(0.5)", "SCREENSHOT(advertise-sound-step-1)", "L3*5", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-step-0"
+sequence = ["@Enter", "L3*5", "WAIT(0.5)", "SCREENSHOT(country-step-0)", "L3*4", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-step-1"
+sequence = ["@Enter", "L3*5", "R3*1", "WAIT(0.5)", "SCREENSHOT(country-step-1)", "L3*4", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-step-2"
+sequence = ["@Enter", "L3*5", "R3*2", "WAIT(0.5)", "SCREENSHOT(country-step-2)", "L3*4", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-type-step-0"
+sequence = ["@Enter", "L3*6", "WAIT(0.5)", "SCREENSHOT(cabinet-type-step-0)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-type-step-1"
+sequence = ["@Enter", "L3*6", "R3*1", "WAIT(0.5)", "SCREENSHOT(cabinet-type-step-1)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "network-type-step-0"
+sequence = ["@Enter", "L3*7", "WAIT(0.5)", "SCREENSHOT(network-type-step-0)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "network-type-step-1"
+sequence = ["@Enter", "L3*7", "R3*1", "WAIT(0.5)", "SCREENSHOT(network-type-step-1)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "network-type-step-2"
+sequence = ["@Enter", "L3*7", "R3*2", "WAIT(0.5)", "SCREENSHOT(network-type-step-2)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-id-step-0"
+sequence = ["@Enter", "L3*8", "WAIT(0.5)", "SCREENSHOT(cabinet-id-step-0)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-id-step-1"
+sequence = ["@Enter", "L3*8", "R3*1", "WAIT(0.5)", "SCREENSHOT(cabinet-id-step-1)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-id-step-2"
+sequence = ["@Enter", "L3*8", "R3*2", "WAIT(0.5)", "SCREENSHOT(cabinet-id-step-2)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-id-step-3"
+sequence = ["@Enter", "L3*8", "R3*3", "WAIT(0.5)", "SCREENSHOT(cabinet-id-step-3)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-id-step-4"
+sequence = ["@Enter", "L3*8", "R3*4", "WAIT(0.5)", "SCREENSHOT(cabinet-id-step-4)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-id-step-5"
+sequence = ["@Enter", "L3*8", "R3*5", "WAIT(0.5)", "SCREENSHOT(cabinet-id-step-5)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-id-step-6"
+sequence = ["@Enter", "L3*8", "R3*6", "WAIT(0.5)", "SCREENSHOT(cabinet-id-step-6)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-id-step-7"
+sequence = ["@Enter", "L3*8", "R3*7", "WAIT(0.5)", "SCREENSHOT(cabinet-id-step-7)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(6.0)", "CLOSE"]

@@ -1,0 +1,20 @@
+schema_version: 1
+game:
+  set: vf2o
+  parent: vf2
+verification:
+  date: "2026-09-18"
+  method: archived_service_menu_and_native_baseline_comparison
+  menu_parameters: identical_to_parent
+nvram_layout:
+  storage: backup_ram
+  configuration_block: {offset: 0x3340, size: 29}
+  revision_header: {offset: 0x3306, value: 0x12}
+  runtime_header_field: {offset: 0x3318, baseline_value: 0x2f, fixed_layout_marker: false}
+  preserved_native_byte: {offset: 0x3001, value: 0xff}
+  crc: {offset: 0x3302, byte_order: little_endian, algorithm: CRC-16/CCITT, initial_value: 0}
+core_options:
+  mapping_reference: vf2.yaml
+  selected: [difficulty, advertise_sound, continue, drink, country, display_type, ranking_mode, version]
+  defaults: native_clone_defaults_except_country_usa
+  initial_template: dedicated_native_clone_baseline

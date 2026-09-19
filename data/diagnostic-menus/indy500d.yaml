@@ -1,0 +1,31 @@
+schema_version: 1
+game: {set: indy500d, parent: indy500}
+verification:
+  date: "2026-09-18"
+  method: archived_menu_comparison_and_isolated_single_parameter_samples
+  evidence: build-libretro-gpu/validation/indy500d-layout-20260918/samples
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 44}
+    mirror: {offset: 0x34, size: 44}
+  integrity: {checksum_offset_within_bank: 0, size: 2, algorithm: sega_crc16_1021_add_init_debdec}
+controls: {enter_test_menu: R3, next_item: L3, select_or_change: R3}
+menus:
+  game_assignments:
+    editable_option_count: 8
+    absent_parent_options: [engine_volume, default_view]
+    options:
+      - {key: game_difficulty, position: 1, default: normal, offset: 0x19, mirror_offset: 0x45, coding_reference: indy500.yaml}
+      - {key: race_mode, position: 2, default: normal, offset: 0x18, mirror_offset: 0x44, coding_reference: indy500.yaml}
+      - {key: handicap, position: 3, default: on, selected_for_core: false}
+      - {key: advertise_sound, position: 4, default: off, offset: 0x27, mirror_offset: 0x53, coding_reference: indy500.yaml}
+      - {key: country, position: 5, native_default: japan, core_default: usa, offset: 0x16, mirror_offset: 0x42, coding_reference: indy500.yaml}
+      - {key: cabinet_type, position: 6, default: deluxe, offset: 0x17, mirror_offset: 0x43, coding_reference: indy500.yaml}
+      - {key: network_type, position: 7, default: stand_alone, offset: 0x28, mirror_offset: 0x54, coding_reference: indy500.yaml}
+      - {key: cabinet_id, position: 8, default: "1", offset: 0x29, mirror_offset: 0x55, coding_reference: indy500.yaml}
+core_options:
+  selected_count: 7
+  initial_template: dedicated_native_clone_baseline
+  initial_overrides: {country: usa, network_type: stand_alone}
+  unknown_internal_fields: preserved_by_core_option_writes

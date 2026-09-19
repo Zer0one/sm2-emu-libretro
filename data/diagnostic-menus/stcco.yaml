@@ -1,0 +1,42 @@
+game: {set: stcco, parent: stcc}
+schema_version: 1
+
+verification:
+  status: verified
+  date: "2026-09-15"
+  base_revision: fc541deb961f46e6db06e3e94ba424b5f498b1c6
+  core_source_state: base revision plus uncommitted clone NVRAM changes
+  method: retroarch_scripted_diagnostic_menu
+  evidence: [native_clone_sample, country_cycle, screenshots, eeprom_checksum]
+
+nvram_layout:
+  storage: eeprom_93c46
+  signature: SEGA-STCf
+  settings_range: {offset: 0x10, size: 25}
+  integrity: {checksum_offset: 0x08, size: 2, algorithm: crc16_ccitt_init_ffff_xor_ffff}
+  note: Country uses the clone-specific companion offsets documented below; Default View is absent from this menu.
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: R3, next_item: L3, select_or_change: R3}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    editable_option_count: 9
+    core_option_count: 8
+    omitted_from_core: [NAME ENTRY]
+    options:
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x10, mask: 0x01, values: [1, 0]}}
+      - {key: url_address, label: URL ADDRESS, position: 2, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x12, mask: 0x10, values: [16, 0]}}
+      - key: country
+        label: COUNTRY
+        position: 3
+        value_count: 3
+        values: [JAPAN, USA, EXPORT]
+        nvram: {storage: eeprom, offset: 0x10, mask: 0x06, values: [0, 2, 4], compound_offsets: [0x0c, 0x14, 0x24], compound_masks: [0x01, 0xff, 0xff], compound_values: [[0, 2, 9], [1, 18, 24], [1, 34, 9]]}
+      - {key: cabinet_type, label: CABINET TYPE, position: 4, value_count: 2, values: [TWIN, DELUX], nvram: {storage: eeprom, offset: 0x10, mask: 0x08, values: [0, 8]}}
+      - {key: link_type, label: LINK TYPE, position: 5, value_count: 10, values: [STAND ALONE, CAR 1, CAR 2, CAR 3, CAR 4, CAR 5, CAR 6, CAR 7, CAR 8, RELAY], nvram: {storage: eeprom, compound_offsets: [0x10, 0x11], compound_masks: [0xe0, 0x01], values: [[0, 0], [32, 0], [64, 0], [96, 0], [128, 0], [160, 0], [192, 0], [224, 0], [0, 1], [32, 1]]}}
+      - {key: difficulty, label: DIFFICULTY, position: 6, value_count: 4, values: [NORMAL, EASY, HARD, HARDEST], nvram: {storage: eeprom, offset: 0x11, mask: 0x06, values: [0, 2, 4, 6]}}
+      - {key: game_mode, label: GAME MODE, position: 7, value_count: 4, values: [NORMAL, SHORT, LONG, GRAND PRIX], nvram: {storage: eeprom, offset: 0x11, mask: 0x18, values: [0, 8, 16, 24]}}
+      - {key: default_car, label: DEFAULT CAR, position: 8, value_count: 5, values: [RANDOM, ALFA ROMEO, MERCEDES, OPEL, TOYOTA], nvram: {storage: eeprom, offset: 0x11, mask: 0xe0, values: [0, 32, 64, 96, 128]}}
+      - {key: name_entry, label: NAME ENTRY, position: 9, value_count: 4, values: [BEFORE-3, AFTER-3, BEFORE-7, AFTER-7], nvram: {storage: eeprom, offset: 0x12, mask: 0x06, values: [0, 2, 4, 6]}}
+    commands: [{label: EXIT, position: 0}]

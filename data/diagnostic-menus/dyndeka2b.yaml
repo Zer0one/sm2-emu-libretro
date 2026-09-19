@@ -1,0 +1,25 @@
+schema_version: 1
+
+game:
+  set: dyndeka2b
+  parent: dynamcop
+  title: Dynamite Deka 2
+  board: model2b
+
+verification:
+  status: verified
+  date: "2026-09-16"
+  method: retroarch_scripted_diagnostic_menu
+  evidence: [native_clone_sample, root_menu_layout, cursor_navigation, clean_exit_comparison, screenshots]
+
+controls: {profile: sega_service_l3_r3, enter_test_menu: R3, next_item: L3, select_or_change: R3}
+
+menus:
+  game_assignments:
+    inherited_editable_options_from: dynamcop
+    visible_setting_row_count: 5
+    editable_option_count: 4
+    note: HP PASSWORD is informational. Service navigation skips from VIOLENCE MODE directly to EXIT.
+    additional_rows:
+      - {key: hp_password, label: HP PASSWORD, position: 5, selectable: false, role: informational, observed_native_value: NO PASSWORD}
+    commands: [{label: EXIT, position: 0}]

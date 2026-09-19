@@ -1,0 +1,38 @@
+game:
+  set: daytona93
+  parent: daytona
+
+schema_version: 1
+
+verification:
+  status: verified
+  date: "2026-09-15"
+  base_revision: fc541deb961f46e6db06e3e94ba424b5f498b1c6
+  core_source_state: base revision plus uncommitted clone NVRAM changes
+  method: retroarch_scripted_diagnostic_menu
+  evidence: [native_clone_sample, option_cycle, screenshots, mirrored_settings_bank, configuration_crc]
+
+nvram_layout:
+  storage: backup_ram_with_eeprom_copy
+  settings_banks:
+    first: {offset: 0x00, size: 128}
+    mirror: {offset: 0x80, size: 128}
+  eeprom_relation: EEPROM equals the first backup-RAM bank after swapping every 16-bit word's two bytes
+  crc: {offset_within_bank: 0x08, byte_order: little_endian, covered_range_within_bank: {offset: 0x0a, size: 118}, algorithm: CRC-16/CCITT, polynomial: 0x1021, initial_value: 0}
+
+controls:
+  enter_test_menu: R3
+  next_item: L3
+  select_or_change: START
+
+menus:
+  game_system:
+    root_position: {initial_item: EXIT, service_presses: 2}
+    editable_option_count: 4
+    note: This prototype menu omits Link ID, Car Number, Game Mode and Rival Arrow from the parent menu.
+    options:
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, value_count: 2, values: ["ON", "OFF"], nvram: {offset: 0x19, mirror_offset: 0x99, values: [0, 1]}}
+      - {key: country, label: COUNTRY, position: 2, value_count: 3, values: [JPN, EXPORT, USA], nvram: {offset: 0x1b, mirror_offset: 0x9b, values: [1, 2, 0]}}
+      - {key: cabinet, label: CABINET, position: 3, value_count: 2, values: [DELUXE, UPRIGHT], nvram: {offset: 0x1a, mirror_offset: 0x9a, values: [0, 1]}}
+      - {key: difficulty, label: DIFFICULTY, position: 4, value_count: 4, values: [NORMAL, HARD, HARDEST, EASY], nvram: {offset: 0x20, mirror_offset: 0xa0, values: [1, 2, 3, 0]}}
+    commands: [{label: EXIT, position: 0}]

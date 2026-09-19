@@ -1,0 +1,79 @@
+# Dedicated clone campaign; reference: data/diagnostic-menus/daytona93.yaml
+# Cycle suffixes identify button steps, not assumed parent default values.
+
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro-gpu/libretro/sm2_libretro.dylib"
+rom_dir = "/Volumes/MacBook External Drive/Retro/_Media/_Multi (MAME)/roms"
+system_assets = "../build-libretro-gpu/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "daytona93"
+baseline_sample = "base"
+output_dir = "../build-libretro-gpu/validation/nvram-campaigns/daytona93"
+startup_wait = 5.0
+button_hold = 0.08
+button_hold_long = 1.0
+default_wait = 0.45
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 20.0
+window_width = 496
+window_height = 384
+
+[core_options]
+sm2_renderer = "software"
+sm2_initial_nvram_setup = "disabled"
+sm2_nvram_settings = "disabled"
+
+[macros]
+Enter = ["R3", "WAIT(2.0)", "L3*2", "START", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@Enter", "WAIT(0.5)", "SCREENSHOT(base)", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-step-0"
+sequence = ["@Enter", "L3*1", "WAIT(0.5)", "SCREENSHOT(advertise-sound-step-0)", "L3*4", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-step-1"
+sequence = ["@Enter", "L3*1", "START*1", "WAIT(0.5)", "SCREENSHOT(advertise-sound-step-1)", "L3*4", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-step-0"
+sequence = ["@Enter", "L3*2", "WAIT(0.5)", "SCREENSHOT(country-step-0)", "L3*3", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-step-1"
+sequence = ["@Enter", "L3*2", "START*1", "WAIT(0.5)", "SCREENSHOT(country-step-1)", "L3*3", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-step-2"
+sequence = ["@Enter", "L3*2", "START*2", "WAIT(0.5)", "SCREENSHOT(country-step-2)", "L3*3", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-step-0"
+sequence = ["@Enter", "L3*3", "WAIT(0.5)", "SCREENSHOT(cabinet-step-0)", "L3*2", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "cabinet-step-1"
+sequence = ["@Enter", "L3*3", "START*1", "WAIT(0.5)", "SCREENSHOT(cabinet-step-1)", "L3*2", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-step-0"
+sequence = ["@Enter", "L3*4", "WAIT(0.5)", "SCREENSHOT(difficulty-step-0)", "L3*1", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-step-1"
+sequence = ["@Enter", "L3*4", "START*1", "WAIT(0.5)", "SCREENSHOT(difficulty-step-1)", "L3*1", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-step-2"
+sequence = ["@Enter", "L3*4", "START*2", "WAIT(0.5)", "SCREENSHOT(difficulty-step-2)", "L3*1", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-step-3"
+sequence = ["@Enter", "L3*4", "START*3", "WAIT(0.5)", "SCREENSHOT(difficulty-step-3)", "L3*1", "START", "WAIT(1.0)", "L3*9", "START", "WAIT(6.0)", "CLOSE"]

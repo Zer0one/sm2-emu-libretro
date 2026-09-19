@@ -1,0 +1,151 @@
+# Dedicated clone campaign; reference: data/diagnostic-menus/vf2o.yaml
+# Cycle suffixes identify button steps, not assumed parent default values.
+
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro-gpu/libretro/sm2_libretro.dylib"
+rom_dir = "/Volumes/MacBook External Drive/Retro/_Media/_Multi (MAME)/roms"
+system_assets = "../build-libretro-gpu/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "vf2o"
+baseline_sample = "base"
+output_dir = "../build-libretro-gpu/validation/nvram-campaigns/vf2o"
+startup_wait = 5.0
+button_hold = 0.06
+button_hold_long = 0.5
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 15.0
+window_width = 496
+window_height = 384
+
+[core_options]
+sm2_renderer = "software"
+sm2_initial_nvram_setup = "disabled"
+sm2_nvram_settings = "disabled"
+
+[macros]
+Enter = ["R3", "WAIT(2.0)", "L3*5", "R3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@Enter", "WAIT(0.5)", "SCREENSHOT(base)", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-step-0"
+sequence = ["@Enter", "L3*1", "WAIT(0.5)", "SCREENSHOT(match-count-1p-step-0)", "L3*12", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-step-1"
+sequence = ["@Enter", "L3*1", "R3*1", "WAIT(0.5)", "SCREENSHOT(match-count-1p-step-1)", "L3*12", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-step-2"
+sequence = ["@Enter", "L3*1", "R3*2", "WAIT(0.5)", "SCREENSHOT(match-count-1p-step-2)", "L3*12", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-1p-step-3"
+sequence = ["@Enter", "L3*1", "R3*3", "WAIT(0.5)", "SCREENSHOT(match-count-1p-step-3)", "L3*12", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-vs-step-0"
+sequence = ["@Enter", "L3*2", "WAIT(0.5)", "SCREENSHOT(match-count-vs-step-0)", "L3*11", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-vs-step-1"
+sequence = ["@Enter", "L3*2", "R3*1", "WAIT(0.5)", "SCREENSHOT(match-count-vs-step-1)", "L3*11", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-vs-step-2"
+sequence = ["@Enter", "L3*2", "R3*2", "WAIT(0.5)", "SCREENSHOT(match-count-vs-step-2)", "L3*11", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "match-count-vs-step-3"
+sequence = ["@Enter", "L3*2", "R3*3", "WAIT(0.5)", "SCREENSHOT(match-count-vs-step-3)", "L3*11", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-step-0"
+sequence = ["@Enter", "L3*3", "WAIT(0.5)", "SCREENSHOT(difficulty-step-0)", "L3*10", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-step-1"
+sequence = ["@Enter", "L3*3", "R3*1", "WAIT(0.5)", "SCREENSHOT(difficulty-step-1)", "L3*10", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-step-2"
+sequence = ["@Enter", "L3*3", "R3*2", "WAIT(0.5)", "SCREENSHOT(difficulty-step-2)", "L3*10", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "difficulty-step-3"
+sequence = ["@Enter", "L3*3", "R3*3", "WAIT(0.5)", "SCREENSHOT(difficulty-step-3)", "L3*10", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-step-0"
+sequence = ["@Enter", "L3*4", "WAIT(0.5)", "SCREENSHOT(advertise-sound-step-0)", "L3*9", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "advertise-sound-step-1"
+sequence = ["@Enter", "L3*4", "R3*1", "WAIT(0.5)", "SCREENSHOT(advertise-sound-step-1)", "L3*9", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-step-0"
+sequence = ["@Enter", "L3*5", "WAIT(0.5)", "SCREENSHOT(continue-step-0)", "L3*8", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "continue-step-1"
+sequence = ["@Enter", "L3*5", "R3*1", "WAIT(0.5)", "SCREENSHOT(continue-step-1)", "L3*8", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "drink-step-0"
+sequence = ["@Enter", "L3*6", "WAIT(0.5)", "SCREENSHOT(drink-step-0)", "L3*7", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "drink-step-1"
+sequence = ["@Enter", "L3*6", "R3*1", "WAIT(0.5)", "SCREENSHOT(drink-step-1)", "L3*7", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-step-0"
+sequence = ["@Enter", "L3*7", "WAIT(0.5)", "SCREENSHOT(country-step-0)", "L3*6", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-step-1"
+sequence = ["@Enter", "L3*7", "R3*1", "WAIT(0.5)", "SCREENSHOT(country-step-1)", "L3*6", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "country-step-2"
+sequence = ["@Enter", "L3*7", "R3*2", "WAIT(0.5)", "SCREENSHOT(country-step-2)", "L3*6", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-type-step-0"
+sequence = ["@Enter", "L3*8", "WAIT(0.5)", "SCREENSHOT(display-type-step-0)", "L3*5", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "display-type-step-1"
+sequence = ["@Enter", "L3*8", "R3*1", "WAIT(0.5)", "SCREENSHOT(display-type-step-1)", "L3*5", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-step-0"
+sequence = ["@Enter", "L3*9", "WAIT(0.5)", "SCREENSHOT(vs-finish-step-0)", "L3*4", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "vs-finish-step-1"
+sequence = ["@Enter", "L3*9", "R3*1", "WAIT(0.5)", "SCREENSHOT(vs-finish-step-1)", "L3*4", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "ranking-mode-step-0"
+sequence = ["@Enter", "L3*10", "WAIT(0.5)", "SCREENSHOT(ranking-mode-step-0)", "L3*3", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "ranking-mode-step-1"
+sequence = ["@Enter", "L3*10", "R3*1", "WAIT(0.5)", "SCREENSHOT(ranking-mode-step-1)", "L3*3", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "version-step-0"
+sequence = ["@Enter", "L3*11", "WAIT(0.5)", "SCREENSHOT(version-step-0)", "L3*2", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]
+
+[[samples]]
+suffix = "version-step-1"
+sequence = ["@Enter", "L3*11", "R3*1", "WAIT(0.5)", "SCREENSHOT(version-step-1)", "L3*2", "R3", "WAIT(1.0)", "L3*6", "R3", "WAIT(6.0)", "CLOSE"]

@@ -1,0 +1,49 @@
+schema_version: 1
+
+game:
+  set: srallycdxa
+  parent: srallyc
+  title: Sega Rally Championship - Deluxe revision A
+  board: model2a
+  declared_manufacturer: Sega
+
+classification:
+  gameplay_type: driving
+  control_family: steering_sequential_handbrake
+  observed_menu_family: sega_model2_game_assignments_44_byte_eeprom
+  evidence: [clone_native_baseline, menu_screenshots, complete_option_cycle]
+
+verification:
+  status: verified
+  date: "2026-09-19"
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    samples: 14
+    persistent_script: scripts/libretro_nvram_samples.srallycdxa.toml
+    persistent_output: build-libretro-gpu/validation/nvram-campaigns/srallycdxa
+    validated: [menu_structure, native_defaults, all_option_values, offsets, crc16_ccitt_inverted]
+
+controls: {profile: sega_service_l3_r3, test: R3, service: L3}
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_header: {checksum_offset: 0x00, declared_size_offset: 0x02, declared_size: 0x2c}
+  integrity: {checksum_offset: 0x00, size: 2, covered_offset: 0x02, covered_size: 0x2a, algorithm: crc16_ccitt_init_ffff_inverted}
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 6}
+    initial_item: EXIT
+    editable_option_count: 4
+    parent_differences: [CABINET TYPE is absent, LINK TYPE is absent]
+    options:
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, values: ["ON", "OFF"], default: "ON", core_option: true, nvram: {offset: 0x08, values: [1, 0]}}
+      - {key: country, label: COUNTRY, position: 2, values: [JPN, USA, EXPORT], default: JPN, core_default: USA, core_option: true, nvram: {offset: 0x09, values: [0, 1, 2]}}
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 3, values: [NORMAL, EASY, HARD, HARDEST], default: NORMAL, core_option: true, nvram: {offset: 0x0c, values: [0, 1, 2, 3]}}
+      - {key: game_mode, label: GAME MODE, position: 4, values: [NORMAL, SHORT, LONG, LONGEST], default: NORMAL, core_option: true, nvram: {offset: 0x0d, values: [0, 1, 2, 3]}}
+    commands: [{label: EXIT, position: 0}]
+
+notes:
+  - The clone keeps its native defaults; only the established core Country rule changes JPN to USA during automatic setup.
+  - Native bytes 0x0a and 0x0b are preserved because the corresponding Cabinet Type and Link Type rows are absent.
+  - Backup RAM differs substantially from the parent and is retained through a dedicated initial template.

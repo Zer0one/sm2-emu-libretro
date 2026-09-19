@@ -51,6 +51,18 @@ bool decode(const Template& source, std::span<u8> destination)
 
 bool has_template(std::string_view game) { return find(game) != nullptr; }
 
+bool can_use_parent_template(std::string_view game)
+{
+    static constexpr std::array<std::string_view, 21> compatible_clones = {
+        "daytonam", "fvipersa", "fvipersb", "hotdo", "lastbrnxj", "lastbrnxu",
+        "overrevb", "overrevba", "pltkidsa", "rchase2a", "srallycb", "srallycc",
+        "topskatrj", "topskatru", "topskatruo", "vcopa", "vonj", "vonr", "vonu",
+        "zerogunaj", "zerogunj",
+    };
+    return std::find(compatible_clones.begin(), compatible_clones.end(), game)
+        != compatible_clones.end();
+}
+
 SeedResult seed(std::string_view game, std::span<u8> backup, std::span<u8> eeprom)
 {
     const Template* source = find(game);

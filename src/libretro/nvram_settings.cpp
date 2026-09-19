@@ -192,7 +192,7 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
                   std::span<const u8> eeprom)
 {
     if (backup.size() != kBackupRamSize || eeprom.size() != kEepromSize) return false;
-    if (game == "daytona")
+    if (game == "daytona" || game == "daytona93" || game == "daytonas")
         return std::equal(backup.begin(), backup.begin() + 0x80, backup.begin() + 0x80) &&
                crc_bank_valid(backup, 0) && crc_bank_valid(backup, 0x80);
     if (game == "desert") return crc_bank_valid(backup, 0);
@@ -216,6 +216,13 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
                           "VIRTUA FIGHTER 2")
             && static_cast<u16>(backup[0x3302] | (static_cast<u16>(backup[0x3303]) << 8)) ==
                 crc16_ccitt(backup.subspan(0x3340, 29));
+    if (game == "vf2a" || game == "vf2o")
+        return backup[0x3306] == (game == "vf2a" ? 0x13 : 0x12)
+            && backup[0x3307] == 0
+            && std::equal(backup.begin() + 0x3308, backup.begin() + 0x3317,
+                          "VIRTUA FIGHTER 2")
+            && static_cast<u16>(backup[0x3302] | (static_cast<u16>(backup[0x3303]) << 8)) ==
+                crc16_ccitt(backup.subspan(0x3340, 29));
     if (game == "vf2")
         return named_layout_valid(backup, "VIRTUA FIGHTER 2", 29) &&
                static_cast<u16>(backup[0x3302] | (static_cast<u16>(backup[0x3303]) << 8)) ==
@@ -227,6 +234,10 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
     if (game == "vcop")
         return std::equal(backup.begin(), backup.begin() + 0x80, backup.begin() + 0x80) &&
                backup[0] == 'S' && backup[1] == 'E' && backup[2] == 'G' && backup[3] == 'A';
+    if (game == "vstrikero")
+        return std::equal(backup.begin(), backup.begin() + 0x80, backup.begin() + 0x80)
+            && std::equal(backup.begin(), backup.begin() + 4, "SEGA")
+            && backup[0x06] == 0x01 && backup[0x08] == 0x0a && backup[0x09] == 0x00;
     if (game == "vcop2" || game == "vstriker")
         return std::equal(backup.begin(), backup.begin() + 0x80, backup.begin() + 0x80) &&
                crc_bank_valid(backup, 0) && crc_bank_valid(backup, 0x80);
@@ -234,6 +245,8 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
         return std::equal(eeprom.begin() + 0x08, eeprom.begin() + 0x20,
                           eeprom.begin() + 0x20) &&
                load_u16(eeprom, 0x08) == sega_crc_or(eeprom.subspan(0x0a, 22), true);
+    if (game == "hotdp")
+        return mirrored_sega_bank_valid(eeprom, 24, 0xdebdeb00u, true);
     if (game == "dynabb" || game == "dynabb97")
         return mirrored_sega_bank_valid(eeprom, 28, 0xdebdeb00u, false);
     if (game == "hpyagu98") {
@@ -241,7 +254,10 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
         return std::equal(protection.begin(), protection.end(), eeprom.begin() + 0x08) &&
                mirrored_sega_bank_valid(eeprom, 0x0c, 28, 0xdebdeb00u, false);
     }
-    if (game == "indy500" || game == "motoraid" || game == "waverunr")
+    if (game == "indy500d")
+        return mirrored_sega_bank_valid(eeprom, 44, 0xdebdec00u, false);
+    if (game == "indy500" || game == "motoraid" || game == "motoraiddx" ||
+        game == "waverunr")
         return mirrored_sega_bank_valid(eeprom, 36, 0xdebdec00u, false);
     if (game == "zerogun" || game == "zeroguna")
         return mirrored_sega_bank_valid(eeprom, 20, 0xdebdeb00u, false);
@@ -252,8 +268,8 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
                mirrored_sega_bank_valid(eeprom, 28, 0xdebdeb00u, false);
     if (game == "segawski")
         return mirrored_sega_bank_valid(eeprom, 32, 0xdebdec00u, false);
-    if (game == "dynamcop" || game == "hotd" || game == "skisuprg" ||
-        game == "skytargt")
+    if (game == "dynamcop" || game == "dyndeka2" || game == "dyndeka2b" ||
+        game == "hotd" || game == "skisuprg" || game == "skytargt")
         return mirrored_sega_bank_valid(eeprom, 40, 0xdebdeb00u, true);
     if (game == "lastbrnx")
         return std::equal(eeprom.begin() + 0x08, eeprom.begin() + 0x44,
@@ -262,7 +278,7 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
     if (game == "manxtt")
         return eeprom[2] == 0x38 && eeprom[3] == 0 &&
                load_u16(eeprom, 0) == crc16_ccitt_inverted(eeprom.subspan(2, 0x36));
-    if (game == "rchase2")
+    if (game == "rchase2" || game == "srallycdxa")
         return eeprom[2] == 0x2c && eeprom[3] == 0 &&
                load_u16(eeprom, 0) == crc16_ccitt_inverted(eeprom.subspan(2, 0x2a));
     if (game == "srallyc")
@@ -270,7 +286,7 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
                load_u16(eeprom, 0) == crc16_ccitt_inverted(eeprom.subspan(2, 0x22));
     if (game == "sgt24h")
         return load_u16(backup, 0) == 0xad85 && sgt24h_link_bank_valid(eeprom);
-    if (game == "stcc")
+    if (game == "stcc" || game == "stcca" || game == "stccb" || game == "stcco")
         return std::equal(eeprom.begin(), eeprom.begin() + 4, "SEGA") &&
                load_u16(eeprom, 0x08) == crc16_ccitt_inverted(eeprom.subspan(0x10, 0x70));
     if (game == "topskatr")
@@ -289,7 +305,7 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
 void sync_integrity(std::string_view game, std::span<u8> backup,
                     std::span<u8> eeprom)
 {
-    if (game == "daytona") {
+    if (game == "daytona" || game == "daytona93" || game == "daytonas") {
         update_crc_bank(backup, 0);
         std::copy_n(backup.begin(), 0x80, backup.begin() + 0x80);
         for (size_t i = 0; i < 0x80; i += 2) {
@@ -310,7 +326,7 @@ void sync_integrity(std::string_view game, std::span<u8> backup,
         update_bel_eeprom(eeprom);
     } else if (game == "gunblade") {
         store_u16(eeprom, 0x08, gunblade_crc(eeprom.subspan(0x10, 0x4a)));
-    } else if (game == "fvipers" || game == "vf2") {
+    } else if (game == "fvipers" || game == "vf2" || game == "vf2a" || game == "vf2o") {
         const u16 crc = crc16_ccitt(backup.subspan(0x3340, 29));
         backup[0x3302] = static_cast<u8>(crc);
         backup[0x3303] = static_cast<u8>(crc >> 8);
@@ -320,17 +336,24 @@ void sync_integrity(std::string_view game, std::span<u8> backup,
         backup[0x3303] = static_cast<u8>(crc >> 8);
     } else if (game == "vcop") {
         std::copy_n(backup.begin(), 0x80, backup.begin() + 0x80);
+    } else if (game == "vstrikero") {
+        std::copy_n(backup.begin(), 0x80, backup.begin() + 0x80);
     } else if (game == "vcop2" || game == "vstriker") {
         update_crc_bank(backup, 0);
         std::copy_n(backup.begin(), 0x80, backup.begin() + 0x80);
     } else if (game == "airwlkrs") {
         store_u16(eeprom, 0x08, sega_crc_or(eeprom.subspan(0x0a, 22), true));
         std::copy_n(eeprom.begin() + 0x08, 24, eeprom.begin() + 0x20);
+    } else if (game == "hotdp") {
+        update_mirrored_sega_bank(eeprom, 24, 0xdebdeb00u, true);
     } else if (game == "dynabb" || game == "dynabb97") {
         update_mirrored_sega_bank(eeprom, 28, 0xdebdeb00u, false);
     } else if (game == "hpyagu98") {
         update_mirrored_sega_bank(eeprom, 0x0c, 28, 0xdebdeb00u, false);
-    } else if (game == "indy500" || game == "motoraid" || game == "waverunr") {
+    } else if (game == "indy500d") {
+        update_mirrored_sega_bank(eeprom, 44, 0xdebdec00u, false);
+    } else if (game == "indy500" || game == "motoraid" || game == "motoraiddx" ||
+               game == "waverunr") {
         update_mirrored_sega_bank(eeprom, 36, 0xdebdec00u, false);
     } else if (game == "zerogun" || game == "zeroguna") {
         update_mirrored_sega_bank(eeprom, 20, 0xdebdeb00u, false);
@@ -340,21 +363,22 @@ void sync_integrity(std::string_view game, std::span<u8> backup,
         update_mirrored_sega_bank(eeprom, 28, 0xdebdeb00u, false);
     } else if (game == "segawski") {
         update_mirrored_sega_bank(eeprom, 32, 0xdebdec00u, false);
-    } else if (game == "dynamcop" || game == "hotd" || game == "skisuprg" ||
-               game == "skytargt") {
+    } else if (game == "dynamcop" || game == "dyndeka2" || game == "dyndeka2b" ||
+               game == "hotd" || game == "skisuprg" || game == "skytargt") {
         update_mirrored_sega_bank(eeprom, 40, 0xdebdeb00u, true);
     } else if (game == "lastbrnx") {
         store_u16(eeprom, 0x08, sega_crc_or(eeprom.subspan(0x0a, 58), false));
         std::copy_n(eeprom.begin() + 0x08, 60, eeprom.begin() + 0x44);
     } else if (game == "manxtt") {
         store_u16(eeprom, 0, crc16_ccitt_inverted(eeprom.subspan(2, 0x36)));
-    } else if (game == "rchase2") {
+    } else if (game == "rchase2" || game == "srallycdxa") {
         store_u16(eeprom, 0, crc16_ccitt_inverted(eeprom.subspan(2, 0x2a)));
     } else if (game == "srallyc") {
         store_u16(eeprom, 0, crc16_ccitt_inverted(eeprom.subspan(2, 0x22)));
     } else if (game == "sgt24h") {
         update_sgt24h_link_bank(eeprom);
-    } else if (game == "stcc") {
+    } else if (game == "stcc" || game == "stcca" || game == "stccb"
+               || game == "stcco") {
         store_u16(eeprom, 0x08, crc16_ccitt_inverted(eeprom.subspan(0x10, 0x70)));
     } else if (game == "topskatr") {
         store_u16(eeprom, 0x08, crc16_ccitt_inverted(eeprom.subspan(0x10, 0x48)));
@@ -386,16 +410,23 @@ std::vector<std::string> initial_values(std::string_view game)
     std::vector<std::string> selected(options.size());
     static constexpr std::pair<std::string_view, std::string_view> offline[] = {
         {"daytona", "link_id"},
+        {"daytonas", "link_id"},
+        {"motoraiddx", "network_type"},
+        {"indy500d", "network_type"},
         {"manxtt", "link_type"},
         {"overrev", "link_max"},
         {"sgt24h", "link_type"},
-        {"sgt24h", "link_max"},
         {"srallyc", "link_type"},
         {"stcc", "link_type"},
+        {"stcca", "link_type"},
+        {"stccb", "link_type"},
+        {"stcco", "link_type"},
         {"von", "network_link_attribute"},
     };
     static constexpr std::pair<std::string_view, std::string_view> initial_defaults[] = {
         {"daytona", "cabinet"},
+        {"daytona93", "cabinet"},
+        {"daytonas", "cabinet"},
         {"manxtt", "cabinet_type"},
         {"sgt24h", "io_type"},
     };
@@ -419,9 +450,19 @@ ApplyResult apply(std::string_view game, std::span<u8> backup,
     if (options.empty() || selections.size() != options.size()) return ApplyResult::Unsupported;
     if (!layout_ready(game, backup, eeprom)) return ApplyResult::LayoutNotReady;
 
+    std::string_view sgt24h_link_type;
+    if (game == "sgt24h") {
+        for (size_t i = 0; i < options.size(); ++i)
+            if (options[i].suffix == std::string_view("link_type"))
+                sgt24h_link_type = selections[i];
+    }
+
     bool changed = false;
     for (size_t i = 0; i < options.size(); ++i) {
         const Option& option = options[i];
+        if (game == "sgt24h" && option.suffix == std::string_view("link_max")
+            && sgt24h_link_type != "car_no1_master")
+            continue;
         const auto value = std::find_if(option.values, option.values + option.value_count,
             [&](const Value& candidate) { return selections[i] == candidate.key; });
         if (value == option.values + option.value_count) continue;
@@ -435,6 +476,10 @@ ApplyResult apply(std::string_view game, std::span<u8> backup,
             changed |= old_value != new_value;
             memory[target.offset] = new_value;
         }
+    }
+    if (game == "sgt24h" && sgt24h_link_type == "not_link") {
+        changed |= eeprom[0x19] != 1;
+        eeprom[0x19] = 1;
     }
     if (!changed) return ApplyResult::Unchanged;
     sync_integrity(game, backup, eeprom);

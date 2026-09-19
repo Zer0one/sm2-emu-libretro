@@ -1,0 +1,59 @@
+schema_version: 1
+
+game:
+  set: hotdp
+  parent: hotd
+  title: The House of the Dead (prototype)
+  board: model2c
+  declared_manufacturer: Sega
+
+classification:
+  gameplay_type: gun
+  control_family: gun
+  observed_menu_family: sega_model2_game_assignments_24_byte_eeprom
+  evidence: [prototype_native_baseline, menu_screenshots, complete_option_cycle]
+
+verification:
+  status: verified
+  date: "2026-09-19"
+  method: retroarch_scripted_diagnostic_menu
+  complete_campaign:
+    captures: 31
+    unique_samples: 29
+    persistent_script: scripts/libretro_nvram_samples.hotdp.toml
+    persistent_output: build-libretro-gpu/validation/nvram-campaigns/hotdp
+    validated: [menu_structure, native_defaults, all_distinct_option_values, offsets, mirrored_settings_bank, sega_crc16]
+
+controls: {profile: sega_service_l3_r3, test: R3, service: L3}
+
+nvram_layout:
+  storage: eeprom_93c46
+  settings_banks:
+    first: {offset: 0x08, size: 24}
+    mirror: {offset: 0x20, size: 24}
+  integrity:
+    checksum_offset_within_bank: 0
+    size: 2
+    algorithm: sega_crc16_1021_add_init_debdeb_append_zero
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    initial_item: EXIT
+    editable_option_count: 7
+    parent_differences: [BLOOD COLOR has only RED and GREEN, GUN BLOWBACK is present, CABINET TYPE is present]
+    options:
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, values: [NORMAL, MEDIUM HARD, VERY HARD, VERY EASY, MEDIUM EASY], default: NORMAL, core_option: true, nvram: {offset: 0x1b, mirror_offset: 0x33, values: [2, 3, 4, 0, 1]}}
+      - {key: life_setting, label: LIFE SETTING, position: 2, values: ["3/5", "4/5", "5/5", "1/3", "2/3", "3/3", "1/4", "2/4", "3/4", "4/4", "1/5", "2/5"], default: "3/5", core_option: false, nvram: {offset: 0x1d, mirror_offset: 0x35, values: [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8]}}
+      - {key: blood_color, label: BLOOD COLOR, position: 3, values: [RED, GREEN], default: RED, core_option: true, nvram: {offset: 0x1e, mirror_offset: 0x36, values: [0, 1]}}
+      - {key: gun_blowback, label: GUN BLOWBACK, position: 4, values: ["ON", "OFF"], default: "ON", core_option: false, nvram: {offset: 0x1f, mirror_offset: 0x37, values: [1, 0]}}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 5, values: ["ON", "OFF"], default: "ON", core_option: true, nvram: {offset: 0x1c, mirror_offset: 0x34, values: [1, 0]}}
+      - {key: country, label: COUNTRY, position: 6, values: [JAPAN, USA, EXPORT], default: JAPAN, core_default: USA, core_option: true, nvram: {offset: 0x19, mirror_offset: 0x31, values: [0, 1, 2]}}
+      - {key: cabinet_type, label: CABINET TYPE, position: 7, values: [STANDARD, DELUXE], default: STANDARD, core_option: false, nvram: {offset: 0x1a, mirror_offset: 0x32, values: [0, 1]}}
+    commands: [{label: EXIT, position: 0}]
+
+notes:
+  - The prototype keeps its native defaults; only the established core Country rule changes JAPAN to USA during automatic setup.
+  - BLOOD COLOR alternates between RED and GREEN. Two additional captures confirmed that further changes wrap to those same values.
+  - LIFE SETTING, GUN BLOWBACK and CABINET TYPE are documented but intentionally not exposed as Core Options.
+  - Byte 0x0c and its mirror are updated by the title during startup and are not operator settings.

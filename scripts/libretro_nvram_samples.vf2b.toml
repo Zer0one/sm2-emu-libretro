@@ -1,0 +1,151 @@
+# Dedicated clone campaign; reference: data/diagnostic-menus/vf2.yaml
+# Cycle suffixes identify button steps, not assumed parent default values.
+
+[retroarch]
+executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
+core = "../build-libretro-gpu/libretro/sm2_libretro.dylib"
+rom_dir = "/Volumes/MacBook External Drive/Retro/_Media/_Multi (MAME)/roms"
+system_assets = "../build-libretro-gpu/libretro/system/sm2-emu"
+base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
+
+[campaign]
+game = "vf2b"
+baseline_sample = "base"
+output_dir = "../build-libretro-gpu/validation/nvram-campaigns/vf2b"
+startup_wait = 5.0
+button_hold = 0.06
+button_hold_long = 0.5
+default_wait = 0.2
+settle_before_close = 0.5
+close_gap = 0.7
+shutdown_timeout = 15.0
+window_width = 496
+window_height = 384
+
+[core_options]
+sm2_renderer = "software"
+sm2_initial_nvram_setup = "disabled"
+sm2_nvram_settings = "disabled"
+
+[macros]
+EnterGameAssignment = ["R3", "WAIT(2.0)", "L3*5", "R3", "WAIT(2.0)"]
+
+[[samples]]
+suffix = "base"
+sequence = ["@EnterGameAssignment", "SCREENSHOT(base)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-001"
+sequence = ["@EnterGameAssignment", "L3", "SCREENSHOT(cycle-001)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-002"
+sequence = ["@EnterGameAssignment", "L3", "R3", "SCREENSHOT(cycle-002)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-003"
+sequence = ["@EnterGameAssignment", "L3", "R3*2", "SCREENSHOT(cycle-003)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-004"
+sequence = ["@EnterGameAssignment", "L3", "R3*3", "SCREENSHOT(cycle-004)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-005"
+sequence = ["@EnterGameAssignment", "L3*2", "SCREENSHOT(cycle-005)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-006"
+sequence = ["@EnterGameAssignment", "L3*2", "R3", "SCREENSHOT(cycle-006)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-007"
+sequence = ["@EnterGameAssignment", "L3*2", "R3*2", "SCREENSHOT(cycle-007)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-008"
+sequence = ["@EnterGameAssignment", "L3*2", "R3*3", "SCREENSHOT(cycle-008)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-009"
+sequence = ["@EnterGameAssignment", "L3*3", "SCREENSHOT(cycle-009)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-010"
+sequence = ["@EnterGameAssignment", "L3*3", "R3", "SCREENSHOT(cycle-010)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-011"
+sequence = ["@EnterGameAssignment", "L3*3", "R3*2", "SCREENSHOT(cycle-011)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-012"
+sequence = ["@EnterGameAssignment", "L3*3", "R3*3", "SCREENSHOT(cycle-012)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-013"
+sequence = ["@EnterGameAssignment", "L3*4", "SCREENSHOT(cycle-013)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-014"
+sequence = ["@EnterGameAssignment", "L3*4", "R3", "SCREENSHOT(cycle-014)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-015"
+sequence = ["@EnterGameAssignment", "L3*5", "SCREENSHOT(cycle-015)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-016"
+sequence = ["@EnterGameAssignment", "L3*5", "R3", "SCREENSHOT(cycle-016)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-017"
+sequence = ["@EnterGameAssignment", "L3*6", "SCREENSHOT(cycle-017)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-018"
+sequence = ["@EnterGameAssignment", "L3*6", "R3", "SCREENSHOT(cycle-018)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-019"
+sequence = ["@EnterGameAssignment", "L3*7", "SCREENSHOT(cycle-019)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-020"
+sequence = ["@EnterGameAssignment", "L3*7", "R3", "SCREENSHOT(cycle-020)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-021"
+sequence = ["@EnterGameAssignment", "L3*7", "R3*2", "SCREENSHOT(cycle-021)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-022"
+sequence = ["@EnterGameAssignment", "L3*8", "SCREENSHOT(cycle-022)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-023"
+sequence = ["@EnterGameAssignment", "L3*8", "R3", "SCREENSHOT(cycle-023)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-024"
+sequence = ["@EnterGameAssignment", "L3*9", "SCREENSHOT(cycle-024)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-025"
+sequence = ["@EnterGameAssignment", "L3*9", "R3", "SCREENSHOT(cycle-025)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-026"
+sequence = ["@EnterGameAssignment", "L3*10", "SCREENSHOT(cycle-026)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-027"
+sequence = ["@EnterGameAssignment", "L3*10", "R3", "SCREENSHOT(cycle-027)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-028"
+sequence = ["@EnterGameAssignment", "L3*11", "SCREENSHOT(cycle-028)", "CLOSE"]
+
+[[samples]]
+suffix = "cycle-029"
+sequence = ["@EnterGameAssignment", "L3*11", "R3", "SCREENSHOT(cycle-029)", "CLOSE"]

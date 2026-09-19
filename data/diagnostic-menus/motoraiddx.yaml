@@ -1,0 +1,42 @@
+schema_version: 1
+
+game:
+  set: motoraiddx
+  parent: motoraid
+  title: Motor Raid - Twin/DX
+  board: model2a
+
+verification:
+  status: verified
+  date: "2026-09-16"
+  method: retroarch_scripted_diagnostic_menu
+  evidence: [native_clone_sample, diagnostic_boot_sequence, root_menu_layout, cursor_navigation, screenshots]
+  startup_wait_seconds: 30
+  diagnostic_boot_sequence:
+    trigger: wait_for_driveboard_error_press_test_prompt
+    actions: [press_test, press_test]
+    note: The prompt appears about 30 seconds after launch. Press Test twice only after it is visible.
+
+controls:
+  profile: sega_service_l3_r3
+  enter_test_menu: R3 twice at the Driveboard Error / Press Test prompt
+  next_item: L3
+  select_or_change: R3
+
+menus:
+  game_assignments:
+    root_position: {initial_item: EXIT, service_presses: 7}
+    visible_setting_row_count: 9
+    editable_option_count: 8
+    note: This Deluxe clone adds selectable CABINET TYPE. ENGINE VOLUME is read-only and service navigation skips from ENEMY LEVEL directly to ADVERTISE SOUND.
+    options:
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1}
+      - {key: race_mode, label: RACE MODE, position: 2}
+      - {key: enemy_level, label: ENEMY LEVEL, position: 3}
+      - {key: engine_volume, label: ENGINE VOLUME, position: 4, selectable: false, role: informational, observed_native_value: OUT OF USE}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 5}
+      - {key: country, label: COUNTRY, position: 6}
+      - {key: cabinet_type, label: CABINET TYPE, position: 7, selectable: true, value_count: 2, values: [DELUXE, TWIN], native_default: DELUXE, nvram: {storage: eeprom, compound_offsets: [0x0c, 0x17, 0x30, 0x3b], compound_masks: [0x03, 0xff, 0x03, 0xff], compound_values: [[1, 1, 1, 1], [2, 0, 2, 0]]}}
+      - {key: network_type, label: NETWORK TYPE, position: 8}
+      - {key: cabinet_id, label: CABINET ID, position: 9}
+    commands: [{label: EXIT, position: 0}]
