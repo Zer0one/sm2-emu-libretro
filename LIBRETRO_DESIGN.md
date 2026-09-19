@@ -73,10 +73,35 @@ neutrale `SoundBoard::set_audio_balance_enabled()` consente all'adattatore di
 ripristinare unity gain senza introdurre dipendenze Libretro nell'hardware.
 L'opzione globale non duplica la tabella e si applica a tutte le schede SCSP.
 
+I metadata di guida sono allineati alle aggiunte upstream fino alla 0.9.9:
+`start_gear=4` consegna Daytona e i suoi cloni alla partenza lanciata in quarta
+quando la Core Option globale `Automatic Start Gear` è abilitata; disabilitandola
+i giochi con cambio a quattro marce partono in prima. L'opzione è abilitata per
+default per seguire il comportamento upstream. `drive_protocol` distingue
+Daytona, STCC e Sega Rally senza modificare i
+profili RetroArch. Il parser conserva entrambi in `GameSpec`; l'adattatore usa
+`start_gear` durante l'inizializzazione dell'input e `drive_protocol` nel decoder
+frontend-neutral importato dall'upstream. La macchina conserva tutte le scritture
+drive-board del frame e il rumble Libretro riceve l'effetto decodificato senza
+dipendere da SDL o da un dispositivo specifico.
+
 Il clone `daytonam` mantiene il metadato upstream `protection="daytona-maxx"`.
 Il parser lo traduce in un tipo di protezione neutrale e `Model2Original`
 decodifica la sola finestra PIC/ROM a `0x00240000`, seguendo la macchina a stati
 documentata da MAME. Il frontend non contiene condizioni specifiche per MAXX.
+
+### Versioni locali che distinguono parent e clone
+
+`games.xml` integra versioni descrittive ricavate dai commenti e dalle
+registrazioni MAME per evitare che parent e clone risultino indistinguibili:
+
+- `daytona`: `Revision A`; `daytona93`: `1993, Deluxe`;
+- `stcc`: `Newer`; `stcco`: `Original`;
+- `vstriker`: `Revision A`; `vstrikero`: `Original`.
+
+Questi campi sono una personalizzazione locale dei soli metadata di
+presentazione. Se l'upstream introdurrà una distinzione equivalente, adottare la
+soluzione upstream; diversamente conservarli durante i futuri allineamenti.
 
 Per ogni aggiornamento, registrare il commit upstream integrato e i riferimenti
 dei submodule, rivedere API e metadati modificati e risolvere i conflitti nel
@@ -127,7 +152,7 @@ frontend target quando categorie o visibilità dinamica non sono disponibili.
 | Categoria | Direzione per SM2 | Quando |
 | --- | --- | --- |
 | System | Persistenza per gioco; eventuale inizializzazione della sola NVRAM nuova e override espliciti dei campi verificati | Milestone 3; nessun preset prima della validazione |
-| Video | Risoluzione nativa 496 × 384 e aspect 4:3; selezione dei mirini; scala interna 1×–4×, filtro texture 3D e xBR/ScaleFX sulle tilemap solo con GPU integrata | Implementato |
+| Video | Risoluzione nativa 496 × 384; aspect automatico 4:3/16:9 dalla NVRAM con override; selezione dei mirini; scala interna 1×–4×, filtro texture 3D e xBR/ScaleFX sulle tilemap solo con GPU integrata | Implementato |
 | Audio | Riproduzione fedele al rate della scheda; eventuali regolazioni specifiche solo se il mixer le supporta e sono utili | Nessuna opzione obbligatoria nel primo core |
 | Input | Profili per gioco, modalità delle sorgenti di puntamento, cambio e regolazioni separate di sterzo/acceleratore/freno | Milestone 3 |
 | CPU | Soltanto scelte di esecuzione effettivamente disponibili e verificate | Rinviata; nessun overclock o JIT presunto |
@@ -143,6 +168,13 @@ sempre visibili; la descrizione dichiara gli eventuali giochi o profili ai quali
 si applicano. Soltanto i campi NVRAM sono filtrati per gioco. I descrittori dei
 controlli devono sempre corrispondere al gioco caricato e una voce non
 applicabile non deve alterare altri profili.
+
+`Aspect Ratio` è una Core Option Video globale con default unico `Auto`.
+L'adattatore legge il tipo di cabinato dalla EEPROM attiva per le famiglie
+Indy 500 e STCC e comunica 4:3 o 16:9 al frontend con
+`RETRO_ENVIRONMENT_SET_GEOMETRY`; 4:3 e 16:9 restano override manuali. Questa
+logica appartiene all'adattatore perché riguarda la presentazione del frame,
+senza modificare renderer, macchina emulata o formato della NVRAM.
 
 ## Controlli e preferenze da conservare
 

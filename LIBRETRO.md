@@ -37,6 +37,14 @@ directory save. Le ROM restano esterne: il core accetta i percorsi ZIP/7z e
 chiede al frontend di non estrarre gli archivi. Se il loader richiede parent
 o firmware separati, valgono le regole del database upstream.
 
+Nell'installazione macOS di sviluppo usata per questo progetto, la copia
+autorevole del database è:
+
+`/Volumes/MacBook External Drive/Retro/_Media/_Multi (RetroArch)/system/sm2-emu/games.xml`
+
+Ogni build destinata alle prove locali deve aggiornare quel file insieme al
+core installato in RetroArch.
+
 Il core usa direttamente la directory save fornita dal frontend, che può già
 essere specifica per `SM2-Emu` o per il contenuto. RetroArch gestisce qui
 `<gioco>.srm`; eventuali immagini standalone `<gioco>.nv` e
@@ -189,11 +197,11 @@ atteso, audio non silenzioso e Save RAM della dimensione prevista.
 
 Super GT 24h espone separatamente `Driving: Sequential + VR1`: conserva lo
 stesso sterzo, pedali e cambio sequenziale, ma assegna soltanto `VR1` a D-Pad
-Up come prescritto dal foglio. Accelerator e Brake conservano la polarità
+Down come prescritto dal foglio. Accelerator e Brake conservano la polarità
 invertita dichiarata dai metadata, senza correzioni aggiuntive nel binding.
 MAME segnala per questo gioco problemi analogici ancora aperti: sterzo che non
 si centra e pedali che pulsano invece di mantenere un valore stabile. D-Pad
-Down non è esposto. Anche questo profilo
+Up non è esposto. Anche questo profilo
 ha le varianti con e senza Test/Service. La ROM parent ha raggiunto la selezione
 del circuito in RetroArch macOS con audio e Save RAM validi.
 
@@ -266,13 +274,16 @@ l'handshake della gun board. Un salvataggio già calibrato è stato provato in
 RetroArch macOS: gli assi cambiano nel Service Menu e il mirino del gioco si
 muove correttamente sia in orizzontale sia in verticale.
 
-La Core Option `Show Crosshair`, ripresa da Supermodel, seleziona `Disabled`,
-`Player 1 Only`, `Player 2 Only` oppure `Players 1 & 2` ed è disabilitata per
-default. La crosshair vettoriale rossa di P1 e verde di P2 usa lo stesso cursore
-virtuale condiviso da Lightgun, Mouse e Analog Stick, funziona nei renderer
-Software, Vulkan e OpenGL e scompare durante la ricarica fuori schermo. Come
-nel core Supermodel, si applica sia ai giochi con pistola seriale sia a Gunblade
-NY, Rail Chase 2 e Behind Enemy Lines, che usano gli assi posizionali.
+La Core Option `Show Crosshair` usa `Automatic` come default unico: mostra P1
+nei giochi con pistola seriale e conserva il mirino in gioco nei titoli gun
+posizionali, seguendo SM2-Emu. `Disabled`, `Player 1 Only`, `Player 2 Only` e
+`Players 1 & 2` sono scelte esplicite; queste ultime rendono il mirino esterno
+selezionabile anche per Gunblade NY, Rail Chase 2 e Behind Enemy Lines.
+`Crosshair Style` usa per default il mirino SM2-Emu, circolare con linee
+cardinali, P1 verde e P2 ciano; lo stile Supermodel a quattro cunei, P1 rosso e
+P2 verde, resta selezionabile. Entrambi usano lo stesso cursore virtuale
+condiviso da Lightgun, Mouse e Analog Stick, funzionano nei renderer Software,
+Vulkan e OpenGL e scompaiono durante la ricarica fuori schermo.
 
 I controlli senza ROM coprono tutte le modalità, i descrittori, le calibrazioni,
 i bit dei grilletti e la distinzione del reload. Le prove RetroArch macOS con
@@ -297,7 +308,7 @@ Lightgun e Mouse restano da provare manualmente.
   Un `.srm` valido prevale; in sua assenza i file nativi `.nv`/`.eeprom` sono
   importati senza essere riscritti dal core Libretro.
 - Core Option `Automatic Initial NVRAM Setup`, Enabled per default. Per i 35
-  parent verificati, quando non esistono un `.srm` valido o file nativi
+  parent verificati e i cloni autorizzati, quando non esistono un `.srm` valido o file nativi
   `.nv`/`.eeprom` validi, il core carica il campione completo ricavato dal
   Service Menu prima del primo frame. Imposta quindi Country/Nation su USA,
   oppure Export se USA non è disponibile, e i valori offline necessari per
@@ -306,6 +317,13 @@ Lightgun e Mouse restano da provare manualmente.
   Type=C, coerente con l'I/O emulato. Il setup automatico non sostituisce i
   salvataggi esistenti; le normali scritture del gioco continuano a persistere.
   Eliminando i dati di salvataggio del gioco si rigenera il setup.
+  Ventuno cloni con campioni byte-identici possono usare il template parent e
+  altri 27 usano un template dedicato. Tredici di questi applicano le opzioni
+  del parent; `daytona93`, `daytonas`, `dyndeka2`, `dyndeka2b`,
+  `motoraiddx`, `stcca`, `stccb`, `stcco`, `vf2a`, `vf2o`, `indy500d`,
+  `vstrikero`, `srallycdxa` e `hotdp` hanno cataloghi specifici verificati dal
+  rispettivo Service Menu. Tutti i 48 cloni dispongono quindi di un template
+  dedicato o di un'eredità parent verificata.
 - Core Option v2 generale `NVRAM Settings`, Disabled per default come nel core
   Supermodel. Quando è Enabled mostra soltanto le opzioni del parent caricato e
   applica tutti i valori scelti all'avvio. Non usa `Keep Current`: disabilitando
@@ -314,9 +332,19 @@ Lightgun e Mouse restano da provare manualmente.
   Standard, Lightgun, Mouse + Analog Stick, Mouse e Analog Stick.
 - Core Option `Off-Screen Reload Shortcut`, per Virtua Cop 1/2 e House of the
   Dead: RetroPad East/LB, Mouse destro e Lightgun Reload; attiva per default.
-- Core Option `Show Crosshair`, disabilitata per default, con selezione P1, P2
-  o entrambi e composizione coerente nei percorsi Software, Vulkan e OpenGL.
-- 197 impostazioni operatore verificate per 35 parent. Oltre ai primi nove,
+- Core Option `Show Crosshair`, con default `Automatic` dipendente dal tipo di
+  gun e selezione esplicita di P1, P2 o entrambi anche per i giochi posizionali;
+  `Crosshair Style` seleziona SM2-Emu (default) o Supermodel, con composizione
+  coerente nei percorsi Software, Vulkan e OpenGL.
+- 289 impostazioni operatore verificate per 35 parent e quattordici cloni con menu
+  specifico. `daytona93` espone il proprio menu ridotto di quattro voci;
+  `daytonas` aggiunge Cabinet=Special e Promote Saturn; i tre cloni STCC usano
+  la propria codifica Country. `dyndeka2` e `dyndeka2b` omettono la riga
+  informativa HP Password; `motoraiddx` omette Engine Volume=Out of Use e
+  aggiunge Cabinet Type=Deluxe/Twin; `indy500d` omette Engine Volume e Default
+  View; `vstrikero` omette One Match Mode; `srallycdxa` omette Cabinet Type e
+  Link Type; `hotdp` usa il proprio formato a banche da 24 byte ed espone
+  Difficulty, Blood Color, Advertise Sound e Country. Oltre ai quattordici cloni,
   sono coperti `airwlkrs`, `bel`, `dynabb`, `dynabb97`, `dynamcop`, `hotd`, `hpyagu98`, `indy500`,
   `gunblade`, `lastbrnx`, `manxtt`, `motoraid`, `overrev`, `rchase2`, `segawski`,
   `pltkids`, `sgt24h`, `skisuprg`, `skytargt`, `srallyc`, `stcc`, `topskatr`, `von`, `waverunr`,
@@ -329,7 +357,7 @@ Lightgun e Mouse restano da provare manualmente.
   In VF2 Country e Drink sono indipendenti, anche se il Service Menu originale
   modifica Drink durante alcune selezioni di Country.
 - Ogni formato viene riconosciuto prima della scrittura. Il core rigenera CRC o
-  checksum e sincronizza copie speculari ed EEPROM soltanto per i 34 layout
+  checksum e sincronizza copie speculari ed EEPROM soltanto per i layout
   dimostrati dai campioni reali; un layout non riconosciuto resta intatto.
 - I campioni iniziali sono generati in modo riproducibile dagli `.srm` validati
   con `scripts/generate-initial-nvram-templates.py`, compressi e verificati di
@@ -360,17 +388,21 @@ Start, senza creare un profilo generico separato.
 
 ## Collegamento tra cabinet Daytona USA
 
-La Core Option System `Linked Cabinets (Restart Required)` offre `Single
-Cabinet`, predefinito, e `2 Cabinets (Experimental)`. La seconda usa
+La Core Option System `Linked Cabinets (Restart Required)`, collocata prima di
+`NVRAM Settings`, offre `Disabled`, predefinito, e valori da `2 Cabinets` a
+`8 Cabinets`. I valori superiori a due predispongono l'interfaccia per la futura
+estensione del networking e non attivano ancora il trasporto. `2 Cabinets` usa
 esclusivamente l'interfaccia ufficiale Libretro Netpacket e per ora si applica
-alla famiglia Daytona USA. Il core non apre socket: RetroArch gestisce host,
-client e rete, mentre `M2Comm` conserva il protocollo della communication board
-Model 2. La struttura di `M2Comm`, il possesso del trasporto e il loopback sono
-quelli dello standalone upstream 0.9.7; il core sostituisce il trasporto UDP con
-l'adattatore Netpacket e attende l'effettiva presenza del secondo cabinet.
+alla famiglia Daytona USA. Come le altre opzioni non NVRAM resta sempre visibile;
+sui giochi non supportati non modifica la macchina. Il core non apre socket:
+RetroArch gestisce host, client e rete, mentre `M2Comm` conserva
+il protocollo della communication board Model 2. La struttura di `M2Comm`, il
+possesso del trasporto e il loopback sono quelli dello standalone upstream
+0.9.7; il core sostituisce il trasporto UDP con l'adattatore Netpacket e attende
+l'effettiva presenza del secondo cabinet.
 
 Entrambi i partecipanti devono usare lo stesso ROM set, la stessa build del
-core, lo stesso timing e `Linked Cabinets=2`. Con `NVRAM Settings=Enabled`,
+core, lo stesso timing e `Linked Cabinets=2 Cabinets`. Con `NVRAM Settings=Enabled`,
 configurare e riavviare il contenuto così:
 
 | RetroArch | Link ID | Car Number |
@@ -519,6 +551,16 @@ prima del primo frame e ha salvato I/O Type C (`0x00` all'offset backup RAM
 `0x0a`) in un contenitore `.srm` con checksum valido. La sessione è terminata
 con exit code 0 e ha prodotto audio non silenzioso e una schermata di gioco.
 
+La verifica visiva successiva ha confrontato la sequenza attract dello
+standalone con il core. Il solo `I/O Type C` e il solo `Country=USA` conservano
+il logo Jaleco rotante, il titolo e la demo 3D. La scrittura di `Link Max=2`
+insieme a `Link Type=NOT LINK` lasciava invece il gioco nella schermata di
+controllo rete su fondo nero. `Link Max` viene ora applicato soltanto a `CAR NO1
+Master`; tornando a `NOT LINK`, il byte interno viene riportato al valore
+offline `1`. Un avvio pulito con `Automatic Initial NVRAM Setup=Enabled` e
+`NVRAM Settings=Enabled` ha quindi mostrato l'intera sequenza Jaleco e la demo
+3D mantenendo I/O Type C, Country USA, checksum e mirror EEPROM validi.
+
 La prova di Gunblade NY ha eseguito la ROM reale fino all’attract mode con le
 cinque Core Options approvate: Advertise Sound, Country, Game Difficulty,
 Shifting Difficulty e Cabinet Type. Il primo avvio ha applicato valori non
@@ -546,6 +588,50 @@ CRC e mirror EEPROM validi. Il secondo avvio con `NVRAM Settings=Disabled` ha
 ricaricato il `.srm` e mantenuto l’intera EEPROM invariata, inclusi il prefisso
 di protezione di `hpyagu98` e la firma `S32A` di `pltkids`. Le quattro sessioni
 sono terminate con exit code 0. La prova copre avvio e persistenza.
+
+Virtua Striker (older) è stato verificato con il proprio menu ridotto: nove
+Core Options, senza One Match Mode, e Advertise Sound agli offset 0x17/0x97.
+Il primo avvio ha applicato valori non predefiniti a tutte le nove opzioni,
+lasciando Time Set al default nativo 2:00; il gioco ha raggiunto una partita.
+Il secondo avvio ha caricato lo stesso `.srm` con `NVRAM Settings=Disabled` e
+ha conservato tutti i campi senza riapplicarli. Entrambe le sessioni sono
+terminate con exit code 0; il marcatore fisso `0a 00` e le due banche da 128
+byte identiche sono rimasti validi. Evidenze in
+`build-libretro-gpu/validation/vstrikero-layout-20260919/summary.json`.
+
+Sega Rally Championship Deluxe revision A è stato verificato su tutti i 14
+campioni del menu ridotto. Il clone usa una EEPROM dichiarata da 44 byte e un
+CRC-16/CCITT invertito sui successivi 42 byte; espone soltanto Advertise Sound,
+Country, Game Difficulty e Game Mode. Il primo avvio ha applicato OFF, USA,
+HARDEST e LONGEST ed è arrivato in gara, conservando invariati i byte delle
+voci Cabinet Type e Link Type assenti. Il secondo avvio con `NVRAM
+Settings=Disabled` ha caricato lo stesso `.srm`, mantenuto i quattro valori e
+un CRC valido senza riapplicarli. Evidenze in
+`build-libretro-gpu/validation/srallycdxa-layout-20260919/summary.json`.
+
+## Rapporto d'aspetto
+
+La Core Option Video `Aspect Ratio` offre `Auto` (default), `4:3` e `16:9`.
+Le due scelte esplicite forzano soltanto il rapporto comunicato al frontend; il
+framebuffer emulato resta 496×384.
+
+In `Auto` il core legge il tipo di cabinato dalla EEPROM attiva e aggiorna la
+geometria Libretro soltanto quando il valore cambia:
+
+- famiglia Indy 500: `Twin` usa 4:3, `Deluxe` usa 16:9;
+- famiglia Sega Touring Car Championship: `Twin` usa 4:3, `Deluxe` usa 16:9;
+- gli altri giochi usano 4:3.
+
+La EEPROM, inclusi i cambiamenti salvati dal Service Menu, resta la fonte
+autorevole. Le Core Options NVRAM e `Automatic Initial NVRAM Setup` modificano
+la stessa EEPROM e `Auto` segue il valore risultante. La selezione deriva dal
+layout widescreen documentato da MAME per Indy 500/STCC; l'upstream standalone
+0.9.9 offre invece soltanto una regolazione generale 4:3/pixel
+quadrati/riempimento e non riconosce il cabinato.
+
+I controlli ABI con ROM reali hanno verificato Indy 500 Twin in 4:3, Indy 500
+Deluxe in 16:9, entrambe le forzature manuali e STCC `Deluxe` in 16:9. In tutti i
+casi risoluzione, frame e NVRAM restano invariati.
 
 ## A/V Timing e overlay diagnostico
 
@@ -601,8 +687,11 @@ fino agli ultimi dieci secondi di 2300 frame, senza campioni saturati.
 ## Gamepad Rumble
 
 La categoria Input espone `Gamepad Rumble`, Enabled per default.
-L'implementazione adatta il modello upstream 0.9.7 all'interfaccia rumble
-Libretro: nei giochi di guida i comandi della drive board producono brevi colpi
+L'implementazione adatta il decoder drive-board upstream 0.9.9 all'interfaccia
+rumble Libretro. Conserva tutte le scritture del frame e distingue i protocolli
+Daytona, STCC e Sega Rally; questo evita di perdere i byte effetto di Indy 500 e
+di trattare le forze continue di STCC o Sega Rally come urti Daytona. Nei giochi
+di guida gli effetti `Push` e `Vibrate` non continui producono brevi colpi
 sul motore strong, accompagnati a metà intensità dal motore weak; lo
 scostamento dello sterzo produce una vibrazione più leggera. Gli altri giochi
 restano silenziosi. Il core genera questi rapporti sulla scala normalizzata;

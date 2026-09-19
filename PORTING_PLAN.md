@@ -3,11 +3,12 @@
 Il progetto indipendente `Zer0one/sm2-emu-libretro` sviluppa su `main` e usa
 `dmanlfc/sm2-emu` come remote `upstream`. La base iniziale è SM2-Emu 0.9.4,
 commit `8b3a468c5b51387093811cb16b076e6fd9289d66`. Il clone mainstream rimane
-separato, per build e confronti con il codice originale. Le modifiche upstream
-applicabili al core fino alla release 0.9.7 sono state integrate selettivamente;
-quelle rimanenti riguardano il frontend standalone e sono escluse dal porting
-corrente. La versione pubblica del core è quindi allineata a 0.9.7 senza
-sostituire la provenienza della base iniziale.
+separato, per build e confronti con il codice originale. Il remote è stato
+ricontrollato il 19 settembre 2026: `upstream/main` è
+`af0be801980e40eb1f7eeff7f72ecc2f8ffe1024`, release 0.9.9. Le modifiche
+applicabili al core e approvate fino a questa revisione sono state integrate
+selettivamente; il core dichiara ora la versione 0.9.9. Le esclusioni e gli
+adattamenti Libretro sono riepilogati nel punto 7.
 
 Obiettivo: un core per RetroArch e Batocera, preservando emulazione, timing,
 audio e controlli. Ogni traguardo richiede una prova eseguibile; una build
@@ -20,7 +21,6 @@ che adatta le convenzioni del progetto personale Supermodel a Model 2.
 
 Standalone macOS arm64 compilato e avviato con Vulkan/MoltenVK su Apple M4.
 Catture delle sequenze dimostrative di Daytona USA, Sega Rally e Virtua Fighter 2.
-Le prove di audio udibile e controlli fisici restano aperte.
 Vedere [MACOS_BUILD.md](MACOS_BUILD.md).
 
 ## 1. Macchina senza frontend — completata il 9 settembre 2026
@@ -72,7 +72,7 @@ Vedere [GPU.md](GPU.md) per implementazione, prove e limiti della prima GPU macO
 Procedere per sottopunti circoscritti, senza implementarli tutti in blocco.
 Il primo definisce il catalogo; le mappature si implementano dopo la sua revisione.
 
-### 3.1 Catalogo dei profili dai metadati — proposta pronta per revisione
+### 3.1 Catalogo dei profili dai metadati — revisionato e implementato
 
 - Inventariare i `GameSpec` dopo l'ereditarietà parent/clone.
 - Definire famiglie e varianti con il criterio usato in Supermodel; per giochi
@@ -105,7 +105,7 @@ permutazione hardware Soccer e doppia leva Virtual On. VF2, Virtua Striker e
 Virtual On sono stati avviati fino a una partita reale in RetroArch macOS;
 rimane distinta la prova manuale con un controller fisico.
 
-### 3.3 Profili di guida — implementati e verificati localmente
+### 3.3 Profili di guida — implementati
 
 - Procedere per varianti 4-Speed + VR4/VR1, Sequential e Motorcycle.
   Per Sega Rally verificare Handbrake prima di esporre il profilo completo
@@ -114,8 +114,7 @@ rimane distinta la prova manuale con un controller fisico.
   cambio e regolazioni di sterzo/acceleratore/freno con default trasparenti.
 - Introdurre insieme alle funzioni le relative Core Options v2 e descrizioni.
 
-Criterio: estremi/riposo degli assi, cambio e azioni verificati per variante,
-più prova con un dispositivo di guida appropriato per il supporto dichiarato.
+Criterio: estremi/riposo degli assi, cambio e azioni coperti per variante.
 
 Il primo gruppo copre i quattro set Daytona e i cinque set Sega Rally. Espone
 `Driving: 4-Speed + VR4` e `Driving: 4-Speed + VR1 + Handbrake`, ciascuno con
@@ -124,8 +123,7 @@ Shifter` seleziona H-Gate, predefinito, oppure Standard; Neutral e Shift
 Down/Up restano sempre disponibili. I test verificano assi, trigger analogici,
 VR, cambio e freno a mano IN2. Le ROM parent hanno raggiunto una gara reale in
 RetroArch macOS, a 300 km/h Daytona e 127 km/h Sega Rally nel frame acquisito.
-La prova con volante fisico resta distinta. I profili Motorcycle sono coperti
-nei gruppi Manx TT e Motor Raid descritti sotto.
+I profili Motorcycle sono coperti nei gruppi Manx TT e Motor Raid descritti sotto.
 
 Il secondo gruppo copre dieci set delle famiglie Indy 500, Over Rev e Sega
 Touring Car Championship con il profilo unico `Driving: Sequential + VR2`.
@@ -141,7 +139,7 @@ la griglia di partenza, Over Rev la selezione modalità e STCC l'inserimento
 nome. Audio e Save RAM sono risultati validi in tutte le esecuzioni.
 
 Il terzo gruppo aggiunge il solo Super GT 24h come `Driving: Sequential + VR1`.
-Rispetto alla variante VR2 espone esclusivamente `VR1` su D-Pad Up; cambio,
+Rispetto alla variante VR2 espone esclusivamente `VR1` su D-Pad Down; cambio,
 sterzo e pedali seguono le posizioni approvate nel foglio, con pedali analogici
 e polarità invertita dichiarata dai metadata, senza correzioni aggiuntive nel
 binding. MAME segnala ancora sterzo non centrato e pedali pulsanti: il limite va
@@ -164,11 +162,9 @@ audio e Save RAM sono validi.
 
 ### 3.4 Puntamento e joystick analogico
 
-Stato: Joystick (Analog) e famiglia Gun implementati; resta la prova manuale
-con periferiche fisiche Lightgun e Mouse.
+Stato: Joystick (Analog) e famiglia Gun implementati.
 
-Criterio: calibrazione, polarità, pulsanti e cambio sorgente verificati; prova
-con periferiche reali per le combinazioni dichiarate supportate.
+Criterio: calibrazione, polarità, pulsanti e cambio sorgente coperti.
 
 L'audit preliminare dei sei parent Gun ha confermato coordinate assolute per
 tutti. `vcop`, `vcop2` e `hotd` usano la lightgun seriale RS-422 a 10 bit e
@@ -217,10 +213,9 @@ schermo e azionata col grilletto continua a usare il gesto nativo del cabinet.
 I controlli senza ROM verificano tutti i dieci set, P1/P2, le cinque modalità,
 i range e le polarità degli assi, il particolare grilletto P2 di House of the Dead e l'assenza
 del reload nei cabinet posizionali. Gunblade NY e Virtua Cop 2 hanno raggiunto
-una partita in RetroArch macOS con audio e Save RAM validi. La validazione con
-Lightgun e Mouse fisici è demandata alle prove manuali dell'utente.
+una partita in RetroArch macOS con audio e Save RAM validi.
 
-### 3.5 Cabinet speciali e casi da verificare
+### 3.5 Cabinet speciali
 
 Primo gruppo completato: `dynabb` e `dynabb97` espongono il profilo condiviso
 `Joystick (Standard): Baseball (Dynamite Baseball)`, con joystick, due pulsanti
@@ -294,65 +289,92 @@ input.
 Criterio: chiusura documentata per ogni profilo; i casi non verificati restano
 indicati nel catalogo e nel frontend.
 
-Al termine dell'intera macro-attività dei profili: implementare la crosshair,
-determinare i dati di calibrazione dei sei parent Gun e integrarli nei campioni
-di `Automatic Initial NVRAM Setup`. La crosshair è ora implementata per tutti i
-sei parent Gun nei backend Software, Vulkan e OpenGL, con opzione e convenzioni
-derivate da Supermodel; restano l'acquisizione delle calibrazioni e la
-rigenerazione dei campioni iniziali.
+La crosshair è implementata nei backend Software, Vulkan e OpenGL. Il valore
+`Automatic` segue la convenzione upstream: P1 esterno per i giochi con pistola
+seriale e mirino in gioco per quelli posizionali; una selezione esplicita rende
+il mirino esterno disponibile anche per questi ultimi. `Crosshair Style` offre
+lo stile SM2-Emu come default e Supermodel come alternativa. Le prove sui sei giochi hanno confermato
+che i valori di calibrazione nativi sono già funzionanti; per decisione
+dell'utente non serve una campagna dedicata né l'iniezione di ulteriori dati nei
+campioni iniziali.
 
 ### 3.6 Persistenza NVRAM/EEPROM
 
 Stato: persistenza e matrice dei parent implementate. `RETRO_MEMORY_SAVE_RAM`
 contiene backup RAM ed EEPROM in formato versionato; import frontend, fallback
-nativo e 197 impostazioni operatore per 35 parent sono coperti da test senza
+nativo e 289 impostazioni operatore per 35 parent più quattordici cloni con menu
+specifico sono coperti da test senza
 ROM e da avvii reali consecutivi in RetroArch. `Automatic Initial NVRAM Setup`
 carica per questi parent un campione completo validato prima del primo frame,
 soltanto in assenza di `.srm` e NVRAM native valide, quindi applica Country/Nation
-USA o Export, i valori offline necessari e I/O Type C per Super GT 24h. Restano
-la validazione esplicita dei dati di calibrazione e i casi di errore del frontend
-sulle piattaforme target.
+USA o Export, i valori offline necessari e I/O Type C per Super GT 24h.
 
-- Verificare riavvio, separazione per gioco, file mancanti, invalidi e directory
-  non scrivibili; preservare i salvataggi esistenti.
 - Valutare SRAM gestita dal frontend definendo prima formato, precedenza e
   import conservativo dei file nativi. Non confonderla con i save state.
-- Rigenerare i campioni iniziali dopo la validazione per ROM set dei dati di
-  calibrazione; non inizializzare o modificare automaticamente i salvataggi
-  esistenti.
-- Eseguire una campagna dedicata a tutti i clone presenti in `games.xml`:
-  acquisire per ciascuno un `.srm` nativo da un avvio pulito, con NVRAM Settings
-  e Automatic Initial NVRAM Setup disabilitati, quindi confrontarne backup RAM,
-  struttura EEPROM, checksum e valori predefiniti con il parent. Se i dati
-  coincidono, verificare con un avvio pulito e uno consecutivo che l'ereditarietà
-  del campione parent funzioni. Se differiscono, sospendere l'ereditarietà NVRAM
-  per quel clone e valutarne separatamente layout, offset delle opzioni e
-  campione iniziale tramite service menu prima di abilitarlo.
-- Registrare `indy500d` come primo caso noto da approfondire nella campagna:
-  dopo l'inizializzazione usa una banca EEPROM specchiata da 44 byte, mentre
-  `indy500`/`indy500to` usano 36 byte. Gli offset parent successivi a Country,
-  Cabinet Type e Difficulty possono sovrapporsi ai dati specifici della Deluxe;
-  per ora non introdurre una correzione non validata.
+- Non inizializzare o modificare automaticamente i salvataggi esistenti; il
+  setup automatico interviene soltanto alla creazione di una nuova Save RAM.
+- Prima fase della campagna clone completata il 15 settembre 2026: tutti i 48
+  cloni presenti in `games.xml` sono stati avviati senza input da una directory
+  vuota e hanno prodotto backup RAM ed EEPROM native. Ventuno acquisizioni sono
+  identiche al parent e 27 presentano differenze stabili; nessun avvio è fallito
+  e una seconda acquisizione dei 22 parent ha escluso variabilità tra esecuzioni
+  equivalenti. Il dettaglio è in `CLONE_NVRAM.md`; i dati grezzi restano esclusi
+  da Git.
+- Per i 21 cloni identici, l'eredità del template parent è autorizzata
+  esplicitamente e coperta dalla campagna conclusiva.
+- Ventuno cloni usano ora template dedicati. Tredici applicano senza modifiche
+  le opzioni del parent; `daytona93`, `daytonas`, `dyndeka2`, `dyndeka2b`,
+  `motoraiddx`, `stcca`, `stccb` e `stcco`
+  hanno invece cataloghi specifici ricavati dal proprio Service Menu.
+  `daytona93` espone solo quattro
+  voci, `daytonas` aggiunge Cabinet=Special e Promote Saturn, mentre `stcca`,
+  `stccb` e `stcco` usano la propria codifica Country; soltanto `stccb` conserva
+  Default View. Complessivamente 494
+  valori e 42 avvii RetroArch hanno verificato layout, integrità, setup pulito e
+  persistenza. Con i 21 cloni byte-identici al parent, il setup automatico copre
+  42/48 cloni. Il dettaglio e gli aggiornamenti successivi sono in
+  `CLONE_NVRAM.md`.
 - `daytonam` conserva l'identificatore upstream `protection="daytona-maxx"` e
   la relativa PIC è emulata nel solo percorso Model 2 Original. Con ROM reale
   il clone supera la schermata operatore e raggiunge Circuit Select con lo
   stesso test Coin/Start del parent; il gameplay è stato poi confermato
-  manualmente in RetroArch macOS. Resta da verificare separatamente il
-  networking della variante MAXX.
+  manualmente in RetroArch macOS.
 
 Criterio: persistenza e import provati con casi positivi e negativi; eventuali
 campi NVRAM esposti devono avere valori e precedenza espliciti.
 
-### 3.7 Revisione dei menu e regressione complessiva
+Aggiornamento 18 settembre: `vf2a` e `vf2o` dispongono ora di template e
+cataloghi propri, riutilizzando gli otto parametri e le codifiche VF2. La
+revisione del blocco è 0x13/0x12 anziché 0x18; il campo a 0x3318 è aggiornato
+dal gioco e non viene trattato come firma fissa. Il setup copre 44/48 cloni.
+`hotdp`, prototipo, è escluso da NVRAM Settings e setup dedicato per decisione
+dell'utente. `indy500d` è ora integrato con banca da 44 byte e sette opzioni specifiche;
+la copertura aggiornata è 45/48. `vstrikero` è ora integrato con il proprio
+menu ridotto di dieci voci, senza One Match Mode, e con Advertise Sound al suo
+offset specifico. La copertura è quindi **46/48**: `hotdp` resta escluso perché
+prototipo e soltanto `srallycdxa` richiede ancora analisi.
+
+Aggiornamento 19 settembre: anche `srallycdxa` è integrato con il proprio
+layout EEPROM da 44 byte e il menu ridotto a Advertise Sound, Country, Game
+Difficulty e Game Mode. Cabinet Type e Link Type non sono presenti e i relativi
+byte restano invariati. Il setup automatico copre quindi **47/48 cloni**; il
+solo `hotdp` rimane intenzionalmente escluso perché prototipo.
+
+Aggiornamento successivo del 19 settembre: su richiesta è stato integrato anche
+`hotdp`. Il prototipo usa due banche EEPROM speculari da 24 byte, distinte dal
+layout retail, e dispone di quattro Core Options verificate: Game Difficulty,
+Blood Color, Advertise Sound e Country. Blood Color espone soltanto Red/Green;
+Life Setting, Gun Blowback e Cabinet Type restano documentate ma escluse secondo
+la revisione concordata. Template dedicato, checksum, primo avvio e persistenza
+portano la copertura della campagna a **48/48 cloni**, con 27 template dedicati
+e 21 ereditati.
+
+### 3.7 Revisione dei menu — completata
 
 - Consolidare le opzioni introdotte nei sottopunti precedenti secondo
   LIBRETRO_DESIGN.md: categorie pertinenti, visibilità, default e riavvio richiesto.
-- Verificare cambio gioco/profilo, remapping e opzioni per gioco in RetroArch,
-  oltre alle regressioni video/audio/NVRAM sulle quattro schede.
-
-Criterio: matrice dei risultati automatici e delle prove fisiche. La milestone
-3 completa richiede prove di guida, combattimento e lightgun con almeno un
-controllo fisico appropriato per le categorie dichiarate supportate.
+Criterio: categorie, visibilità, default e indicazioni di riavvio coerenti con
+`LIBRETRO_DESIGN.md`; le prove fisiche residue sono raccolte nella sezione finale.
 
 ### 3.8 Core Options derivate da Supermodel
 
@@ -383,7 +405,7 @@ Le quattro regolazioni precedenti sono implementate, restano sempre visibili,
 agiscono soltanto sui profili Driving e sono verificate con curve, saturazione,
 pedali normali/invertiti e Throttle motociclistico.
 
-`Gamepad Rumble` è implementata seguendo il modello upstream 0.9.7.
+`Gamepad Rumble` è implementata seguendo il decoder upstream 0.9.9.
 L'interfaccia rumble Libretro pilota i motori strong e
 weak del gamepad P1: i comandi della drive board producono colpi brevi e lo
 scostamento dello sterzo una vibrazione più leggera. Il default è Enabled al
@@ -407,12 +429,16 @@ a tutti i set supportati; Disabled ripristina unity gain in tempo reale. Il fix
 INTENA di `overrevb`/`overrevba` resta sempre attivo perché corregge il timer
 audio della macchina e non appartiene al mastering opzionale.
 
+`Aspect Ratio` è implementata con `Auto` come default globale e override `4:3`
+o `16:9`. In Auto legge la configurazione attiva dalla NVRAM: Indy 500 e STCC
+usano 16:9 nei rispettivi cabinati Deluxe e 4:3 in Twin; gli altri giochi usano
+4:3. Il framebuffer resta 496×384 e il frontend riceve soltanto la geometria.
+
 Altre opzioni da valutare separatamente:
 
 - abilitazione dell'emulazione audio, solo se produce un risparmio reale;
 - volume separato della musica DSB/MPEG, se il mixer conserva flussi distinti;
-- widescreen reale, con modifica di viewport 3D e composizione 2D;
-- filtri di upscaling 2D e supersampling;
+- supersampling aggiuntivo oltre alle scale e ai filtri 2D già disponibili;
 - adattamento colore CRT specifico Model 2, solo con una necessità misurata.
 
 Queste voci sono una roadmap, non funzionalità dichiarate. Renderer Model 3,
@@ -425,18 +451,13 @@ x86_64, con software + Vulkan, controlli ABI senza ROM e pacchetti corredati
 dal database giochi. Evidenze e limiti in [CI.md](CI.md). Linux arm64 resta
 da aggiungere e la milestone completa richiede ancora la matrice estesa sotto.
 
-- Estendere le regressioni a Model 2/2A/2B/2C, ROM parent/clone, ZIP/7z e
-  caricamenti falliti; includere più giochi e sequenze rappresentative.
 - Automatizzare build macOS arm64 e Linux x86_64/arm64, controlli ABI e test
   eseguibili senza ROM. Le ROM restano esterne al repository e alla CI.
-- Preparare core info e istruzioni di installazione; provare l'artefatto su
-  RetroArch e Batocera reali, mantenendo lo standalone disponibile.
-- Misurare prestazioni e memoria su hardware target. Ottimizzare senza
-  semplificare emulazione o alterare la fedeltà.
+- Preparare core info e istruzioni di installazione, mantenendo lo standalone
+  disponibile come riferimento separato.
 
-Criterio: artefatti installabili e testati sulle piattaforme dichiarate, con
-matrice di compatibilità e limiti documentati. Prima di allargare la
-redistribuzione, verificare i termini dei componenti e conservare gli avvisi.
+Criterio: artefatti installabili sulle piattaforme dichiarate, con matrice di
+compatibilità e limiti documentati.
 
 ## 5. Rendering GPU integrato nel frontend — Vulkan e OpenGL implementati
 
@@ -466,12 +487,6 @@ framebuffer speciale è stato verificato sul title screen di Last Bronx.
 La verifica degli altri sistemi e della compatibilità estesa continua al punto 4.
 Dettagli, limiti e avvio con MoltenVK aggiornato: [GPU.md](GPU.md).
 
-Da fare: validazione su Windows 11 con GPU dedicata e RetroArch reale. La prova
-deve distinguere build/ABI, caricamento del core e resa sulla GPU fisica; coprire
-OpenGL e Vulkan, scale 1×/4×, lifecycle e persistenza SRAM, conservando log e
-screenshot. L'accesso remoto può usare SSH per trasferimenti e comandi, con il
-test grafico avviato nella sessione desktop dell'utente.
-
 ## 6. Networking, save state e funzioni avanzate
 
 ### 6.1 Collegamento tra cabinet — prototipo Daytona conservato
@@ -483,7 +498,10 @@ test grafico avviato nella sessione desktop dell'utente.
 - Usare l'interfaccia ufficiale Libretro Netpacket: nessun socket, discovery o
   configurazione di rete appartiene al core.
 - Conservare il comportamento standalone a cabinet singolo quando la Core
-  Option `Linked Cabinets` è lasciata al valore predefinito.
+  Option `Linked Cabinets` è lasciata su `Disabled`, valore predefinito.
+- Mantenere `Linked Cabinets` sempre visibile come le altre opzioni non NVRAM,
+  dichiarando che il trasporto Netpacket del core si applica attualmente alla
+  sola famiglia Daytona USA.
 
 Il prototipo attuale resta circoscritto alla famiglia Daytona USA e a due
 cabinet. Host e
@@ -496,22 +514,59 @@ client blu `1st/2`, entrambi in movimento nella stessa sessione.
 I test senza ROM verificano inoltre assegnazione degli ID, conteggio dei nodi,
 trasporto integro dei frame, rifiuto di un terzo client e disconnessione.
 
-Limiti attuali: due cabinet soltanto, famiglia Daytona soltanto e prova locale
-sullo stesso Mac con input registrati. Restano la prova manuale con due
-controller, una prova tra due host fisici e l'estensione agli altri giochi
-Model 2 con communication board. L'estensione del networking resta sospesa
-finché il porting generale non rende opportuno riprendere questa attività.
+La Core Option è già predisposta con valori da 2 a 8 cabinet, massimo verificato
+nei menu operatore Model 2; le sessioni superiori a due restano da implementare
+nel trasporto Netpacket.
 
-### 6.2 Save state — da implementare
+Limiti attuali: due cabinet soltanto e famiglia Daytona soltanto. L'estensione
+agli altri giochi Model 2 con communication board resta sospesa finché il
+porting generale non rende opportuno riprendere questa attività.
 
-- Inventariare tutto lo stato di CPU, coprocessori, RAM, FIFO, video, audio,
-  timer e I/O; definire un formato versionato e controlli sui dati in ingresso.
-- Implementare serializzazione e ripristino completi, verificando determinismo
-  dopo il caricamento e rifiuto sicuro degli stati incompatibili.
-- Solo dopo: valutare rewind e run-ahead. Netplay richiede verifiche ulteriori.
+### 6.2 Save state — upstream 0.9.8 disponibile, adattamento Libretro da implementare
 
-Criterio: dopo save/load, la stessa sequenza di input produce gli stessi frame
-e campioni audio su prove rappresentative delle quattro varianti.
+L'upstream 0.9.8 ha già introdotto `Archive`, la serializzazione delle quattro
+varianti di scheda e il ripristino transazionale: magic, versione, gioco e board
+sono verificati prima di modificare la macchina e un payload troncato ripristina
+lo snapshot precedente. Il frontend standalone aggiunge file e slot propri;
+questa parte non va portata nel core, perché RetroArch possiede slot e file.
+
+- Importare la serializzazione frontend-neutral e i fix-up post-caricamento,
+  mantenendo il layout upstream per facilitare gli aggiornamenti successivi.
+- Collegarla a `retro_serialize_size`, `retro_serialize` e
+  `retro_unserialize`, definendo una dimensione Libretro stabile e un contenitore
+  versionato con gioco e board; non introdurre un secondo sistema di slot.
+- Dopo il caricamento invalidare e ricostruire correttamente risorse GPU,
+  generazioni video, code audio e stato dell'adattatore input.
+- Rifiutare o gestire esplicitamente il caricamento durante un collegamento tra
+  cabinet: lo stato della communication board è serializzabile, la sessione
+  Netpacket esterna non lo è.
+- Dichiarare rewind e run-ahead utilizzabili soltanto dopo la matrice di verifica
+  raccolta nella sezione finale.
+
+## 7. Allineamento selettivo upstream 0.9.8/0.9.9 — completato
+
+L'analisi è allineata al commit upstream
+`af0be801980e40eb1f7eeff7f72ecc2f8ffe1024` del 19 settembre 2026. Il core
+dichiara 0.9.9 e conserva la provenienza della base iniziale 0.9.4.
+
+| Gruppo upstream | Stato nel core |
+| --- | --- |
+| Save state 0.9.8 | Serializzazione frontend-neutral disponibile upstream; adattamento all'API Libretro ancora da implementare nel punto 6.2. |
+| Daytona `start_gear=4` | Integrato con la Core Option globale `Automatic Start Gear`, abilitata per default. |
+| FPS toggle standalone | Coperto da `Timing / FPS Overlay`; tasto e UI SDL esclusi. |
+| Configurazione SDL dei volanti | Esclusa: dispositivi, mapping e conversione degli assi appartengono a RetroArch. |
+| Drive command 0.9.9 | Integrati coda per frame, protocolli Daytona/STCC/Rally e adattamento Gamepad Rumble. |
+| Metadata `games.xml` | Integrati `start_gear`, `drive_protocol`, correzioni `drive_board`, clone Daytona MAXX e aggiornamenti approvati. |
+| Bilanciamento audio e timer INTENA | Integrati tramite `Enhanced Audio Balance` e fix macchina permanente. |
+| Filtri xBR/ScaleFX | Integrati come filtri dei livelli 2D prima della composizione 3D. |
+| Texture 3D personalizzate e dump | Non inclusi nello scope corrente; restano un miglioramento renderer opzionale. |
+| Traslucenza blended | Non inclusa nello scope corrente; lo stipple hardware resta il comportamento fedele. |
+| Funzioni GUI, file, slot e backend SDL/evdev | Escluse quando il frontend o la piattaforma possiedono già la funzione. |
+
+Le future revisioni upstream seguiranno la stessa procedura: confronto con il
+clone mainstream pulito, importazione selettiva delle parti applicabili e
+adattamento confinato in `src/libretro/` quando la funzione appartiene al
+frontend.
 
 ## Modalità di lavoro
 
@@ -530,3 +585,23 @@ non cambiare modello o delegare ad altri agenti senza autorizzazione.
 `git fetch upstream` recupera riferimenti senza modificare i sorgenti. Gli
 aggiornamenti si valutano e integrano su `main` con patch, cherry-pick o merge,
 secondo il caso e le istruzioni correnti. Il mainstream si aggiorna separatamente.
+
+## Verifiche ancora aperte
+
+Questa sezione raccoglie soltanto attività di verifica. Le implementazioni
+mancanti restano nei rispettivi punti della roadmap.
+
+| Ambito | Verifica residua |
+| --- | --- |
+| Standalone baseline | Ascolto audio e prova dei controlli fisici sulla build macOS upstream. |
+| Profili digitali | Prova manuale con un gamepad fisico rappresentativo. |
+| Guida | Prova con volante e pedali reali, comprese calibrazione, polarità, cambio e Handbrake. |
+| Gun | Prova con Lightgun e Mouse fisici sui percorsi dichiarati. |
+| NVRAM/SRAM | Riavvio e separazione per gioco con file mancanti, invalidi e directory non scrivibili; conservazione dei salvataggi esistenti. |
+| Menu e opzioni | Cambio contenuto, profilo, remapping e visibilità delle opzioni per gioco in RetroArch. |
+| Regressione generale | Video, audio, input e NVRAM sulle quattro board con una matrice parent/clone, ZIP/7z e caricamenti falliti. |
+| GPU Windows | RetroArch su Windows 11 con GPU dedicata: Vulkan/OpenGL, scale 1×/4×, lifecycle, SRAM, log e screenshot. |
+| Piattaforme | Artefatto Linux arm64 e ulteriori prove RetroArch/Batocera sugli hardware dichiarati. |
+| Networking | Due controller reali, due host fisici, variante Daytona MAXX e future sessioni superiori a due cabinet dopo la relativa implementazione. |
+| Save state | Dopo l'implementazione: determinismo video/audio/macchina sulle quattro board, dati troncati e incompatibili, cicli ripetuti e interazione col networking. |
+| Prestazioni e distribuzione | Misure di memoria e velocità sugli hardware target e controllo finale degli avvisi/licenze prima di ampliare la distribuzione. |

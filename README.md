@@ -5,19 +5,20 @@ Independent development repository for a Libretro adaptation of
 Development takes place on `main`; the original source history is retained
 for attribution, comparison and future upstream updates.
 
-**Status: SM2-Emu 0.9.7 Libretro core implemented and tested on macOS arm64.**
+**Status: SM2-Emu 0.9.9 Libretro core implemented and tested on macOS arm64.**
 The isolated adapter uses the upstream machine and software renderer, with
 native timing/audio by default, an optional speed-preserving 60 Hz cadence,
 a Libretro timing/FPS overlay, reviewed control profiles and frontend-managed save RAM.
 1800-frame video/audio/NVRAM comparisons pass on all four board variants.
-The data-driven NVRAM Core Options currently cover 196 reviewed operator
-settings across 35 parent sets. Each supported title validates its native
+The data-driven NVRAM Core Options currently cover 289 reviewed operator
+settings across 35 parent sets and fourteen clones with distinct service menus.
+Each supported title validates its native
 layout and updates the corresponding integrity field and settings mirror.
 Experimental linked-cabinet networking uses Libretro Netpacket; Daytona USA
 has completed a two-car race in two local RetroArch instances.
 The core also provides Vulkan/OpenGL rendering, upstream 3D/2D enhancement
 filters, gamepad rumble and optional Enhanced Audio Balance. Changes from
-upstream 0.9.7 relevant to Libretro are integrated selectively; standalone GUI,
+upstream 0.9.9 relevant to Libretro are integrated selectively; standalone GUI,
 packaging and SDL-only changes remain in the adjacent upstream reference.
 
 See [Libretro build and validation](LIBRETRO.md) for the artifact, commands
