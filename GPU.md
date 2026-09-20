@@ -159,6 +159,8 @@ in `GPU_REPORT.json`.
 | OpenGL, 60 Hz con overlay e perdita contesto | 600 callback, 575 invii GPU, 25 duplicazioni, 440814 frame audio e 9 aggiornamenti overlay |
 | OpenGL, scala 4× e tre cicli load/reset/unload | Acquisizione 1984 × 1536 e tutti i cicli superati |
 | RetroArch 1.18 Linux arm64, driver `gl`, Mesa llvmpipe | Fallback GLES3 legacy negoziato, contesto ES 3.2 pronto, 2300 frame, screenshot e SRAM salvati; il controllo finale del runner non accetta la registrazione Matroska di questa vecchia versione |
+| RetroArch 1.22.2 Windows, Radeon Vega 11, VF2 Vulkan/OpenGL 1×/4× | Cinque esecuzioni da 2300 frame completate con uscita 0, gameplay acquisito, WAV non silenzioso e SRAM valida; Vulkan 1× ripetuto dopo OpenGL verifica il nuovo avvio e produce evidenze identiche |
+| RetroArch 1.22.2 Batocera 43.1, Radeon Vega 11, Daytona OpenGL 1× | OpenGL Core 4.6 negoziato; 2300 frame, gara visibile, audio non silenzioso, SRAM valida e uscita 0 |
 | Virtua Cop 2, crosshair P1 in RetroArch macOS | Software e Vulkan hanno completato 2300 callback, gameplay, acquisizione GPU, audio e Save RAM; la crosshair vettoriale segue il cursore e il pass Vulkan resta stabile durante gli shortcut off-screen. Il percorso OpenGL è compilato nello stesso artefatto e resta da osservare in un frontend OpenGL 4.3/ES 3.1 reale. |
 | VF2, RetroArch Nightly macOS, Vulkan 2×, Faithful / xBR / ScaleFX / Anisotropic 16x | Quattro esecuzioni concluse regolarmente con screenshot, audio e Save RAM da 16576 byte. Le quattro immagini hanno hash distinti; xBR e ScaleFX differiscono sia da Faithful sia tra loro. |
 
@@ -206,24 +208,46 @@ Il default prova GLES 3.1; aggiungere `--api desktop` per OpenGL 4.3 Core.
 
 ## Limiti del supporto dichiarato
 
-Verificato macOS arm64/Apple M4 con le versioni indicate e, nella prima prova
-Linux descritta sotto, Batocera 43.1 su Radeon Vega 11. Non sono ancora verificati
-altri driver GPU, la compatibilità dell'intero catalogo o una misura comparativa
-delle prestazioni. Le prove non usano i Vulkan validation layers, che non sono
-installati nell'ambiente macOS attuale. Il ripristino dopo ricreazione ordinata del contesto è provato;
+Verificato macOS arm64/Apple M4 con le versioni indicate, Batocera 43.1 su
+Radeon Vega 11 e Windows con la configurazione descritta sotto. Non sono ancora
+verificati altri driver GPU, la compatibilità dell'intero catalogo o una misura
+comparativa delle prestazioni. Le prove non usano i Vulkan validation layers,
+che non sono installati nell'ambiente macOS attuale. Il ripristino dopo
+ricreazione ordinata del contesto è provato;
 un guasto fisico o `VK_ERROR_DEVICE_LOST` richiede il riavvio del contenuto.
 Per OpenGL sono provate sia la ricreazione annunciata sia la perdita non
-annunciata del contesto. La prova RetroArch Linux usa Mesa llvmpipe; rimane da
-eseguire la prova Batocera con un driver OpenGL hardware. llvmpipe dimostra
-correttezza, integrazione frontend e lifecycle, non prestazioni o compatibilità
-di una GPU fisica. Non è presente un backend Metal.
+annunciata del contesto. Oltre alla prova Linux Mesa llvmpipe, Batocera 43.1 ha
+negoziato OpenGL Core 4.6 sulla Radeon Vega 11 e completato una gara Daytona.
+La qualifica non si estende automaticamente ad altre GPU o versioni dei driver.
+Non è presente un backend Metal.
 
-Attività aperta: provare il core anche su un PC Windows 11 con GPU dedicata,
-usando RetroArch reale e i driver del produttore. Verificare almeno OpenGL
-desktop, Vulkan, scala 1×/4×, avvio/uscita, persistenza SRAM e una cattura di
-gioco; registrare modello GPU, versione driver e backend effettivamente
-negoziato. La build CI Windows resta una prova separata e non sostituisce
-l'esecuzione sulla GPU fisica.
+## Verifica Windows del 20 settembre 2026
+
+L'artifact Windows x86_64 della
+[CI della revisione `1d8a1ab`](https://github.com/Zer0one/sm2-emu-libretro/actions/runs/35509380925)
+è stato eseguito in RetroArch 1.22.2 sul PC `RETROSTATION`, con Radeon Vega 11 e
+driver AMD `31.0.21925.1001`. Il core provato ha SHA-256
+`a37e87f26663827006cb00dd5912d77c5ba2d0c5f1a737e03dfded8f727ee66a`.
+L'installazione globale, la configurazione, i salvataggi e i core residenti non
+sono stati modificati: bundle, configurazione, contenuto e risultati risiedono
+in una radice isolata.
+
+VF2 è stato eseguito per 2300 frame in cinque processi RetroArch distinti:
+Vulkan 1× e 4×, OpenGL 1× e 4×, quindi Vulkan 1× ripetuto dopo i cambi di
+backend. Vulkan ha negoziato 1.3.260; OpenGL il profilo Core 4.6. I log
+confermano le risoluzioni interne 496×384 e 1984×1536 e i pass upstream 2D
+compute + 3D. Ogni sessione è terminata con codice 0; gli assert fra i casi e
+un controllo SSH conclusivo riportano zero processi RetroArch residui.
+
+Le cinque catture mostrano gameplay valido. I PNG delle prove 1× sono 512×384
+e quelli 4× 2048×1536 per l'allineamento del frontend; a parità di scala,
+Vulkan e OpenGL sono identici byte per byte. Lo sono anche tutti i WAV RIFF non
+silenziosi da 7.053.092 byte e le SRAM `SM2SRAM` da 16.576 byte. La ripetizione
+Vulkan 1× coincide con la prima esecuzione. Le evidenze locali, escluse da Git,
+sono in `build-windows-x86_64/validation/gpu-matrix-1d8a1ab-20260920/`; quelle
+remote sono conservate nella radice marcata del runner. La prova usa un replay:
+non qualifica un controller fisico né la qualità audio soggettiva. Altre GPU e
+versioni dei driver restano fuori da questa qualifica.
 
 I profili completi, le opzioni Input e i Save State sono stati implementati
 successivamente; per i Save State vedere `LIBRETRO.md`.
@@ -238,5 +262,6 @@ una callback successiva nella nostra libreria.
 Il core Linux della CI è stato provato su Batocera 43.1 con Radeon Vega 11,
 RetroArch 1.22.2 e VF2: Vulkan 1×/2× e software, 2300 frame ciascuno, screenshot
 di gioco, PCM e NVRAM identici tra i renderer, uscita regolare. Vedere [CI.md](CI.md)
-per ambiente, artifact, riproduzione e limiti. È una prima verifica su GPU Linux;
-la compatibilità estesa rimane aperta.
+per ambiente, artifact, riproduzione e limiti. Il worktree corrente è stato
+inoltre verificato con Daytona e OpenGL Core 4.6 sullo stesso hardware. La
+compatibilità estesa ad altre GPU e driver rimane aperta.

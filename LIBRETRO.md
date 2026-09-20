@@ -486,8 +486,24 @@ Una seconda prova automatica ha avviato tre istanze isolate di RetroArch Nightly
 0, 1 e 2 hanno tutti formato lo stesso roster da tre cabinet. Le tre istanze si
 sono chiuse con codice 0, senza terminazione forzata né processi residui. Questa
 prova copre il roster reale oltre due cabinet, ma non equivale ancora a una gara
-sincronizzata a tre auto. Restano una prova manuale con due controller, una
-prova tra due host fisici, la gara a tre e l'estensione ad altri giochi.
+sincronizzata a tre auto. Una successiva prova distribuita ha collegato una
+istanza macOS e una Batocera x86_64 fisica: entrambe hanno formato il roster 2/2
+e mostrato `UP TO 2 RACERS WANTED`. La stessa topologia è rimasta connessa per
+due minuti con entrambi gli host cablati, senza errori di collegamento. Restano
+una prova manuale con due controller e la gara a tre. Una prova successiva ha
+applicato lo stesso replay di guida validato a entrambi gli host: il cabinet
+rosso macOS e quello blu Batocera hanno raggiunto la stessa gara, giro 1/8,
+nelle posizioni reciproche 2/2 e 1/2 e in movimento a circa 177–185 mph. Questo
+conferma a campione una gara sincronizzata tra le due piattaforme.
+
+La stessa topologia è stata qualificata anche tra macOS arm64 e Windows x86_64
+con gli artifact CI della medesima revisione `1d8a1ab`. RetroArch 1.22.2 su
+macOS ha ospitato la sessione e il client Windows si è collegato via LAN: le due
+communication board hanno formato il roster 2/2 e il replay ha portato entrambe
+le postazioni nella stessa gara. La cattura macOS mostra il cabinet rosso in
+posizione 2/2 con l'auto `2P` davanti; quella Windows mostra il cabinet blu in
+posizione 1/2. Entrambi i processi sono usciti con codice 0, senza forzature o
+residui, e hanno scritto screenshot e SRAM isolate valide da 16.576 byte.
 
 La prima estensione non-Daytona ha usato il parent `stcc`. La prova massima ha
 avviato nove istanze isolate con `Car 1`…`Car 8` e `Relay`, codifiche 1…9
@@ -495,6 +511,16 @@ verificate nei rispettivi `.srm`. Tutti i partecipanti hanno formato il roster
 9/9 e tutti i processi sono terminati con codice 0, senza kill forzato né
 residui. La prova conferma configurazione NVRAM, avvio del core e handshake
 Netpacket al limite del gioco; non dimostra ancora una gara STCC sincronizzata.
+Una prova distribuita a tre partecipanti ha mantenuto il roster con due cabinet
+giocabili su macOS e il Relay su Batocera; il replay esistente si è però fermato
+all'inserimento del nome sui cabinet giocabili, quindi non viene contato come
+prova di gara sincronizzata.
+Una seconda prova distribuita ha usato `Car 1` sul Mac e `Car 2` più `Relay` su
+Windows, sempre con gli artifact CI `1d8a1ab`: l'host ha registrato prima 2/3 e
+poi 3/3, e tutti i partecipanti hanno formato il roster completo. Le tre
+catture, le SRAM separate e le uscite con codice 0 sono valide; nessuna istanza
+è stata terminata forzatamente e non sono rimasti processi. Anche questa prova
+qualifica interoperabilità e ruoli, non ancora una gara STCC sincronizzata.
 
 La famiglia Sega Rally usa lo stesso schema combinato. La prova massima sul
 parent ha avviato cinque istanze con `Car 1`…`Car 4` e `Relay`, codifiche 1…5
@@ -510,9 +536,13 @@ una gara Sega Rally sincronizzata.
 Motor Raid è stato inoltre verificato con tre istanze `Master`, `Slave` e
 `Live`. Tutti i partecipanti hanno formato il roster 3/3; gli `.srm` conservano
 le codifiche native 1, 2 e 3 e gli ID 1, 2 e 3 in entrambe le copie EEPROM. I
-tre processi sono terminati con codice 0, senza chiusure forzate né residui. La
-prova conferma il ruolo Live nel collegamento; l'uscita visiva del live monitor
-resta una verifica manuale.
+tre processi sono terminati con codice 0, senza chiusure forzate né residui. Una
+prova distribuita successiva ha usato Master e Slave su macOS e Live su Batocera:
+il nodo remoto ha formato il roster 3/3 e mostrato la telecamera esterna della
+gara. La topologia è stata ripetuta con entrambi gli host cablati e ha mantenuto
+il roster 3/3 per due minuti senza errori di collegamento. Il gioco presenta il
+ruolo speciale come Relay ID16, mentre il Service Menu conserva i valori NVRAM
+documentati `Live` e `Cabinet ID=3`.
 
 Super GT 24h e i tre set Over Rev sono stati verificati con due istanze isolate.
 Tutti hanno formato il roster 2/2 sulle communication board, chiuso entrambi i
@@ -525,16 +555,20 @@ verifiche.
 Le prove a tre istanze su `manxtt` e `manxttc` hanno formato roster 3/3 su tutte
 le communication board. I rispettivi SRM conservano `Master=1`, `Slave=2` e
 `Relay=3`; tutti i processi sono terminati con codice 0, senza chiusure forzate
-o residui. La prova non dimostra ancora una gara sincronizzata o il comportamento
-visivo specifico della postazione Relay.
+o residui. Nella prova distribuita con Master e Slave su macOS e Relay su
+Batocera, il nodo remoto ha formato il roster 3/3 e mostrato esplicitamente
+`THIS IS RELAY MACHINE`. Resta da verificare una gara con input reali.
 
 Virtual On è stato provato prima con due istanze `von` Master/Slave e poi con
 tre istanze `von`, `von` e `vonr`. Entrambe le sessioni hanno formato il roster
 completo su ogni partecipante; la seconda ha conservato negli `.srm` i valori
 NVRAM `Master=1`, `Slave=0` e `No Link=2` del programma Relay. Tutti i processi
 sono terminati con codice 0, senza chiusure forzate o residui. Questa prova
-conferma avvio, persistenza e compatibilità Netpacket tra i due programmi; una
-partita sincronizzata e la visualizzazione del Relay restano prove manuali.
+conferma avvio, persistenza e compatibilità Netpacket tra i due programmi. Una
+prova distribuita ha poi eseguito i due programmi Twin su macOS e `vonr` su
+Batocera: il Relay ha formato il roster 3/3 e mostrato il live monitor. La
+topologia cablata ha mantenuto il roster completo per due minuti senza errori
+di collegamento. Resta da verificare una partita con input reali.
 
 Controllo dedicato senza ROM:
 
@@ -859,8 +893,10 @@ La dimensione dichiarata è fissa a 9 MiB ed è disponibile già prima del
 caricamento del gioco, requisito pratico di RetroArch 1.22.2. L'immagine contiene
 magic, versione, nome del set e tipo di scheda; stati di un altro gioco o board,
 intestazioni errate e payload troncati sono rifiutati. Il caricamento troncato è
-transazionale e lascia intatta la macchina corrente. Il formato corrente è
-versione 2 e non promette compatibilità con altre revisioni del core.
+transazionale e lascia intatta la macchina corrente. Il payload macchina usa il
+formato upstream versione 4; una coda Libretro separata e versionata conserva
+soltanto lo stato runtime del frontend, senza introdurre dipendenze nella macchina.
+Non è promessa compatibilità con altre revisioni del core.
 
 Il core usa inoltre la più recente negoziazione pubblica Libretro
 `RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS` per dichiarare che il formato è
@@ -869,21 +905,40 @@ comando lo ignorano e continuano a usare gli stessi tre callback standard; non
 sono richieste estensioni private di RetroArch.
 
 Dopo un caricamento vengono invalidate le risorse derivate del renderer e
-azzerate code audio frontend, cadenza, rumble e latch input. I test ABI con ROM
-reali hanno verificato round-trip byte-identico e riesecuzione deterministica di
-tre frame su Daytona USA, VF2, Virtual On e STCC, oltre al rifiuto senza effetti
-di stati corrotti e di VF2 caricato in Daytona. RetroArch Nightly 1.22.2 su
+azzerate le code audio e il rumble. Cadenza, cambio, controlli relativi e stato
+del puntatore vengono invece ripristinati dalla coda Libretro: il loro precedente
+azzeramento causava in Daytona una divergenza di cinque byte dopo tre frame.
+I test ABI con ROM reali hanno verificato round-trip byte-identico e
+riesecuzione deterministica su Daytona USA, VF2, Indy 500 e STCC, oltre al
+rifiuto senza effetti di stati corrotti e di VF2 caricato in Daytona. Venti
+cicli per ciascuna board coprono sia il pattern run-ahead, con esecuzione
+speculativa e ripristino, sia una sequenza di stati ricaricata in ordine inverso
+come rewind. Daytona supera la stessa prova anche con timing frontend a 60 Hz.
+RetroArch Nightly 1.22.2 su
 macOS ha caricato lo stesso stato VF2 dal proprio replay sia con Software sia
-con Vulkan, completando 2300 frame con screenshot, audio e SRAM validi.
+con Vulkan, completando 2300 frame con screenshot, audio e SRAM validi. Il
+runner `scripts/test-retroarch-savestate.py` conserva una verifica separata del
+percorso file e slot del frontend e ora usa `PAUSE_TOGGLE`; rifiuta confronti
+casuali tra frame animati e permette di omettere il replay, incompatibile con il
+caricamento di uno stato esterno durante la riproduzione.
+
+La build Linux x86_64 del worktree corrente ha ripetuto su Batocera 43.1 la
+prova Daytona con 20 cicli: round-trip, replay deterministico, pattern run-ahead,
+ricarica in ordine inverso come rewind e rifiuto degli stati corrotti sono tutti
+superati. Questa prova qualifica il formato e la coda Libretro anche sul target
+Linux; file e slot grafici restano responsabilità di RetroArch.
 
 Save/load è disabilitato durante `Linked Cabinets`: la communication board
 interna è serializzabile, la sessione Netpacket esterna no. Rewind e run-ahead
-restano da qualificare separatamente sulle piattaforme target.
+sono qualificati su macOS per tutte le quattro board e su Batocera per Daytona;
+le altre combinazioni di piattaforma e board estendono la matrice senza cambiare
+il formato.
 
 ## Limiti
 
-I cheat non sono implementati. Save State è disponibile; rewind e run-ahead
-non sono ancora qualificati. Renderer Vulkan/OpenGL e Core Options Video sono
+I cheat non sono implementati. Save State, rewind e run-ahead sono qualificati
+localmente sulle quattro board; le prove multipiattaforma restano separate.
+Renderer Vulkan/OpenGL e Core Options Video sono
 disponibili nella build descritta in [GPU.md](GPU.md); la geometria nativa
 software resta fissa. Il collegamento Netpacket è disponibile per tutte le
 famiglie censite: Daytona, STCC, Sega Rally, Indy 500, Motor Raid, Wave Runner,
@@ -892,8 +947,22 @@ cabinet è stato provato in una gara con input registrati; le altre prove reali
 coprono roster da 2 a 9 partecipanti, compresi i ruoli Relay/Live di STCC, Sega
 Rally, Motor Raid, Manx TT e Virtual On. Motor Raid DX salva i valori corretti e
 stabilisce la connessione frontend 2/2, ma non elabora la communication board,
-coerentemente con il suo stato upstream non funzionante. Restano da provare le
-gare sincronizzate indicate nella roadmap, più controller fisici e due host.
+coerentemente con il suo stato upstream non funzionante. Le sessioni distribuite
+macOS/Batocera hanno verificato il roster Daytona 2/2 e i ruoli Relay/Live 3/3
+di STCC, Sega Rally, Motor Raid, Manx TT e Virtual On. Una campagna aggiuntiva
+con entrambi gli host cablati ha mantenuto per due minuti i roster di Daytona,
+STCC, Motor Raid e Virtual On, senza errori di collegamento. Il controllo visivo
+dell'utente ha inoltre confermato la corretta uscita delle postazioni Relay/Live.
+Gli artifact CI macOS arm64 e Windows x86_64 della revisione `1d8a1ab` hanno
+inoltre completato una gara Daytona 2/2 e un roster STCC 3/3 distribuiti fra i
+due sistemi. Restano da provare le altre gare sincronizzate indicate nella
+roadmap e i controller fisici.
+
+Una verifica Daytona in gara su Windows ha confermato lo stipple a scacchiera
+previsto dalla traslucenza Model 2. La dominante bluastra osservata sul
+televisore proveniva dalla modalità Luce notturna di Windows: gli screenshot
+digitali conservano il retino nero e non è emersa alcuna anomalia del core o dei
+backend grafici.
 
 Le opzioni selezionate per gli altri parent restano rinviate finché il relativo
 formato non è scrivibile con controllo d'integrità dimostrato. `hpyagu98` e

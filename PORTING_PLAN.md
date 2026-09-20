@@ -457,8 +457,10 @@ corredati dal database giochi. Linux arm64 usa il runner GitHub nativo
 `ubuntu-24.04-arm` e pubblica `sm2-libretro-linux-arm64`, seguendo lo stesso
 percorso degli altri Linux senza cross-compilazione o emulazione. Evidenze e
 limiti in [CI.md](CI.md). `sm2_libretro.info`, database e istruzioni sono già
-inclusi nei pacchetti. La prima esecuzione remota del nuovo job richiede il
-prossimo commit/push autorizzato.
+inclusi nei pacchetti. Il controllo di distribuzione verifica inoltre licenze
+del core e delle dipendenze incorporate, revisione sorgente, checksum, struttura
+del pacchetto e assenza di ROM. La prima esecuzione remota del nuovo job richiede
+il prossimo commit/push autorizzato.
 
 Criterio: artefatti installabili sulle piattaforme dichiarate, con matrice di
 compatibilità e limiti documentati.
@@ -599,8 +601,10 @@ nome esatto del set, seguendo la separazione tra famiglia e ruolo già usata dal
 core Supermodel. Le prove reali hanno formato sia il roster Twin 2/2 sia il
 roster 3/3 con `von`, `von` e `vonr`; gli `.srm` conservano Master, Slave e il
 valore No Link nativo del programma Relay. Tutte le istanze si sono chiuse senza
-forzature o residui. La partita sincronizzata e l'uscita del live monitor restano
-nella sezione delle verifiche.
+forzature o residui. Le prove distribuite macOS/Batocera hanno inoltre mostrato
+il live monitor di Motor Raid e del programma `vonr`, oltre alla schermata Relay
+di Manx TT e alle visuali Relay di STCC e Sega Rally. La partita sincronizzata
+con input reali resta nella sezione delle verifiche.
 
 ### 6.2 Save state — implementato
 
@@ -620,12 +624,14 @@ rifiutati senza alterare la macchina. Save/load viene rifiutato durante una
 sessione `Linked Cabinets` perché il peer Netpacket esterno non è serializzabile.
 
 Round-trip e riesecuzione deterministica sono verificati con ROM reali su Model
-2, 2A, 2B e 2C. RetroArch macOS ha caricato uno stato VF2 nei renderer Software
-e Vulkan. La prova manuale dell'utente in RetroArch macOS ha inoltre confermato
-save/load su Indy 500 (Model 2B) dopo l'allineamento dei metadata
-`sm2_libretro.info`; il controllo CI ora impedisce di distribuire nuovamente un
-binario serializzabile con `savestate = "false"`. Rewind e run-ahead restano
-qualifiche separate nella sezione finale.
+2, 2A, 2B e 2C. Il core conserva in una coda separata lo stato runtime Libretro
+necessario a cambio, controlli relativi, puntamento e cadenza, mantenendo intatto
+il formato macchina upstream. RetroArch macOS ha caricato uno stato VF2 nei
+renderer Software e Vulkan; la prova manuale dell'utente ha inoltre confermato
+save/load su Indy 500 (Model 2B). Il controllo CI impedisce di distribuire
+nuovamente un binario serializzabile con
+`savestate = "false"`. Venti cicli per ciascuna board verificano inoltre i
+pattern run-ahead e rewind; Daytona supera la prova anche a 60 Hz.
 
 ## 7. Integrazioni derivate dall'upstream 0.9.8/0.9.9
 
@@ -672,18 +678,40 @@ secondo il caso e le istruzioni correnti. Il mainstream si aggiorna separatament
 ## Verifiche ancora aperte
 
 Questa sezione raccoglie soltanto attività di verifica. Le implementazioni
-mancanti restano nei rispettivi punti della roadmap.
+mancanti restano nei rispettivi punti della roadmap. Non rimangono verifiche
+tecniche locali elencate in questa sezione; prove su hardware e periferiche
+diverse estendono la matrice ma non bloccano le qualifiche già concluse.
 
-| Ambito | Verifica residua |
-| --- | --- |
-| Standalone baseline | Ascolto audio e prova dei controlli fisici sulla build macOS upstream. |
-| Profili digitali | Prova manuale con un gamepad fisico rappresentativo. |
-| Guida | Prova con volante e pedali reali, comprese calibrazione, polarità, cambio e Handbrake. |
-| Gun | Prova con Lightgun e Mouse fisici sui percorsi dichiarati. |
-| Menu e opzioni | Cambio contenuto, profilo, remapping e visibilità delle opzioni per gioco in RetroArch. |
-| Regressione generale | Video, audio e input sulle quattro board con una matrice parent/clone, ZIP/7z e caricamenti falliti. |
-| GPU Windows | RetroArch su Windows 11 con GPU dedicata: Vulkan/OpenGL, scale 1×/4×, lifecycle, SRAM, log e screenshot. |
-| Piattaforme | Il job Linux arm64 nativo e il relativo artefatto aarch64 sono verificati; provarlo in RetroArch/Batocera su hardware reale. |
-| Networking | Gare RetroArch Daytona e STCC a tre cabinet (entrambi i roster locali a tre sono verificati); gare sincronizzate Super GT 24h, Over Rev e Manx TT; uscita live monitor di Motor Raid e Virtual On; controller reali; due host fisici; variante Daytona MAXX. |
-| Save state | La prova manuale copre Indy 500 (Model 2B). Provare Daytona USA (Model 2), Virtua Fighter 2 (Model 2A) e STCC (Model 2C); successivamente qualificare rewind/run-ahead, cicli prolungati e piattaforme diverse. Save/load resta intenzionalmente rifiutato durante il networking. |
-| Prestazioni e distribuzione | Misure di memoria e velocità sugli hardware target e controllo finale degli avvisi/licenze prima di ampliare la distribuzione. |
+Completate il 20 settembre 2026: la verifica strutturale di menu e opzioni cambia
+set, parent/clone e profilo senza rilevare voci per gioco residue; la regressione
+generale copre le quattro board, parent e clone, ZIP e 7z, input sintetico,
+video/audio, cicli load/unload/reset, Save RAM e rifiuto controllato di archivi
+mancanti o invalidi. Nessun crash, blocco o salvataggio corrotto è emerso.
+Save State, rewind e run-ahead sono inoltre verificati localmente sulle quattro
+board con 20 cicli per scheda; il precedente scarto Daytona è risolto salvando
+lo stato runtime dell'adattatore Libretro. La qualifica Windows usa l'artifact
+CI esatto della revisione `1d8a1ab`: RetroArch 1.22.2 su Radeon Vega 11 completa
+VF2 in Vulkan e OpenGL a 1×/4×, con una ripetizione Vulkan dopo il cambio di
+backend, uscita regolare, SRAM, audio e screenshot verificati. Restano fuori
+dalla prova controller fisici, ascolto soggettivo e GPU/driver differenti. Gli
+artifact CI macOS arm64 e Windows x86_64 della stessa revisione hanno inoltre
+formato via LAN una gara Daytona 2/2 e un roster STCC 3/3 con il Relay Windows;
+tutte le istanze hanno salvato SRAM e screenshot e sono uscite senza forzature
+o residui. Una verifica Daytona in gara ha inoltre confermato la corretta ombra
+retinata: la dominante bluastra osservata sul televisore era prodotta dalla
+modalità Luce notturna di Windows, non dal core o dal backend grafico.
+Il worktree corrente è stato infine compilato per Linux x86_64 e provato in una
+directory isolata di Batocera 43.1: Daytona ha completato 2300 frame di gara con
+OpenGL Core 4.6, audio e SRAM validi, mentre 20 cicli Save State hanno coperto
+round-trip, replay deterministico, run-ahead, rewind e rifiuto degli stati
+corrotti. Non restano quindi verifiche tecniche specifiche di Windows o
+Batocera nella roadmap corrente.
+
+## Vincolo esterno prima della pubblicazione
+
+L'audit di distribuzione è concluso: il pacchetto contiene 15 file previsti,
+licenze delle dipendenze, revisione sorgente e checksum completi, senza ROM o
+contenuti inattesi. Rimane una decisione del titolare upstream, non una verifica
+tecnica locale: `LICENSE` dichiara BSD-3-Clause, mentre 114 intestazioni vietano
+l'uso commerciale senza permesso. Prima di un PR o di una pubblicazione esterna
+va chiarito quale dei due testi governi quei file.

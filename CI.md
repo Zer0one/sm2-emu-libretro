@@ -5,15 +5,25 @@ request e su avvio manuale cinque core: Linux x86_64, Linux arm64, Windows
 x86_64, macOS Apple Silicon e macOS Intel. I renderer Software, Vulkan e
 OpenGL sono inclusi. Non servono ROM nei runner e nessuna ROM viene distribuita.
 
-Ogni job esegue i controlli degli input e verifica caricamento della libreria,
-25 funzioni ABI, dipendenze e tre cicli init/deinit senza contenuto. Questi
-controlli non sostituiscono una prova con giochi e GPU reali.
+Ogni job esegue i controlli ROM-free di input, SAVE_RAM/Core Options,
+Netpacket e rumble, quindi verifica caricamento della libreria, 25 funzioni ABI,
+dipendenze e tre cicli init/deinit senza contenuto. Questi controlli non
+sostituiscono una prova con giochi e GPU reali.
 
 Gli artifact privati restano disponibili per 14 giorni. Contengono il core,
 `sm2_libretro.info`, `system/sm2-emu/games.xml`, licenze, revisione sorgente e
 SHA256SUMS. Copiare il core nella directory core del frontend, il file `.info`
 nella directory informazioni e `sm2-emu/games.xml` nella directory system.
 Per una prova usare prima directory separate per configurazione e salvataggi.
+La CI controlla dopo il confezionamento che la struttura sia completa, che i
+checksum corrispondano, che non siano presenti ROM e che le licenze delle
+dipendenze incorporate siano incluse in `licenses/`.
+
+Il controllo di distribuzione locale ha inoltre rilevato una possibile
+contraddizione da chiarire prima di una pubblicazione esterna: il file radice
+`LICENSE` dichiara BSD-3-Clause, mentre 114 file conservano nell'intestazione
+upstream una limitazione all'uso commerciale o monetario. Il port mantiene
+intatte entrambe le dichiarazioni finché upstream non ne chiarisce la relazione.
 
 Entrambe le architetture Linux usano runner nativi Ubuntu 24.04 (glibc 2.39) e
 incorporano i runtime GCC/C++: la compatibilità con distribuzioni precedenti
@@ -84,12 +94,50 @@ Le evidenze locali sono in `build-ci-artifacts/34388054838/batocera/REPORT.json`
 e nelle tre sottodirectory (log, screenshot, WAV e salvataggi), escluse da Git.
 Il core Apple Silicon del primo artifact CI era stato anche confrontato con
 la baseline headless a 1800 frame (video/audio/NVRAM identici) ed eseguito con
-Vulkan in RetroArch macOS. Windows e macOS Intel hanno controlli di build/ABI,
-ma nessuna prova con giochi su quelle piattaforme. Una precedente build Linux
+Vulkan in RetroArch macOS. La prova Windows con gioco e GPU reale della revisione
+`1d8a1ab` è documentata in `GPU.md`; macOS Intel conserva soltanto i controlli
+di build/ABI. Una precedente build Linux
 arm64 ha già completato 2300 frame di VF2 in RetroArch 1.18 con OpenGL ES e
 Save RAM; il nuovo job nativo deve ancora essere eseguito dopo commit/push e il
 suo artefatto resta da provare su hardware reale. Restano da verificare altri
 giochi, controller fisici e altre combinazioni di frontend/driver.
+
+## Verifica Windows del 20 settembre 2026
+
+L'artifact `windows-x86_64` dell'esecuzione
+[35509380925](https://github.com/Zer0one/sm2-emu-libretro/actions/runs/35509380925),
+corrispondente esattamente alla revisione `1d8a1ab6b69d0393ce4247100056e853dacb85ae`,
+è stato verificato su Windows con RetroArch 1.22.2 e Radeon Vega 11, driver AMD
+`31.0.21925.1001`. I checksum del pacchetto corrispondono; il core ha SHA-256
+`a37e87f26663827006cb00dd5912d77c5ba2d0c5f1a737e03dfded8f727ee66a`.
+
+VF2 ha completato 2300 frame in Vulkan 1×/4× e OpenGL 1×/4×; una quinta
+esecuzione Vulkan 1× dopo i cambi di backend ha verificato il riavvio. Tutti i
+processi sono usciti con codice 0 senza residui. Vulkan 1.3.260 e OpenGL Core
+4.6 hanno prodotto gameplay visibile e identico byte per byte a parità di
+scala, WAV RIFF non silenziosi identici e SRAM valide da 16.576 byte. Il test è
+isolato dall'installazione globale e non dimostra controller fisici o ascolto
+soggettivo. Dettagli e limiti sono in `GPU.md`; i risultati grezzi locali sono
+esclusi da Git sotto
+`build-windows-x86_64/validation/gpu-matrix-1d8a1ab-20260920/`.
+
+## Verifica Batocera del worktree corrente del 20 settembre 2026
+
+Il worktree corrente, basato su `1d8a1ab` e comprendente la coda Libretro dei
+Save State, è stato compilato localmente per Linux x86_64 con la stessa
+configurazione Software/Vulkan/OpenGL della CI. I controlli ROM-free e
+l'ispezione ABI sono verdi; il core, SHA-256
+`895620d76a683bc1689fe803b244dedb854a1eb4d485f31b3f2ed9c5b31f9555`,
+dipende soltanto da libc, libm e dal loader x86_64.
+
+In una directory isolata di Batocera 43.1, Daytona ha completato 2300 frame in
+RetroArch 1.22.2 con OpenGL Core 4.6, risoluzione interna 496x384, gara visibile,
+audio stereo non silenzioso, SRAM da 16.576 byte e uscita 0. Sul medesimo core,
+il test ABI Linux ha superato 20 cicli Save State nei pattern run-ahead e rewind,
+round-trip e replay deterministici e rifiuto transazionale degli stati corrotti.
+Le evidenze locali, escluse da Git, sono in
+`build-linux-x86_64/batocera-current-validation-results/`; la directory remota
+marcata è stata conservata per revisione.
 
 ## Verifica delle Core Options del 12 settembre 2026
 

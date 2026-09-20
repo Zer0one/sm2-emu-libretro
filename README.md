@@ -15,7 +15,8 @@ settings across 35 parent sets and fourteen clones with distinct service menus.
 Each supported title validates its native
 layout and updates the corresponding integrity field and settings mirror.
 Experimental linked-cabinet networking uses Libretro Netpacket; Daytona USA
-has completed a two-car race. Daytona and STCC have formed three-cabinet
+has completed a two-car race, including an interoperable macOS/Windows session.
+Daytona and STCC have formed three-cabinet
 rosters, while Sega Rally parent/B/C, the Indy 500 family, Motor Raid, Wave
 Runner and Sega Ski Super G have formed two-cabinet rosters in isolated local
 RetroArch instances. Virtual On has formed both a two-Twin roster and a
@@ -27,8 +28,8 @@ upstream 0.9.9 relevant to Libretro are integrated selectively; standalone GUI,
 packaging and SDL-only changes remain in the adjacent upstream reference.
 
 See [Libretro build and validation](LIBRETRO.md) for the artifact, commands
-and limits. Physical controllers, linked play across two hosts and audible
-quality need manual checks.
+and limits. Linked play is verified across macOS/Batocera and macOS/Windows;
+physical controllers and audible quality still need manual checks.
 The standalone and [headless validation runner](HEADLESS.md) remain available.
 
 ## Get the project
@@ -144,6 +145,18 @@ python3 scripts/test-retroarch-netpacket.py \
   --system-assets /percorso/system/sm2-emu \
   --cabinets 3
 ```
+
+Lo stesso runner copre sessioni distribuite. `--instance-indices` seleziona gli
+indici zero-based avviati sulla macchina corrente; l'host include l'indice `0`,
+mentre gli altri host usano `--connect-host` con l'indirizzo dell'host
+Netpacket. Numero totale di cabinet e porta devono coincidere. Per esempio, una
+macchina può avviare `--instance-indices 0,1` e una seconda macchina l'indice
+`2`. `--capture-screenshots` salva inoltre un'immagine per ogni istanza locale
+insieme a manifest, risultato e log. `--input-replay` applica un replay
+RetroArch già validato a tutte le istanze locali. Nelle prove distribuite
+avviare prima l'host e attendere il relativo messaggio di disponibilità nel log:
+i client RetroArch possono fallire subito se la porta dell'host non è ancora
+aperta.
 
 Per STCC usare `stcc.zip` e aggiungere `--set-name stcc`; il runner assegna
 `Car 1`, `Car 2` e così via alle rispettive istanze e, con nove partecipanti,
