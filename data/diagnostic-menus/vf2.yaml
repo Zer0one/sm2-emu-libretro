@@ -82,9 +82,9 @@ menus:
             energy_max_vs: {offset: 0x3354, values: [200, 180, 160, 220]}
             stage_width: {offset: 0x334f, values: [15, 14, 13, 16]}
         display_only_dependents:
-          - ENERGY MAX(1P)
-          - ENERGY MAX(VS)
-          - STAGE WIDTH
+          - {key: energy_max_1p, label: ENERGY MAX (1P), visible_position: 4, native_default: 168}
+          - {key: energy_max_vs, label: ENERGY MAX (VS), visible_position: 5, native_default: 288}
+          - {key: stage_width, label: STAGE WIDTH, visible_position: 6, native_default: 1580}
       - key: advertise_sound
         label: ADVERTISE SOUND
         position: 4

@@ -6,8 +6,8 @@ system_assets = "../build-libretro-gpu/libretro/system/sm2-emu"
 base_config = "~/Library/Application Support/RetroArch/config/retroarch.cfg"
 
 [campaign]
-game = "rascot2"
-output_dir = "../build-libretro-gpu/validation/game-settings-gap-fill-20260920/rascot2"
+game = "overrevba"
+output_dir = "../build-libretro-gpu/validation/game-settings-gap-fill-20260920/overrevba"
 startup_wait = 12.0
 button_hold = 0.1
 button_hold_long = 1.0
@@ -18,10 +18,13 @@ shutdown_timeout = 20.0
 window_width = 496
 window_height = 384
 
-[[samples]]
-suffix = "service-short"
-sequence = ["L3", "WAIT(6.0)", "SCREENSHOT(service-short)", "CLOSE"]
+[macros]
+EnterGameAssignments = ["R3", "WAIT(7.0)", "L3*6", "WAIT(1.0)", "R3", "WAIT(2.0)"]
 
 [[samples]]
-suffix = "local-start-test-menu"
-sequence = ["L3", "WAIT(4.0)", "LONG(B)", "WAIT(10.0)", "SCREENSHOT(after-shot1)", "R3", "WAIT(5.0)", "SCREENSHOT(local-start-test-menu)", "CLOSE"]
+suffix = "foundational-settings"
+sequence = ["@EnterGameAssignments", "R3", "WAIT(2.0)", "SCREENSHOT(foundational-settings)", "CLOSE"]
+
+[[samples]]
+suffix = "optional-game-settings"
+sequence = ["@EnterGameAssignments", "L3", "R3", "WAIT(2.0)", "SCREENSHOT(optional-game-settings)", "CLOSE"]

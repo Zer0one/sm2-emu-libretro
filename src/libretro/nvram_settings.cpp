@@ -281,7 +281,7 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
     if (game == "rchase2" || game == "srallycdxa")
         return eeprom[2] == 0x2c && eeprom[3] == 0 &&
                load_u16(eeprom, 0) == crc16_ccitt_inverted(eeprom.subspan(2, 0x2a));
-    if (game == "srallyc")
+    if (game == "srallyc" || game == "srallycdx")
         return eeprom[2] == 0x24 && eeprom[3] == 0 &&
                load_u16(eeprom, 0) == crc16_ccitt_inverted(eeprom.subspan(2, 0x22));
     if (game == "sgt24h")
@@ -373,7 +373,7 @@ void sync_integrity(std::string_view game, std::span<u8> backup,
         store_u16(eeprom, 0, crc16_ccitt_inverted(eeprom.subspan(2, 0x36)));
     } else if (game == "rchase2" || game == "srallycdxa") {
         store_u16(eeprom, 0, crc16_ccitt_inverted(eeprom.subspan(2, 0x2a)));
-    } else if (game == "srallyc") {
+    } else if (game == "srallyc" || game == "srallycdx") {
         store_u16(eeprom, 0, crc16_ccitt_inverted(eeprom.subspan(2, 0x22)));
     } else if (game == "sgt24h") {
         update_sgt24h_link_bank(eeprom);

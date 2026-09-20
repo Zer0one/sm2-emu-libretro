@@ -1,6 +1,6 @@
 # Campagne NVRAM dei cloni
 
-I 26 cloni validati con template dedicato hanno una campagna permanente
+I 27 cloni validati con template dedicato hanno una campagna permanente
 `libretro_nvram_samples.<set>.toml`. I risultati restano nel workspace sotto
 `build-libretro-gpu/validation/nvram-campaigns`; ROM e risultati non vanno in Git.
 
@@ -20,9 +20,20 @@ python3 scripts/libretro_nvram_samples.py scripts/libretro_nvram_samples.indy500
 python3 scripts/libretro_nvram_samples.py scripts/libretro_nvram_samples.indy500d.toml
 ```
 
+Il catalogo ricavato dagli screenshot e i 51 YAML diagnostici si controllano
+con:
+
+```sh
+ruby scripts/audit-diagnostic-yaml-catalog.rb
+```
+
+Il controllo confronta righe visibili, ordine, default dichiarati e valori
+acquisiti. Offset, codifiche e algoritmi d’integrità restano responsabilità dei
+singoli YAML e dei controlli Save RAM.
+
 ## Sequenze e verifica
 
-Tutte le 26 campagne hanno superato il controllo preliminare del generatore;
+Tutte le 27 campagne hanno superato il controllo preliminare del generatore;
 è stata verificata anche la disattivazione esplicita dei setup del core.
 Non è stata ripetuta l'estrazione: le sequenze derivano dai menu e dalle
 acquisizioni archiviati. I cicli completi dei nuovi file non sono tutti stati
@@ -71,3 +82,20 @@ Tutti i cloni dispongono ora di una campagna dedicata o di un’eredità parent
 verificata. Per `hotdp` i 29 campioni permanenti coprono i valori distinti; due
 acquisizioni aggiuntive archiviate confermano il ritorno ciclico Red/Green di
 Blood Color.
+
+## Acquisizioni mirate per il catalogo Game Settings
+
+Le seguenti campagne brevi completano la struttura dei menu senza duplicare i
+cicli dei valori già acquisiti per i parent:
+
+| Configurazione | Scopo |
+|---|---|
+| `libretro_nvram_samples.overrevb.toml` | Foundational Setting e Optional Game Setting del clone |
+| `libretro_nvram_samples.overrevba.toml` | Foundational Setting e Optional Game Setting del clone |
+| `libretro_nvram_samples.vonr.toml` | Test Menu e Game Assignments dopo il timeout della rete Relay |
+| `libretro_nvram_samples.rascot2.toml` | Diagnostica SegaNet, avvio locale con Button 1 e ritorno della diagnostica con Test |
+
+I risultati verificati sono archiviati sotto
+`build-libretro-gpu/validation/game-settings-gap-fill-20260920`. `vonr` richiede
+che il comando Test venga inviato soltanto dopo l’inizializzazione Relay;
+`rascot2` non espone un normale menu Game Settings nel percorso acquisito.

@@ -30,13 +30,13 @@ menus:
     editable_option_count: 8
     note: This Deluxe clone adds selectable CABINET TYPE. ENGINE VOLUME is read-only and service navigation skips from ENEMY LEVEL directly to ADVERTISE SOUND.
     options:
-      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1}
-      - {key: race_mode, label: RACE MODE, position: 2}
-      - {key: enemy_level, label: ENEMY LEVEL, position: 3}
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, values: [NORMAL, HARD, VERY HARD, VERY EASY, EASY], native_default: NORMAL, coding_reference: motoraid.yaml}
+      - {key: race_mode, label: RACE MODE, position: 2, values: [STANDARD, LONG], native_default: STANDARD, coding_reference: motoraid.yaml}
+      - {key: enemy_level, label: ENEMY LEVEL, position: 3, values: [NORMAL, STRONG], native_default: NORMAL, coding_reference: motoraid.yaml}
       - {key: engine_volume, label: ENGINE VOLUME, position: 4, selectable: false, role: informational, observed_native_value: OUT OF USE}
-      - {key: advertise_sound, label: ADVERTISE SOUND, position: 5}
-      - {key: country, label: COUNTRY, position: 6}
-      - {key: cabinet_type, label: CABINET TYPE, position: 7, selectable: true, value_count: 2, values: [DELUXE, TWIN], native_default: DELUXE, nvram: {storage: eeprom, compound_offsets: [0x0c, 0x17, 0x30, 0x3b], compound_masks: [0x03, 0xff, 0x03, 0xff], compound_values: [[1, 1, 1, 1], [2, 0, 2, 0]]}}
-      - {key: network_type, label: NETWORK TYPE, position: 8}
-      - {key: cabinet_id, label: CABINET ID, position: 9}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 5, values: ["ON", "OFF"], native_default: "ON", coding_reference: motoraid.yaml}
+      - {key: country, label: COUNTRY, position: 6, values: [JAPAN, USA, EXP], native_default: JAPAN, core_default: USA, coding_reference: motoraid.yaml}
+      - {key: network_type, label: NETWORK TYPE, position: 7, values: [STAND ALONE, MASTER, SLAVE, LIVE], native_default: STAND ALONE, coding_reference: motoraid.yaml}
+      - {key: cabinet_id, label: CABINET ID, position: 8, values: [1, 2, 3, 4], native_default: 1, coding_reference: motoraid.yaml}
+      - {key: cabinet_type, label: CABINET TYPE, position: 9, selectable: true, value_count: 2, values: [DELUXE, TWIN], native_default: DELUXE, nvram: {storage: eeprom, compound_offsets: [0x0c, 0x17, 0x30, 0x3b], compound_masks: [0x03, 0xff, 0x03, 0xff], compound_values: [[1, 1, 1, 1], [2, 0, 2, 0]]}}
     commands: [{label: EXIT, position: 0}]

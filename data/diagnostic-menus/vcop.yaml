@@ -40,5 +40,7 @@ menus:
       - {key: cabinet, label: CABINET, position: 3, value_count: 3, values: [DX, SP U/R, U/R], nvram: {offset: 0x1a, mirror_offset: 0x9a, values: [0, 1, 2]}}
       - {key: difficulty, label: DIFFICULTY, position: 4, value_count: 9, values: [NORMAL, MEDIUM HARD, HARD, VERY HARD, HARDEST, EASIEST, VERY EASY, EASY, MEDIUM EASY], nvram: {offset: 0x20, mirror_offset: 0xa0, values: [4, 5, 6, 7, 8, 0, 1, 2, 3]}}
       - {key: life, label: LIFE, position: 5, value_count: 9, values: [1, 2, 3, 4, 5, 6, 7, 8, 9], nvram: {offset: 0x21, mirror_offset: 0xa1, values: [0, 1, 2, 3, 4, 5, 6, 7, 8]}}
-    display_only: [HUMAN TYPE, RELOAD TYPE]
+    display_only_rows:
+      - {key: human_type, label: HUMAN TYPE, visible_position: 6, native_default: NORMAL}
+      - {key: reload_type, label: RELOAD TYPE, visible_position: 7, native_default: NORMAL}
     commands: [{label: EXIT, position: 0}]

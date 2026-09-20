@@ -4,21 +4,27 @@ game: {set: rascot2, parent: rascot2, title: Royal Ascot II, board: model2c, dec
 classification:
   gameplay_type: horse_racing_betting
   control_family: joystick_three_buttons
-  observed_menu_family: unavailable_before_seganet_initialization
+  observed_menu_family: seganet_diagnostic_without_ordinary_game_settings
   developer: not_declared_in_current_metadata
-  evidence: [game_metadata, repeated_boot_capture, test_switch_at_runtime, test_switch_held_during_boot]
+  evidence: [game_metadata, seganet_diagnostic, local_start, test_switch_after_local_start]
 verification:
-  status: blocked_by_emulated_game_boot
-  date: "2026-09-11"
+  status: verified_special_case_no_ordinary_game_settings
+  date: "2026-09-20"
   base_revision: f746cdb742ce4cf5c522228a90b11bf20b161158
   core_source_state: base revision plus uncommitted Libretro SAVE_RAM changes
   method: retroarch_scripted_diagnostic_menu
   complete_campaign:
-    samples: 1
-    persistent_output: ~/Documents/RetroArch/sm2-nvram-analysis/rascot2/generated
-    validated: [srm_container, extracted_nvram, extracted_eeprom, screenshot]
+    samples: 2
+    persistent_script: scripts/libretro_nvram_samples.rascot2.toml
+    persistent_output: build-libretro-gpu/validation/game-settings-gap-fill-20260920/rascot2
+    validated: [srm_container, extracted_nvram, extracted_eeprom, diagnostic_screen, local_game_start, test_switch_return]
   observed_screen: SegaNet Wait Status / AR ERR SELFTEST
-  attempts: [test_switch_after_12_seconds, test_switch_held_during_boot]
-  limitation: the current core remains in SegaNet board connection wait and never exposes the operator menu, so positions and values cannot be measured honestly
-controls: {enter_test_menu_attempted: L3}
-menus: {diagnostic_menu: {accessible: false}}
+  local_start: long_press_button_1_after_push_shot1_prompt
+  test_switch_result: returns_to_seganet_diagnostic
+  conclusion: no ordinary Game Settings menu is exposed in the current emulation path
+controls: {service: L3, test: R3, local_start: long_press_button_1}
+menus:
+  seganet_diagnostic:
+    accessible: true
+    ordinary_game_settings: false
+    note: Button 1 starts the local game; Test subsequently returns to the SegaNet diagnostic.

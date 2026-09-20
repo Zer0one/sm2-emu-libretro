@@ -20,6 +20,7 @@ compile_commands.json
 nvram/
 saves/
 screenshots/
+cheat/
 sm2-emu.ini
 
 # ROM images — never commit these
@@ -31,6 +32,8 @@ roms/
 .idea/
 .DS_Store
 *.swp
+__pycache__/
+*.pyc
 
 # Kiro spec/session workspace
 .kiro/

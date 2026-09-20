@@ -39,7 +39,7 @@ menus:
     persistence_sequence: [select_submenu_EXIT, select_test_menu_EXIT, wait_for_game]
     options:
       - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, value_count: 5, values: [NORMAL, MEDIUM HARD, VERY HARD, VERY EASY, MEDIUM EASY], nvram: {storage: eeprom, offset: 0x1a, mirror_offset: 0x42, values: [2, 3, 4, 0, 1]}}
-      - {key: life_setting, label: LIFE SETTING, position: 2, value_count: 12, values: ["3/5", "4/5", "5/5", "1/3", "2/3", "3/3", "1/4", "2/4", "3/4", "4/4", "1/5", "2/5"], nvram: {storage: eeprom, offset: 0x1c, mirror_offset: 0x44, values: [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8]}}
+      - {key: life_setting, label: LIFE SETTING, position: 2, value_count: 12, values: ["3/5", "4/5", "5/5", "1/3", "2/3", "3/3", "1/4", "2/4", "3/4", "4/4", "1/5", "2/5"], native_default: "INITIAL 3 / MAX LIFE 5", nvram: {storage: eeprom, offset: 0x1c, mirror_offset: 0x44, values: [9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8]}}
       - {key: blood_color, label: BLOOD COLOR, position: 3, value_count: 4, values: [GREEN, BLUE, PURPLE, RED], nvram: {storage: eeprom, offset: 0x1d, mirror_offset: 0x45, values: [1, 2, 3, 0]}}
       - {key: advertise_sound, label: ADVERTISE SOUND, position: 4, value_count: 2, values: ["ON", "OFF"], nvram: {storage: eeprom, offset: 0x1b, mirror_offset: 0x43, values: [1, 0]}}
       - {key: country, label: COUNTRY, position: 5, value_count: 3, values: [JAPAN, USA, EXPORT], nvram: {storage: eeprom, offset: 0x19, mirror_offset: 0x41, values: [0, 1, 2]}}

@@ -16,14 +16,14 @@ menus:
     editable_option_count: 8
     absent_parent_options: [engine_volume, default_view]
     options:
-      - {key: game_difficulty, position: 1, default: normal, offset: 0x19, mirror_offset: 0x45, coding_reference: indy500.yaml}
-      - {key: race_mode, position: 2, default: normal, offset: 0x18, mirror_offset: 0x44, coding_reference: indy500.yaml}
-      - {key: handicap, position: 3, default: on, selected_for_core: false}
-      - {key: advertise_sound, position: 4, default: off, offset: 0x27, mirror_offset: 0x53, coding_reference: indy500.yaml}
-      - {key: country, position: 5, native_default: japan, core_default: usa, offset: 0x16, mirror_offset: 0x42, coding_reference: indy500.yaml}
-      - {key: cabinet_type, position: 6, default: deluxe, offset: 0x17, mirror_offset: 0x43, coding_reference: indy500.yaml}
-      - {key: network_type, position: 7, default: stand_alone, offset: 0x28, mirror_offset: 0x54, coding_reference: indy500.yaml}
-      - {key: cabinet_id, position: 8, default: "1", offset: 0x29, mirror_offset: 0x55, coding_reference: indy500.yaml}
+      - {key: game_difficulty, label: GAME DIFFICULTY, position: 1, native_default: NORMAL, documented_values_from: indy500.yaml, offset: 0x19, mirror_offset: 0x45, coding_reference: indy500.yaml}
+      - {key: race_mode, label: RACE MODE, position: 2, native_default: NORMAL, documented_values_from: indy500.yaml, offset: 0x18, mirror_offset: 0x44, coding_reference: indy500.yaml}
+      - {key: handicap, label: HANDICAP, position: 3, native_default: "ON", documented_values_from: indy500.yaml, selected_for_core: false}
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 4, native_default: "OFF", documented_values_from: indy500.yaml, offset: 0x27, mirror_offset: 0x53, coding_reference: indy500.yaml}
+      - {key: country, label: COUNTRY, position: 5, native_default: JAPAN, core_default: USA, documented_values_from: indy500.yaml, offset: 0x16, mirror_offset: 0x42, coding_reference: indy500.yaml}
+      - {key: cabinet_type, label: CABINET TYPE, position: 6, native_default: DELUXE, documented_values_from: indy500.yaml, offset: 0x17, mirror_offset: 0x43, coding_reference: indy500.yaml}
+      - {key: network_type, label: NETWORK TYPE, position: 7, native_default: STAND ALONE, documented_values_from: indy500.yaml, offset: 0x28, mirror_offset: 0x54, coding_reference: indy500.yaml}
+      - {key: cabinet_id, label: CABINET ID, position: 8, native_default: "1", documented_values_from: indy500.yaml, offset: 0x29, mirror_offset: 0x55, coding_reference: indy500.yaml}
 core_options:
   selected_count: 7
   initial_template: dedicated_native_clone_baseline

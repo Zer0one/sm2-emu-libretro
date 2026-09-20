@@ -1,5 +1,4 @@
-# Dedicated clone campaign; reference: data/diagnostic-menus/srallyc.yaml
-# Cycle suffixes identify button steps, not assumed parent default values.
+# Dedicated clone campaign; srallycdx exposes only four Game Assignments rows.
 
 [retroarch]
 executable = "~/Retro/Apps/RetroArch/Nightly/RetroArch (ARM).app/Contents/MacOS/RetroArch"
@@ -35,85 +34,53 @@ suffix = "base"
 sequence = ["@EnterGameAssignments", "SCREENSHOT(base)", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-001"
-sequence = ["@EnterGameAssignments", "L3*1", "SCREENSHOT(cycle-001)", "L3*6", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "advertise-sound-on"
+sequence = ["@EnterGameAssignments", "L3*1", "SCREENSHOT(advertise-sound-on)", "L3*4", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-002"
-sequence = ["@EnterGameAssignments", "L3*1", "R3*1", "SCREENSHOT(cycle-002)", "L3*6", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "advertise-sound-off"
+sequence = ["@EnterGameAssignments", "L3*1", "R3*1", "SCREENSHOT(advertise-sound-off)", "L3*4", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-003"
-sequence = ["@EnterGameAssignments", "L3*2", "SCREENSHOT(cycle-003)", "L3*5", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "country-jpn"
+sequence = ["@EnterGameAssignments", "L3*2", "SCREENSHOT(country-jpn)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-004"
-sequence = ["@EnterGameAssignments", "L3*2", "R3*1", "SCREENSHOT(cycle-004)", "L3*5", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "country-usa"
+sequence = ["@EnterGameAssignments", "L3*2", "R3*1", "SCREENSHOT(country-usa)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-005"
-sequence = ["@EnterGameAssignments", "L3*2", "R3*2", "SCREENSHOT(cycle-005)", "L3*5", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "country-export"
+sequence = ["@EnterGameAssignments", "L3*2", "R3*2", "SCREENSHOT(country-export)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-006"
-sequence = ["@EnterGameAssignments", "L3*3", "SCREENSHOT(cycle-006)", "L3*4", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "game-difficulty-normal"
+sequence = ["@EnterGameAssignments", "L3*3", "SCREENSHOT(game-difficulty-normal)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-007"
-sequence = ["@EnterGameAssignments", "L3*3", "R3*1", "SCREENSHOT(cycle-007)", "L3*4", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "game-difficulty-easy"
+sequence = ["@EnterGameAssignments", "L3*3", "R3*1", "SCREENSHOT(game-difficulty-easy)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-008"
-sequence = ["@EnterGameAssignments", "L3*4", "SCREENSHOT(cycle-008)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "game-difficulty-hard"
+sequence = ["@EnterGameAssignments", "L3*3", "R3*2", "SCREENSHOT(game-difficulty-hard)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-009"
-sequence = ["@EnterGameAssignments", "L3*4", "R3*1", "SCREENSHOT(cycle-009)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "game-difficulty-hardest"
+sequence = ["@EnterGameAssignments", "L3*3", "R3*3", "SCREENSHOT(game-difficulty-hardest)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-010"
-sequence = ["@EnterGameAssignments", "L3*4", "R3*2", "SCREENSHOT(cycle-010)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "game-mode-normal"
+sequence = ["@EnterGameAssignments", "L3*4", "SCREENSHOT(game-mode-normal)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-011"
-sequence = ["@EnterGameAssignments", "L3*4", "R3*3", "SCREENSHOT(cycle-011)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "game-mode-short"
+sequence = ["@EnterGameAssignments", "L3*4", "R3*1", "SCREENSHOT(game-mode-short)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-012"
-sequence = ["@EnterGameAssignments", "L3*4", "R3*4", "SCREENSHOT(cycle-012)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "game-mode-long"
+sequence = ["@EnterGameAssignments", "L3*4", "R3*2", "SCREENSHOT(game-mode-long)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
 
 [[samples]]
-suffix = "cycle-013"
-sequence = ["@EnterGameAssignments", "L3*4", "R3*5", "SCREENSHOT(cycle-013)", "L3*3", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
-
-[[samples]]
-suffix = "cycle-014"
-sequence = ["@EnterGameAssignments", "L3*5", "SCREENSHOT(cycle-014)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
-
-[[samples]]
-suffix = "cycle-015"
-sequence = ["@EnterGameAssignments", "L3*5", "R3*1", "SCREENSHOT(cycle-015)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
-
-[[samples]]
-suffix = "cycle-016"
-sequence = ["@EnterGameAssignments", "L3*5", "R3*2", "SCREENSHOT(cycle-016)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
-
-[[samples]]
-suffix = "cycle-017"
-sequence = ["@EnterGameAssignments", "L3*5", "R3*3", "SCREENSHOT(cycle-017)", "L3*2", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
-
-[[samples]]
-suffix = "cycle-018"
-sequence = ["@EnterGameAssignments", "L3*6", "SCREENSHOT(cycle-018)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
-
-[[samples]]
-suffix = "cycle-019"
-sequence = ["@EnterGameAssignments", "L3*6", "R3*1", "SCREENSHOT(cycle-019)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
-
-[[samples]]
-suffix = "cycle-020"
-sequence = ["@EnterGameAssignments", "L3*6", "R3*2", "SCREENSHOT(cycle-020)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
-
-[[samples]]
-suffix = "cycle-021"
-sequence = ["@EnterGameAssignments", "L3*6", "R3*3", "SCREENSHOT(cycle-021)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]
+suffix = "game-mode-longest"
+sequence = ["@EnterGameAssignments", "L3*4", "R3*3", "SCREENSHOT(game-mode-longest)", "L3*1", "R3", "WAIT(1.0)", "L3*5", "R3", "WAIT(10.0)", "CLOSE"]

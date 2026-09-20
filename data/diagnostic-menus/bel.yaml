@@ -102,6 +102,7 @@ menus:
       - key: difficulty
         label: DIFFICULTY
         position: 6
+        default: 6
         value_count: 10
         values: [6, 7, 8, 9, 10, 1, 2, 3, 4, 5]
         nvram: {storage: eeprom, offset: 0x22, mirror_offset: 0x62, values: [5, 6, 7, 8, 9, 0, 1, 2, 3, 4]}
