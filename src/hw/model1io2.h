@@ -99,9 +99,8 @@ public:
     /// A light gun axis, 10 bits, in the order the FPGA reports them.
     void set_lightgun(u32 axis, LightgunHandler handler);
 
-    /// The range an axis reports, which the off-screen test needs: MAME derives
-    /// the border from the port's declared minimum and maximum.
-    void set_lightgun_range(u32 axis, u16 minimum, u16 maximum);
+    /// Bit 0 reports player 1 off screen and bit 1 player 2.
+    void set_lightgun_offscreen(InputHandler handler);
 
     /// The two board dipswitch banks the PIO reads. MAME's dsw2 and dsw3.
     void set_dipswitches(u8 dsw2, u8 dsw3);
@@ -178,8 +177,7 @@ private:
     std::array<InputHandler, kInputCount>     m_input{};
     std::array<InputHandler, kAnalogCount>    m_analog{};
     std::array<LightgunHandler, kLightgunAxes> m_lightgun{};
-    std::array<u16, kLightgunAxes> m_lightgun_min{};
-    std::array<u16, kLightgunAxes> m_lightgun_max{};
+    InputHandler m_lightgun_offscreen;
 
     DualPortRead  m_dual_port_read;
     DualPortWrite m_dual_port_write;

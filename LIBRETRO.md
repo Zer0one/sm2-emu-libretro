@@ -263,8 +263,10 @@ Lightgun Aux A e Reload; per BEL Reload è soltanto un secondo binding della ste
 
 Il core conserva le due interfacce arcade. Virtua Cop 1/2 e House of the Dead
 ricevono coordinate seriali RS-422 a 10 bit; East o LB, clic destro o il comando
-Lightgun Reload eseguono `Reload Offscreen` portando la mira fuori dall'area
-calibrata e premendo Shot. La Core Option `Off-Screen Reload Shortcut`, sempre
+Lightgun Reload eseguono `Reload Offscreen` impostando lo stato seriale
+off-screen e premendo Shot. Lo stato nativo della Lightgun arriva separatamente
+da `RETRO_DEVICE_ID_LIGHTGUN_IS_OFFSCREEN`; le coordinate Mouse al bordo non lo
+generano. La Core Option `Off-Screen Reload Shortcut`, sempre
 visibile e attiva per default, abilita o disabilita insieme i tre binding nei
 giochi supportati. Il grilletto di una lightgun fisicamente puntata fuori schermo resta
 sempre un gesto nativo di ricarica. Gunblade NY, Rail Chase 2 e BEL ricevono invece
@@ -339,6 +341,10 @@ Lightgun e Mouse restano da provare manualmente.
   Standard, Lightgun, Mouse + Analog Stick, Mouse e Analog Stick.
 - Core Option `Off-Screen Reload Shortcut`, per Virtua Cop 1/2 e House of the
   Dead: RetroPad East/LB, Mouse destro e Lightgun Reload; attiva per default.
+- Core Option `Mouse Edge Off-Screen Reload`, disabilitata per default: nei tre
+  giochi seriali interpreta un Mouse Left premuto entro il 5% esterno del
+  cursore virtuale come colpo off-screen, ripristinando su richiesta il
+  comportamento MAME precedente senza alterare il percorso Lightgun.
 - Core Option `Show Crosshair`, con default `Automatic` dipendente dal tipo di
   gun e selezione esplicita di P1, P2 o entrambi anche per i giochi posizionali;
   `Crosshair Style` seleziona SM2-Emu (default) o Supermodel, con composizione

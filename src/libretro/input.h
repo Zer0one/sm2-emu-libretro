@@ -113,5 +113,6 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 bool offscreen_reload_shortcut = true,
                 DrivingAnalogOptions driving_options = {},
                 DesertElevationOptions desert_elevation_options = {},
-                bool automatic_start_gear = true);
+                bool automatic_start_gear = true,
+                bool mouse_edge_offscreen_reload = false);
 }

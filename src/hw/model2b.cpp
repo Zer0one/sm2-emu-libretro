@@ -458,6 +458,7 @@ void Model2B::reset()
     m_inputs.gun_p1y = m_game.lightgun.p1y.rest;
     m_inputs.gun_p2x = m_game.lightgun.p2x.rest;
     m_inputs.gun_p2y = m_game.lightgun.p2y.rest;
+    m_inputs.gun_offscreen = 0;
     m_inputs.gears   = 0;
     m_gear_selected  = 0;
 

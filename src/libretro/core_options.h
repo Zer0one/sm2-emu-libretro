@@ -157,7 +157,7 @@ inline void build_option_definitions()
 {
     if (!registered_definitions.empty()) return;
     const auto all = nvram::all_options();
-    registered_definitions.reserve(all.size() + 28);
+    registered_definitions.reserve(all.size() + 29);
 
     retro_core_option_v2_definition initial_nvram{};
     initial_nvram.key = "sm2_initial_nvram_setup";
@@ -404,6 +404,16 @@ inline void build_option_definitions()
     offscreen_reload.values[1] = {"disabled", "Disabled"};
     offscreen_reload.default_value = "enabled";
     registered_definitions.push_back(offscreen_reload);
+
+    retro_core_option_v2_definition mouse_edge_reload{};
+    mouse_edge_reload.key = "sm2_mouse_edge_offscreen_reload";
+    mouse_edge_reload.desc = "Mouse Edge Off-Screen Reload";
+    mouse_edge_reload.info = "Provides off-screen reload when using a Mouse, because the Libretro Mouse interface does not report whether the pointer is off-screen. In Standard, Mouse + Analog Stick or Mouse Only mode, moving the virtual cursor within the outer five percent of the screen and pressing Mouse Left sends an off-screen shot in Virtua Cop, Virtua Cop 2 and The House of the Dead. A Lightgun already supplies its native off-screen status and does not require this option. Takes effect immediately.";
+    mouse_edge_reload.category_key = "input";
+    mouse_edge_reload.values[0] = {"disabled", "Disabled"};
+    mouse_edge_reload.values[1] = {"enabled", "Enabled"};
+    mouse_edge_reload.default_value = "disabled";
+    registered_definitions.push_back(mouse_edge_reload);
 
     retro_core_option_v2_definition gamepad_rumble{};
     gamepad_rumble.key = "sm2_gamepad_rumble";
@@ -711,6 +721,13 @@ inline bool offscreen_reload_shortcut_enabled()
     retro_variable option{"sm2_offscreen_reload_shortcut", nullptr};
     return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
              && option.value && std::strcmp(option.value, "disabled") == 0);
+}
+
+inline bool mouse_edge_offscreen_reload_enabled()
+{
+    retro_variable option{"sm2_mouse_edge_offscreen_reload", nullptr};
+    return option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+        && option.value && std::strcmp(option.value, "enabled") == 0;
 }
 
 inline unsigned linked_cabinets(std::string_view game)

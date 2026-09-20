@@ -1008,6 +1008,7 @@ void Input::gather_lightguns(hw::Inputs* inputs, const rom::GameSpec& game) cons
     if (!spec.present && !positional) {
         m_gun_aims[0].active = false;
         m_gun_aims[1].active = false;
+        inputs->gun_offscreen = 0;
         return;
     }
 
@@ -1031,10 +1032,9 @@ void Input::gather_lightguns(hw::Inputs* inputs, const rom::GameSpec& game) cons
     // evdev gun or the shared mouse pointer.
     //
     // These titles have no reload button: the gun reloads when fired while aimed
-    // off screen (`lightgun_offscreen_read` treats a coordinate near the edge of
-    // the calibrated travel as off-screen). So a reload -- the mouse's right
-    // button, or a gun's reload button -- forces the aim to the corner and pulls
-    // the trigger.
+    // off screen. The standalone adapter retains MAME's five-percent border
+    // approximation below. A reload button forces that status and pulls the
+    // trigger.
     struct GunInput {
         float x       = 0.5f;
         float y       = 0.5f;
@@ -1131,6 +1131,7 @@ void Input::gather_lightguns(hw::Inputs* inputs, const rom::GameSpec& game) cons
     m_gun_aims[1] = GunAim{p2_active && !positional, p2.x, p2.y};
 
     if (positional) {
+        inputs->gun_offscreen = 0;
         // Positional gun: the aim is an analogue axis. Scale the mouse fraction
         // into each channel's calibrated travel and overwrite the value the
         // stick sampled. No off-screen reload here, so the reload snap is not
@@ -1150,6 +1151,17 @@ void Input::gather_lightguns(hw::Inputs* inputs, const rom::GameSpec& game) cons
         write_channel(pos_gun_ch[2], p2.x);
         write_channel(pos_gun_ch[3], p2.y);
     } else {
+        // The standalone has no host off-screen status. Preserve its established
+        // mouse/lightgun behaviour in this adapter instead of baking the 5%
+        // approximation into the emulated serial board.
+        const auto near_border = [](const GunInput& gun) {
+            constexpr float border = 0.05f;
+            return gun.x <= border || gun.x >= 1.0f - border
+                || gun.y <= border || gun.y >= 1.0f - border;
+        };
+        inputs->gun_offscreen = static_cast<u8>(
+            (p1.reload || near_border(p1) ? 0x01 : 0)
+            | (p2.reload || near_border(p2) ? 0x02 : 0));
         // RS-422 lightgun: off-screen reload snaps the aim to the corner.
         if (p1.reload) { p1.x = 0.0f; p1.y = 0.0f; }
         if (p2.reload) { p2.x = 0.0f; p2.y = 0.0f; }

@@ -312,7 +312,8 @@ void Model2Original::reset()
             m_inputs.analog[channel] = m_game.analog[channel].rest;
         }
     }
-    m_inputs.gears  = 0;
+    m_inputs.gears = 0;
+    m_inputs.gun_offscreen = 0;
 
     m_dpram.reset();
     m_ioboard.reset();
@@ -1406,10 +1407,8 @@ void Model2Original::wire_advanced_io_board()
     m_ioboard2.set_lightgun(1, [this] { return m_inputs.gun_p1x; });
     m_ioboard2.set_lightgun(2, [this] { return m_inputs.gun_p2y; });
     m_ioboard2.set_lightgun(3, [this] { return m_inputs.gun_p2x; });
-    m_ioboard2.set_lightgun_range(0, gun.p1y.minimum, gun.p1y.maximum);
-    m_ioboard2.set_lightgun_range(1, gun.p1x.minimum, gun.p1x.maximum);
-    m_ioboard2.set_lightgun_range(2, gun.p2y.minimum, gun.p2y.maximum);
-    m_ioboard2.set_lightgun_range(3, gun.p2x.minimum, gun.p2x.maximum);
+    m_ioboard2.set_lightgun_offscreen(
+        [this] { return static_cast<u8>(m_inputs.gun_offscreen & 0x03); });
 
     if (!gun.present) {
         SM2_WARN("model2o: %s fits the advanced I/O board but declares no lightgun "

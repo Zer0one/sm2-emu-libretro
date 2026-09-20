@@ -122,9 +122,9 @@ private:
 namespace state {
 
 inline constexpr char     kMagic[8]      = {'S', 'M', '2', 'S', 'T', 'A', 'T', 'E'};
-// Version 3 adds the Air Walkers P3/P4 input matrix state. Version 2 was the
-// Libretro port's first public layout and included enhanced-audio balance.
-inline constexpr u32      kFormatVersion = 3;
+// Version 4 separates the serial lightgun off-screen status from its coordinates.
+// Version 3 added the Air Walkers P3/P4 input matrix state.
+inline constexpr u32      kFormatVersion = 4;
 
 /// Header fields, in file order. The game name and board are supplied by the
 /// caller so this stays free of the rom layer.

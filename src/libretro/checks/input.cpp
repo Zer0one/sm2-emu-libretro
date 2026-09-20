@@ -1677,8 +1677,8 @@ int main()
               && inputs.gun_p1y == vcop->lightgun.p1y.maximum
               && inputs.gun_p2x == vcop->lightgun.p2x.maximum
               && inputs.gun_p2y == vcop->lightgun.p2y.minimum
-              && inputs.in1 == 0xfc,
-          "Virtua Cop writes calibrated 10-bit coordinates and both trigger bits");
+              && inputs.in1 == 0xfc && inputs.gun_offscreen == 0,
+          "Virtua Cop keeps extreme coordinates separate from off-screen status");
     runtime = {};
     lightgun_axes = {};
     lightgun_buttons = {
@@ -1689,8 +1689,8 @@ int main()
                          libretro::GunInputMode::Lightgun, false);
     check(inputs.gun_p1x == vcop->lightgun.p1x.minimum
               && inputs.gun_p1y == vcop->lightgun.p1y.minimum
-              && inputs.in1 == 0xfe,
-          "A physical Lightgun offscreen trigger automatically performs reload");
+              && inputs.in1 == 0xfe && inputs.gun_offscreen == 0x01,
+          "Libretro Lightgun off-screen status reaches the serial gun board");
     runtime = {};
     lightgun_axes = {{{-32768, 32767}, {32767, -32768}}};
     lightgun_buttons = {1u << RETRO_DEVICE_ID_LIGHTGUN_TRIGGER,
@@ -1707,7 +1707,7 @@ int main()
                          libretro::GunInputMode::AnalogSticks);
     check(inputs.gun_p1x == vcop2->lightgun.p1x.minimum
               && inputs.gun_p1y == vcop2->lightgun.p1y.minimum
-              && inputs.in1 == 0xfe,
+              && inputs.in1 == 0xfe && inputs.gun_offscreen == 0x01,
           "RetroPad Reload Offscreen snaps serial aim to the corner and fires");
     runtime = {};
     pressed = {1u << RETRO_DEVICE_ID_JOYPAD_L, 0};
@@ -1715,7 +1715,7 @@ int main()
                          libretro::GunInputMode::AnalogSticks);
     check(inputs.gun_p1x == vcop2->lightgun.p1x.minimum
               && inputs.gun_p1y == vcop2->lightgun.p1y.minimum
-              && inputs.in1 == 0xfe,
+              && inputs.in1 == 0xfe && inputs.gun_offscreen == 0x01,
           "RetroPad LB is a second Reload Offscreen binding");
     runtime = {};
     pressed = {1u << RETRO_DEVICE_ID_JOYPAD_R, 0};
@@ -1730,7 +1730,7 @@ int main()
                          libretro::GunInputMode::Mouse);
     check(inputs.gun_p1x == vcop2->lightgun.p1x.minimum
               && inputs.gun_p1y == vcop2->lightgun.p1y.minimum
-              && inputs.in1 == 0xfe,
+              && inputs.in1 == 0xfe && inputs.gun_offscreen == 0x01,
           "Mouse right implements the same serial offscreen reload");
     runtime = {};
     pressed = {(1u << RETRO_DEVICE_ID_JOYPAD_A)
@@ -1739,10 +1739,28 @@ int main()
     lightgun_buttons = {1u << RETRO_DEVICE_ID_LIGHTGUN_RELOAD, 0};
     libretro::poll_input(inputs, *vcop2, devices, runtime, true, state,
                          libretro::GunInputMode::Hybrid, false);
-    check(inputs.in1 == 0xff,
+    check(inputs.in1 == 0xff && inputs.gun_offscreen == 0,
           "Disabled reload shortcut ignores RetroPad, Mouse and Lightgun shortcut inputs");
     runtime = {};
+    mouse_axes = {{{-32768, -32768}, {0, 0}}};
+    mouse_buttons = {1u << RETRO_DEVICE_ID_MOUSE_LEFT, 0};
+    libretro::poll_input(inputs, *vcop2, devices, runtime, true, state,
+                         libretro::GunInputMode::Mouse);
+    check(inputs.gun_p1x == vcop2->lightgun.p1x.minimum
+              && inputs.gun_p1y == vcop2->lightgun.p1y.minimum
+              && inputs.in1 == 0xfe && inputs.gun_offscreen == 0,
+          "Mouse coordinates at the screen edge remain an on-screen shot");
+    runtime = {};
+    libretro::poll_input(inputs, *vcop2, devices, runtime, true, state,
+                         libretro::GunInputMode::Mouse, true, {}, {}, true, true);
+    check(inputs.gun_p1x == vcop2->lightgun.p1x.minimum
+              && inputs.gun_p1y == vcop2->lightgun.p1y.minimum
+              && inputs.in1 == 0xfe && inputs.gun_offscreen == 0x01
+              && runtime.gun_aim_offscreen[0],
+          "Enabled Mouse edge reload restores the MAME-style off-screen shot");
+    runtime = {};
     pressed = {};
+    mouse_axes = {};
     mouse_buttons = {1u << RETRO_DEVICE_ID_MOUSE_RIGHT, 0};
     lightgun_buttons = {};
     libretro::poll_input(inputs, *gunblade, devices, runtime, true, state,

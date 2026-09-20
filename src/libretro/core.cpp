@@ -775,7 +775,8 @@ void retro_run()
                                  libretro::offscreen_reload_shortcut_enabled(),
                                  libretro::driving_analog_options(),
                                  libretro::desert_elevation_options(),
-                                 libretro::automatic_start_gear_enabled());
+                                 libretro::automatic_start_gear_enabled(),
+                                 libretro::mouse_edge_offscreen_reload_enabled());
             if (content->game.name == "skisuprg"
                 && content->machine->frames() == ski_super_g_drive_board_test_frame
                 && libretro::ski_super_g_drive_board_bypass_enabled()) {

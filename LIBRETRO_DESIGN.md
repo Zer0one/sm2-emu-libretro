@@ -251,9 +251,10 @@ formato né i callback di serializzazione.
 
 Magic, versione, gioco e scheda vengono verificati prima di modificare la
 macchina. Un payload troncato viene applicato in modo transazionale e causa il
-ripristino dello snapshot precedente. Il formato del core è versione 3 perché
-include la matrice P3/P4 di Air Walkers e lo stato di `Enhanced Audio Balance`,
-assenti nel layout upstream versione 1. Dopo un caricamento, la macchina invalida le generazioni video; il
+ripristino dello snapshot precedente. Il formato del core è versione 4: separa
+lo stato off-screen seriale dalle coordinate lightgun e include la matrice P3/P4
+di Air Walkers e lo stato di `Enhanced Audio Balance`, assenti nel layout
+upstream versione 1. Dopo un caricamento, la macchina invalida le generazioni video; il
 solo adattatore svuota audio pendente, cadenza, rumble e latch input del
 frontend. Una sessione `Linked Cabinets` rifiuta save/load perché il peer
 Netpacket esterno non fa parte dello stato emulato.
@@ -275,6 +276,16 @@ Type` e `VF2 Drink`, visibili soltanto per `vf2` e autonomi. Come in Supermodel,
 reali e viene applicato al caricamento. La descrizione di Country documenta
 l'effetto collaterale del menu Service originale senza imporlo nel core. Gli
 override aggiornano il CRC e non toccano altri campi o calibrazioni.
+
+La scheda lightgun seriale riceve coordinate e stato off-screen come segnali
+distinti. L'adattatore Libretro alimenta il secondo esclusivamente da
+`RETRO_DEVICE_ID_LIGHTGUN_IS_OFFSCREEN` o dalle scorciatoie di ricarica
+esplicite; un Mouse arrivato al bordo resta quindi on-screen. La deduzione MAME
+basata sul 5% degli estremi calibrati resta confinata all'adattatore standalone,
+che non dispone del segnale Libretro. Nel core Libretro la Core Option
+`Mouse Edge Off-Screen Reload`, disabilitata per default, può applicare la stessa
+soglia esclusivamente a un colpo Mouse Left; non converte in off-screen gli assi
+RetroPad né le sole coordinate al bordo.
 
 Affidare al frontend remapping, opzioni per gioco, shader, volume generale,
 pausa, screenshot e sincronizzazione della presentazione. Il core comunica

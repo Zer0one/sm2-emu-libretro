@@ -46,9 +46,6 @@ constexpr u8 kFloatingBus = 0xff;
 /// busy. MAME's threshold, and the firmware's bitstream is longer than this.
 constexpr u32 kFpgaReadyAfter = 0x1400;
 
-/// The off-screen test's border, as a fraction of an axis's declared range.
-constexpr float kBorderFraction = 0.05F;
-
 }  // namespace
 
 // ---------------------------------------------------------------------------
@@ -86,8 +83,6 @@ Model1io2::Model1io2() : m_cpu(*this)
     m_pio.set_input(0, [this] { return m_dsw2; });
     m_pio.set_input(1, [this] { return m_dsw3; });
 
-    m_lightgun_min.fill(0);
-    m_lightgun_max.fill(0x3ff);
 }
 
 Model1io2::~Model1io2() = default;
@@ -198,11 +193,9 @@ void Model1io2::set_lightgun(u32 axis, LightgunHandler handler)
     if (axis < kLightgunAxes) m_lightgun[axis] = std::move(handler);
 }
 
-void Model1io2::set_lightgun_range(u32 axis, u16 minimum, u16 maximum)
+void Model1io2::set_lightgun_offscreen(InputHandler handler)
 {
-    if (axis >= kLightgunAxes) return;
-    m_lightgun_min[axis] = minimum;
-    m_lightgun_max[axis] = maximum;
+    m_lightgun_offscreen = std::move(handler);
 }
 
 void Model1io2::set_dipswitches(u8 dsw2, u8 dsw3)
@@ -334,28 +327,8 @@ void Model1io2::fpga_write(u8 /*value*/)
 
 u8 Model1io2::lightgun_offscreen() const
 {
-    // MAME's test: a gun within five per cent of either end of an axis counts as
-    // pointed off the screen, and the two players share one bit each. The unused
-    // bits read as ones.
-    u8 data = 0xfc;
-
-    const auto outside = [this](u32 axis) {
-        const LightgunHandler& handler = m_lightgun[axis];
-        if (!handler) return false;
-        const u16 minimum = m_lightgun_min[axis];
-        const u16 maximum = m_lightgun_max[axis];
-        if (maximum <= minimum) return false;
-        const auto border =
-            static_cast<u16>(static_cast<float>(maximum - minimum) * kBorderFraction);
-        const u16 value = handler();
-        return value <= static_cast<u16>(minimum + border)
-            || value >= static_cast<u16>(maximum - border);
-    };
-
-    // Axis order is P1 Y, P1 X, P2 Y, P2 X.
-    if (outside(0) || outside(1)) data |= 1;
-    if (outside(2) || outside(3)) data |= 2;
-    return data;
+    return static_cast<u8>(0xfc | (m_lightgun_offscreen
+        ? m_lightgun_offscreen() & 0x03 : 0));
 }
 
 // ---------------------------------------------------------------------------

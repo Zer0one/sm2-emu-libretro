@@ -304,6 +304,7 @@ void Model2::reset()
     m_inputs.gun_p1y = m_game.lightgun.p1y.rest;
     m_inputs.gun_p2x = m_game.lightgun.p2x.rest;
     m_inputs.gun_p2y = m_game.lightgun.p2y.rest;
+    m_inputs.gun_offscreen = 0;
     m_inputs.gears   = 0;
     m_gear_selected  = 0;
 
@@ -688,27 +689,7 @@ u8 Model2::lightgun_data_read(u8 offset) const
 
 u8 Model2::lightgun_offscreen_read(u8 offset) const
 {
-    // Bit 0 is set while player 1 is aimed off the screen, bit 1 for player 2,
-    // which is how a game distinguishes a reload from a miss. MAME derives the
-    // border from each axis's own calibrated travel rather than from the raster,
-    // because the gun's range and the visible area are not the same thing.
-    constexpr float kBorderFraction = 0.05f;
-
-    const auto offscreen = [](u16 value, const rom::LightgunAxis& axis) {
-        const int border = static_cast<int>(
-            static_cast<float>(axis.maximum - axis.minimum) * kBorderFraction);
-        return value <= axis.minimum + border || value >= axis.maximum - border;
-    };
-
-    u16 data = 0xfffc;
-    if (offscreen(m_inputs.gun_p1x, m_game.lightgun.p1x)
-        || offscreen(m_inputs.gun_p1y, m_game.lightgun.p1y)) {
-        data |= 1;
-    }
-    if (offscreen(m_inputs.gun_p2x, m_game.lightgun.p2x)
-        || offscreen(m_inputs.gun_p2y, m_game.lightgun.p2y)) {
-        data |= 2;
-    }
+    const u16 data = static_cast<u16>(0xfffc | (m_inputs.gun_offscreen & 0x03));
     return static_cast<u8>((data >> ((offset & 1) * 8)) & 0xff);
 }
 

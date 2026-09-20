@@ -155,6 +155,11 @@ struct Inputs {
     u16 gun_p1y = 0;
     u16 gun_p2x = 0;
     u16 gun_p2y = 0;
+
+    /// Off-screen status reported by the gun interface board: bit 0 is player 1,
+    /// bit 1 is player 2. The host input adapter supplies this independently of
+    /// the coordinates, as the real serial interface does.
+    u8 gun_offscreen = 0;
 };
 
 /// A type-erased snapshot of the machine's main CPU state.

@@ -825,10 +825,12 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 GunInputMode gun_mode, bool offscreen_reload_shortcut,
                 DrivingAnalogOptions driving_options,
                 DesertElevationOptions desert_elevation_options,
-                bool automatic_start_gear)
+                bool automatic_start_gear,
+                bool mouse_edge_offscreen_reload)
 {
     inputs.in0 = inputs.in1 = inputs.in2 = inputs.in3 = inputs.in4 = 0xff;
     inputs.player_starts = 0xff;
+    inputs.gun_offscreen = 0;
     const auto profile = recognize_profile(game);
     if (profile == InputProfile::Driving4SpeedVR1Handbrake) inputs.in2 = 0x00;
     if (profile == InputProfile::SpecialSkiSuperG) inputs.in2 = 0x00;
@@ -924,9 +926,11 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
             float x = static_cast<float>(runtime.gun_cursor_x[p]) / (width - 1);
             float y = static_cast<float>(runtime.gun_cursor_y[p]) / (height - 1);
 
+            const bool mouse_trigger = allow_mouse
+                && mouse(RETRO_DEVICE_ID_MOUSE_LEFT);
             bool shot = (allow_analog && (pressed(RETRO_DEVICE_ID_JOYPAD_B)
                                          || pressed(RETRO_DEVICE_ID_JOYPAD_R)))
-                || (allow_mouse && mouse(RETRO_DEVICE_ID_MOUSE_LEFT)) || lg_trigger;
+                || mouse_trigger || lg_trigger;
             const bool secondary_source = allow_mouse && mouse(RETRO_DEVICE_ID_MOUSE_RIGHT);
             const bool secondary = profile == InputProfile::GunBehindEnemyLines
                 ? secondary_source
@@ -939,9 +943,16 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                                             || pressed(RETRO_DEVICE_ID_JOYPAD_L)))
                         || lg_reload);
             const bool offscreen_shot = game.lightgun.present && lg_offscreen && lg_trigger;
+            constexpr float mouse_edge = 0.05f;
+            const bool mouse_edge_shot = game.lightgun.present
+                && mouse_edge_offscreen_reload && mouse_trigger && !use_lightgun
+                && (x <= mouse_edge || x >= 1.0f - mouse_edge
+                    || y <= mouse_edge || y >= 1.0f - mouse_edge);
             runtime.gun_aim_active[p] = true;
             runtime.gun_aim_offscreen[p] = game.lightgun.present
-                && (lg_offscreen || secondary);
+                && (lg_offscreen || secondary || mouse_edge_shot);
+            if (runtime.gun_aim_offscreen[p])
+                inputs.gun_offscreen |= static_cast<u8>(1u << p);
             if (game.lightgun.present && (secondary || offscreen_shot)) {
                 x = y = 0.0f;
                 shot = true;

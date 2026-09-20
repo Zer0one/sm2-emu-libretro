@@ -214,6 +214,11 @@ La Core Option `Off-Screen Reload Shortcut`, visibile soltanto sui sei set
 seriali, abilita per default RetroPad East/LB, Mouse destro e Lightgun Reload. Se
 disabilitata rimuove questi descrittori e ingressi; una lightgun puntata fuori
 schermo e azionata col grilletto continua a usare il gesto nativo del cabinet.
+Coordinate e stato off-screen sono separati fino alla scheda seriale emulata:
+Libretro usa `IS_OFFSCREEN`, mentre raggiungere il bordo con il Mouse non attiva
+più implicitamente la ricarica. La Core Option `Mouse Edge Off-Screen Reload`,
+Disabled per default, consente di ripristinare esplicitamente il comportamento
+MAME per Mouse Left entro il 5% dei bordi.
 
 I controlli senza ROM verificano tutti i dieci set, P1/P2, le cinque modalità,
 i range e le polarità degli assi, il particolare grilletto P2 di House of the Dead e l'assenza

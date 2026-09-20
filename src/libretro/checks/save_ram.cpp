@@ -134,6 +134,8 @@ int main()
     const auto* audio_balance = find_definition("sm2_audio_balance");
     const auto* music_volume = find_definition("sm2_music_volume");
     const auto* crosshairs = find_definition("sm2_crosshairs");
+    const auto* mouse_edge_reload =
+        find_definition("sm2_mouse_edge_offscreen_reload");
     const auto* linked_cabinets = find_definition("sm2_linked_cabinets_daytona");
     const auto* stcc_linked_cabinets = find_definition("sm2_linked_cabinets_stcc");
     const auto* rally_linked_cabinets = find_definition("sm2_linked_cabinets_srallyc");
@@ -207,6 +209,15 @@ int main()
     expect(crosshairs && std::string_view(crosshairs->default_value) == "auto"
                && std::string_view(crosshairs->values[0].label) == "Automatic",
            "crosshair option uses one game-aware Automatic default");
+    expect(mouse_edge_reload
+               && std::string_view(mouse_edge_reload->desc)
+                    == "Mouse Edge Off-Screen Reload"
+               && std::string_view(mouse_edge_reload->default_value) == "disabled"
+               && std::string_view(mouse_edge_reload->info).find(
+                      "Libretro Mouse interface does not report") != std::string_view::npos
+               && std::string_view(mouse_edge_reload->info).find(
+                      "Lightgun already supplies") != std::string_view::npos,
+           "Mouse edge reload explains why Mouse modes need the optional fallback");
     expect(linked_cabinets && stcc_linked_cabinets && rally_linked_cabinets
                && indy_linked_cabinets
                && motor_linked_cabinets && sgt24h_linked_cabinets
