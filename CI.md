@@ -1,9 +1,9 @@
 # Build automatiche Libretro
 
 Il workflow `.github/workflows/libretro-ci.yml` compila da `main`, nelle pull
-request e su avvio manuale quattro core: Linux x86_64, Windows x86_64,
-macOS Apple Silicon e macOS Intel. Entrambi i renderer, software e Vulkan,
-sono inclusi. Non servono ROM nei runner e nessuna ROM viene distribuita.
+request e su avvio manuale cinque core: Linux x86_64, Linux arm64, Windows
+x86_64, macOS Apple Silicon e macOS Intel. I renderer Software, Vulkan e
+OpenGL sono inclusi. Non servono ROM nei runner e nessuna ROM viene distribuita.
 
 Ogni job esegue i controlli degli input e verifica caricamento della libreria,
 25 funzioni ABI, dipendenze e tre cicli init/deinit senza contenuto. Questi
@@ -15,13 +15,16 @@ SHA256SUMS. Copiare il core nella directory core del frontend, il file `.info`
 nella directory informazioni e `sm2-emu/games.xml` nella directory system.
 Per una prova usare prima directory separate per configurazione e salvataggi.
 
-Linux usa Ubuntu 24.04 (glibc 2.39) e incorpora i runtime GCC/C++: la
-compatibilità con distribuzioni precedenti non è garantita. Windows usa MinGW64
-con runtime statici. macOS richiede almeno macOS 13. La GPU richiede Vulkan 1.3
-con le feature verificate dal core; su macOS vedere `GPU.md` nel repository
-per la selezione di una versione compatibile di MoltenVK.
+Entrambe le architetture Linux usano runner nativi Ubuntu 24.04 (glibc 2.39) e
+incorporano i runtime GCC/C++: la compatibilità con distribuzioni precedenti
+non è garantita. Il job arm64 verifica inoltre `uname -m = aarch64` prima della
+build. Windows usa MinGW64 con runtime statici. macOS richiede almeno macOS 13.
+La GPU richiede Vulkan 1.3 con le feature verificate dal core; su macOS vedere
+`GPU.md` nel repository per la selezione di una versione compatibile di MoltenVK.
 
-I profili completi dei controlli e i savestate non sono ancora implementati.
+I profili completi dei controlli e i Save State Libretro sono implementati.
+Le build CI verificano compilazione e ABI; la matrice Save State con ROM reali è
+documentata in `LIBRETRO.md` e non viene eseguita sui runner privi di ROM.
 
 ## Verifica del 9 settembre 2026
 
@@ -82,8 +85,11 @@ e nelle tre sottodirectory (log, screenshot, WAV e salvataggi), escluse da Git.
 Il core Apple Silicon del primo artifact CI era stato anche confrontato con
 la baseline headless a 1800 frame (video/audio/NVRAM identici) ed eseguito con
 Vulkan in RetroArch macOS. Windows e macOS Intel hanno controlli di build/ABI,
-ma nessuna prova con giochi su quelle piattaforme. Restano da verificare altri
-giochi, controller fisici, Linux arm64 e altre combinazioni di frontend/driver.
+ma nessuna prova con giochi su quelle piattaforme. Una precedente build Linux
+arm64 ha già completato 2300 frame di VF2 in RetroArch 1.18 con OpenGL ES e
+Save RAM; il nuovo job nativo deve ancora essere eseguito dopo commit/push e il
+suo artefatto resta da provare su hardware reale. Restano da verificare altri
+giochi, controller fisici e altre combinazioni di frontend/driver.
 
 ## Verifica delle Core Options del 12 settembre 2026
 

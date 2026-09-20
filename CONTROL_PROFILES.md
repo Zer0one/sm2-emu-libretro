@@ -128,7 +128,7 @@ separatamente l'eventuale integrazione dei metadati upstream.
 | Special: Ski Super G | swing/inclining | Sega Ski Super G | 1 |
 | Special: Top Skater | curving/slide e comandi digitali particolari | Top Skater e revisioni | 4 |
 | Special: Wave Runner | handle/roll/throttle/pitch; non trattarlo come volante a tre assi | Wave Runner | 1 |
-| Joystick (Standard): Basketball (Air Walkers) | common + joystick1 + buttons3; P1/P2 implementati, multiplexing P3/P4 rinviato | Air Walkers | 1 |
+| Joystick (Standard): Basketball (Air Walkers) | common + joystick1 + buttons3; P1-P4 implementati tramite la matrice I/O del cabinet | Air Walkers | 1 |
 | Joystick (Standard): Horse Racing (Royal Ascot II) | common + joystick1 + buttons3; migliore mappatura consentita dai metadata correnti | Royal Ascot II | 1 |
 | Joystick (Analog): Desert Tank + VR3 | Scheda Model 1 I/O già emulata; steer/accel/elevation e cablaggio digitale verificati da MAME | Desert Tank | 1 |
 
@@ -173,9 +173,9 @@ digitale approvato, distinto dai due Dynamite Baseball con assi bat1/bat2.
    firma attesa e prova delle azioni. Per Sega Rally il riconoscitore esplicito
    completa la firma con il freno a mano analogico documentato su IN2.
 6. **Copertura:** il riconoscimento del cabinet non dimostra che il titolo
-   sia giocabile. Air Walkers espone P1/P2 attraverso i due ingressi già
-   supportati; P3/P4 restano in attesa del multiplexing. Il fallback deve essere
-   esplicito e conservativo.
+   sia giocabile. Air Walkers espone P1-P4 attraverso le due coppie selezionate
+   dalla matrice I/O documentata da MAME. Il fallback deve essere esplicito e
+   conservativo.
 
 ## Regole per il successivo riconoscitore
 

@@ -50,8 +50,11 @@ Il collegamento tra cabinet usa l'interfaccia neutrale upstream `CommTransport`.
 espone soltanto la communication board comune alle quattro varianti hardware.
 `src/libretro/netpacket.*` adatta i frame completi all'interfaccia ufficiale
 Libretro Netpacket. L'unica estensione al contratto upstream è `ready()`, che
-impedisce al timer di collegamento di partire prima dell'arrivo dell'altro
-cabinet. Per i trasporti standalone coincide con `connected()`. Il motore non
+impedisce al timer di collegamento di partire prima che sia completo il roster
+dei cabinet richiesti. L'adattatore riusa dal core Supermodel handshake,
+conteggio atteso e roster ordinato; ogni frame Model 2 viene inviato soltanto al
+successore, lasciando a `M2Comm` il protocollo hardware ad anello. Per i
+trasporti standalone `ready()` coincide con `connected()`. Il motore non
 include header Libretro e il core non apre socket. Senza trasporto esterno resta
 attivo il `LoopbackTransport` dello standalone per un solo cabinet.
 
@@ -217,6 +220,11 @@ con firme risolte, varianti, copertura dei set e lacune da verificare.
 - Una porta 2 limitata a Coin/Start mantiene invariato il profilo del gioco; i
   descrittori disponibili sulla porta esprimono la limitazione senza creare una
   famiglia di profilo separata.
+- Air Walkers pubblica quattro porte con lo stesso profilo approvato. Il backend
+  mantiene quattro ingressi logici e riproduce la matrice reale: la porta F
+  seleziona P1/P2 oppure P3/P4 sulle porte C/D e sulle due linee Start. Questo
+  adattamento resta frontend-neutral; l'adattatore Libretro si limita a
+  raccogliere le quattro porte RetroPad.
 
 ## Persistenza e responsabilità del frontend
 
@@ -228,6 +236,27 @@ aggiunge un proprio livello `sm2-emu/<gioco>`. Il `.srm` gestito dal frontend e
 gli eventuali `<gioco>.nv`/`<gioco>.eeprom` nativi condividono quindi la stessa
 directory, anche quando RetroArch l'ha già organizzata per nome del core.
 Questo non equivale ai save state.
+
+I save state riusano la serializzazione frontend-neutral upstream 0.9.8. Le
+macchine espongono la stessa immagine `SM2STATE` sia su file sia in memoria;
+l'adattatore Libretro implementa soltanto `retro_serialize_size`,
+`retro_serialize` e `retro_unserialize`, lasciando slot e nomi dei file al
+frontend. Il buffer Libretro è fisso a 9 MiB: RetroArch 1.22.2 interroga la
+dimensione prima del caricamento del contenuto e considera uno zero come
+funzione assente. Il payload reale resta più piccolo ed è completato con zeri.
+Il core negozia inoltre `RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS` per
+dichiarare la dipendenza da piattaforma ed endianness; il rifiuto del comando
+da parte di un frontend precedente costituisce il fallback e non modifica il
+formato né i callback di serializzazione.
+
+Magic, versione, gioco e scheda vengono verificati prima di modificare la
+macchina. Un payload troncato viene applicato in modo transazionale e causa il
+ripristino dello snapshot precedente. Il formato del core è versione 3 perché
+include la matrice P3/P4 di Air Walkers e lo stato di `Enhanced Audio Balance`,
+assenti nel layout upstream versione 1. Dopo un caricamento, la macchina invalida le generazioni video; il
+solo adattatore svuota audio pendente, cadenza, rumble e latch input del
+frontend. Una sessione `Linked Cabinets` rifiuta save/load perché il peer
+Netpacket esterno non fa parte dello stato emulato.
 
 `Automatic Initial NVRAM Setup` è Enabled per default. In assenza sia del `.srm`
 sia di NVRAM native valide, i parent supportati ricevono un campione completo

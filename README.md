@@ -15,7 +15,11 @@ settings across 35 parent sets and fourteen clones with distinct service menus.
 Each supported title validates its native
 layout and updates the corresponding integrity field and settings mirror.
 Experimental linked-cabinet networking uses Libretro Netpacket; Daytona USA
-has completed a two-car race in two local RetroArch instances.
+has completed a two-car race. Daytona and STCC have formed three-cabinet
+rosters, while Sega Rally parent/B/C, the Indy 500 family, Motor Raid, Wave
+Runner and Sega Ski Super G have formed two-cabinet rosters in isolated local
+RetroArch instances. Virtual On has formed both a two-Twin roster and a
+three-participant roster using the dedicated `vonr` Relay program.
 The core also provides Vulkan/OpenGL rendering, upstream 3D/2D enhancement
 filters, gamepad rumble and optional Enhanced Audio Balance. Changes from
 upstream 0.9.9 relevant to Libretro are integrated selectively; standalone GUI,
@@ -42,10 +46,12 @@ named `sm2-emu-mainstream` is used for original standalone builds and comparison
 - [Libretro build and validation](LIBRETRO.md)
 - [Roadmap](PORTING_PLAN.md)
 - [Libretro menu and control design](LIBRETRO_DESIGN.md)
+- [Authoritative screenshot-derived Game Settings catalog](GAME_SETTINGS_CATALOG.md)
 - [Frontend-free build and validation](HEADLESS.md)
 - [macOS baseline build and validation](MACOS_BUILD.md)
 - [Baseline build script](scripts/build-upstream-macos.sh)
 - [NVRAM sampling script for gameplay-option analysis](scripts/libretro_nvram_samples.py)
+- [RetroArch linked-cabinet test runner](scripts/test-retroarch-netpacket.py)
 
 Original notices and source headers are preserved. See [LICENSE](LICENSE),
 [NOTICE](NOTICE) and the source headers for terms and attribution. No ROMs or
@@ -102,15 +108,68 @@ non viene dedotto quando i metadata non lo dichiarano. L’ottavo e ultimo lotto
 e `zerogun`: 130 acquisizioni verificate da `validate_nvram_batch8.py`.
 Dynamite Cop espone 33 valori di Life Amount; Pilot Kids usa i direzionali nel
 menu e mostra correttamente 8 opzioni, ma nel core corrente non ripristina le
-modifiche dopo il riavvio. Royal Ascot II resta nella schermata di attesa SegaNet
-anche mantenendo Test durante l’avvio: il YAML conserva la prova riproducibile e
-segnala esplicitamente che menu e valori non sono accessibili.
+modifiche dopo il riavvio. Per Royal Ascot II è stata acquisita la procedura
+speciale mostrata dal gioco: Button 1 avvia il titolo senza SegaNetCom, mentre
+Test torna alla diagnostica SegaNet. Nell’emulazione corrente non viene esposto
+un normale menu Game Settings, quindi non ci sono righe NVRAM da catalogare.
 
 La campagna è completa per tutte le 36 parent censite: 1.259 acquisizioni, 35
-menu mappati e una parent classificata come bloccata dall’avvio emulato, senza
+menu mappati e una parent classificata come caso speciale privo di un normale
+menu Game Settings nell’emulazione corrente, senza
 parent ancora non esaminate. I controlli coprono contenitori, estratti,
 schermate, campi, copie speculari, copie incrociate EEPROM/backup RAM, ordine dei
 byte EEPROM e gli algoritmi di integrità conosciuti.
+
+## Utility di test Netpacket
+
+`scripts/test-retroarch-netpacket.py` avvia istanze RetroArch isolate per
+verificare i roster dei set supportati. Copia la configurazione base del frontend,
+applica soltanto override temporanei, assegna i valori NVRAM di ruolo/cabinet,
+registra subito ogni processo e produce `manifest.json`, `result.json` e un log
+per istanza. Il runner rifiuta di partire se la stessa applicazione RetroArch è
+già aperta e attende sempre la chiusura dei soli processi creati dal test. Daytona
+e Indy 500 ammettono da 2 a 8 istanze; STCC da 2 a 9 e Sega Rally da 2 a 5,
+contando il Relay finale ai rispettivi valori massimi. Motor Raid, Wave Runner,
+Sega Ski Super G, Super GT 24h e Over Rev vanno da 2 a 4; Manx TT usa 2 o 3 istanze,
+con la terza configurata come Relay. Virtual On usa due istanze Twin o due Twin
+più il programma Relay dedicato `vonr`. `daytona93` non è esposto
+perché il suo menu ridotto non contiene le impostazioni di collegamento.
+
+```sh
+python3 scripts/test-retroarch-netpacket.py \
+  --retroarch /percorso/RetroArch.app/Contents/MacOS/RetroArch \
+  --core /percorso/sm2_libretro.dylib \
+  --rom /percorso/roms/daytona.zip \
+  --system-assets /percorso/system/sm2-emu \
+  --cabinets 3
+```
+
+Per STCC usare `stcc.zip` e aggiungere `--set-name stcc`; il runner assegna
+`Car 1`, `Car 2` e così via alle rispettive istanze e, con nove partecipanti,
+`Relay` all'ultima. Per Sega Rally fa lo stesso con quattro auto più il Relay.
+Con `--include-relay`, STCC e Sega Rally possono usare il Relay anche con un
+totale inferiore al massimo. La stessa opzione assegna `Live` all'ultima istanza
+di Motor Raid; il totale deve comprendere almeno Master, Slave e Live.
+Applica automaticamente
+anche i campi specifici di Super GT 24h e Over Rev, compresi i rispettivi cloni
+supportati. Per Manx TT assegna `Master`, `Slave` e, con tre istanze, `Relay`;
+`manxttdx` resta escluso perché non espone `Link Type`.
+
+Per Virtual On, due istanze usano la stessa ROM Twin. Per aggiungere il live
+monitor, selezionare tre cabinet e fornire il programma Relay separato:
+
+```sh
+python3 scripts/test-retroarch-netpacket.py \
+  --retroarch /percorso/RetroArch.app/Contents/MacOS/RetroArch \
+  --core /percorso/sm2_libretro.dylib \
+  --rom /percorso/roms/von.zip \
+  --relay-rom /percorso/roms/vonr.zip \
+  --system-assets /percorso/system/sm2-emu \
+  --set-name von --cabinets 3
+```
+
+Il test automatico dimostra la formazione del roster e lo scambio Netpacket;
+una gara sincronizzata e i controller fisici restano verifiche manuali distinte.
 
 ---
 
@@ -577,8 +636,11 @@ Everything with a local ROM archive runs. The exceptions:
 
 - A handful of sets produce nothing here *and nothing in MAME*, because they
   are marked not-working upstream: Manx TT (both DX sets), Motor Raid DX,
-  Virtual-On Relay, Royal Ascot II, and Sega Ski Super G (also unemulated
-  protection). There is no reference to work against for these.
+  Virtual-On Relay and Royal Ascot II. There is no reference to work against
+  for these. Sega Ski Super G still lacks the external Drive Board response,
+  but the optional Libretro `Drive Board Error Bypass` reproduces the verified
+  Test press at error `FF` and allows the game to proceed without claiming that
+  the board is emulated.
 
 Separately, the Manx TT Deluxe cabinet carries a Model 1 audio board *on top
 of* the 68000/SCSP board every Model 2A has. The audio board itself works, but

@@ -225,7 +225,8 @@ gioco; registrare modello GPU, versione driver e backend effettivamente
 negoziato. La build CI Windows resta una prova separata e non sostituisce
 l'esecuzione sulla GPU fisica.
 
-I profili completi, le opzioni Input e i save state restano nei punti successivi.
+I profili completi, le opzioni Input e i Save State sono stati implementati
+successivamente; per i Save State vedere `LIBRETRO.md`.
 
 ## Estensione Linux / Batocera
 

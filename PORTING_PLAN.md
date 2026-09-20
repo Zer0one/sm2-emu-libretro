@@ -17,6 +17,17 @@ riuscita da sola non dimostra compatibilità o gameplay corretto.
 Menu, profili e opzioni seguono [LIBRETRO_DESIGN.md](LIBRETRO_DESIGN.md),
 che adatta le convenzioni del progetto personale Supermodel a Model 2.
 
+## Implementazioni ancora aperte
+
+Le funzioni già completate non compaiono in questa tabella. Le prove senza
+nuovo sviluppo sono raccolte esclusivamente nella sezione finale.
+
+| Priorità | Implementazione | Stato concreto |
+| --- | --- | --- |
+| Opzionale | Force feedback e recoil `evdev` | Backend specifici Linux per forza direzionale dei volanti e rinculo lightgun, separati dal rumble portabile. |
+| Opzionale | Volume musica DSB/MPEG | Aggiungere un controllo separato solo se il mixer espone realmente quel flusso distinto dagli altri canali. |
+| Opzionale | Miglioramenti video | Supersampling oltre le scale disponibili e adattamento colore CRT, soltanto dopo una necessità concreta e misurabile. |
+
 ## 0. Baseline upstream — completata nei limiti indicati
 
 Standalone macOS arm64 compilato e avviato con Vulkan/MoltenVK su Apple M4.
@@ -232,10 +243,14 @@ con Inclining su Right Analog X/canale 0 e Swing su Left Analog X/canale 1.
 Swing applica la polarità invertita dichiarata nei metadata e
 Foot Sensor attivi alti su L1/R1. I controlli ROM-free verificano
 firme, descrittori, bit, assi e varianti Test/Service. Water Ski ha raggiunto
-una gara reale. Ski Super G carica profilo, audio e Save RAM, ma resta bloccato
-su `DRIVE BOARD TROUBLE CODE: FF`: il database SM2 non include la ROM
-drive-board definita da MAME. La relativa emulazione resta un
-sottopunto futuro separato dai profili.
+una gara reale. Ski Super G carica profilo, audio e Save RAM, ma l'emulazione
+comune non risponde al controllo della Drive Board esterna e raggiunge
+`DRIVE BOARD TROUBLE CODE: FF`. La Core Option specifica `Drive Board Error
+Bypass (Restart Required)`, disabilitata per default, riproduce la singola
+pressione di Test verificata su quella schermata. Abilitandola, la ROM parent ha
+raggiunto la sequenza sciabile in RetroArch macOS; disabilitandola resta ferma
+sull'errore come upstream. Il bypass non dichiara emulata la scheda o la
+protezione e non modifica ROM, NVRAM o binding.
 
 Terzo gruppo completato: `topskatr`, `topskatrj`, `topskatru` e `topskatruo`
 espongono `Special: Top Skater`. Curving e Slide restano assi distinti su Left
@@ -253,8 +268,10 @@ riposo dichiarato, safety sensor non bindabile e varianti Test/Service. Il
 parent ha raggiunto una sessione di gioco in RetroArch macOS con audio e Save
 RAM validi.
 
-Quinto gruppo completato: `airwlkrs` espone P1/P2 con
-`Joystick (Standard): Basketball (Air Walkers)`; `rascot2` espone
+Quinto gruppo completato: `airwlkrs` espone P1-P4 con
+`Joystick (Standard): Basketball (Air Walkers)`; la matrice I/O commuta P1/P2
+e P3/P4 sulle porte C/D insieme alle rispettive linee Start, mentre Coin 1-4
+restano indipendenti. `rascot2` espone
 `Joystick (Standard): Horse Racing (Royal Ascot II)` secondo i metadata
 disponibili. Entrambi hanno firme, descrittori, bit e varianti Test/Service
 coperti dai controlli ROM-free. Air Walkers raggiunge una partita reale con
@@ -281,8 +298,6 @@ partita reale in RetroArch macOS con audio e Save RAM validi. Il problema di
 persistenza di `FAVORITE` resta confinato alla NVRAM e non blocca il profilo
 input.
 
-- Integrare in seguito P3/P4 di Air Walkers mediante il multiplexing della
-  matrice. P1/P2, incluse le rispettive linee Start/Coin, sono implementati.
 - Integrare ciascun profilo con i suoi test senza estendere implicitamente le
   conclusioni agli altri cabinet o confondere input supportati e gioco funzionante.
 
@@ -298,7 +313,7 @@ che i valori di calibrazione nativi sono già funzionanti; per decisione
 dell'utente non serve una campagna dedicata né l'iniezione di ulteriori dati nei
 campioni iniziali.
 
-### 3.6 Persistenza NVRAM/EEPROM
+### 3.6 Persistenza NVRAM/EEPROM — completata
 
 Stato: persistenza e matrice dei parent implementate. `RETRO_MEMORY_SAVE_RAM`
 contiene backup RAM ed EEPROM in formato versionato; import frontend, fallback
@@ -309,8 +324,6 @@ carica per questi parent un campione completo validato prima del primo frame,
 soltanto in assenza di `.srm` e NVRAM native valide, quindi applica Country/Nation
 USA o Export, i valori offline necessari e I/O Type C per Super GT 24h.
 
-- Valutare SRAM gestita dal frontend definendo prima formato, precedenza e
-  import conservativo dei file nativi. Non confonderla con i save state.
 - Non inizializzare o modificare automaticamente i salvataggi esistenti; il
   setup automatico interviene soltanto alla creazione di una nuova Save RAM.
 - Prima fase della campagna clone completata il 15 settembre 2026: tutti i 48
@@ -434,10 +447,11 @@ o `16:9`. In Auto legge la configurazione attiva dalla NVRAM: Indy 500 e STCC
 usano 16:9 nei rispettivi cabinati Deluxe e 4:3 in Twin; gli altri giochi usano
 4:3. Il framebuffer resta 496×384 e il frontend riceve soltanto la geometria.
 
-Altre opzioni da valutare separatamente:
+Backlog opzionale delle Core Options, da aprire soltanto dopo la verifica della
+condizione indicata:
 
-- abilitazione dell'emulazione audio, solo se produce un risparmio reale;
-- volume separato della musica DSB/MPEG, se il mixer conserva flussi distinti;
+- `DSB/MPEG Music Volume`: volume separato, solo se il mixer conserva un flusso
+  musicale distinto dagli altri canali;
 - supersampling aggiuntivo oltre alle scale e ai filtri 2D già disponibili;
 - adattamento colore CRT specifico Model 2, solo con una necessità misurata.
 
@@ -446,15 +460,14 @@ PowerPC/JIT e DSP specifici di Supermodel restano esclusi perché non applicabil
 
 ## 4. Compatibilità e build di distribuzione
 
-Prima matrice CI implementata: Linux x86_64, macOS arm64/Intel e Windows
-x86_64, con software + Vulkan, controlli ABI senza ROM e pacchetti corredati
-dal database giochi. Evidenze e limiti in [CI.md](CI.md). Linux arm64 resta
-da aggiungere e la milestone completa richiede ancora la matrice estesa sotto.
-
-- Automatizzare build macOS arm64 e Linux x86_64/arm64, controlli ABI e test
-  eseguibili senza ROM. Le ROM restano esterne al repository e alla CI.
-- Preparare core info e istruzioni di installazione, mantenendo lo standalone
-  disponibile come riferimento separato.
+Matrice CI implementata: Linux x86_64, Linux arm64, macOS arm64/Intel e Windows
+x86_64, con Software + Vulkan + OpenGL, controlli ABI senza ROM e pacchetti
+corredati dal database giochi. Linux arm64 usa il runner GitHub nativo
+`ubuntu-24.04-arm` e pubblica `sm2-libretro-linux-arm64`, seguendo lo stesso
+percorso degli altri Linux senza cross-compilazione o emulazione. Evidenze e
+limiti in [CI.md](CI.md). `sm2_libretro.info`, database e istruzioni sono già
+inclusi nei pacchetti. La prima esecuzione remota del nuovo job richiede il
+prossimo commit/push autorizzato.
 
 Criterio: artefatti installabili sulle piattaforme dichiarate, con matrice di
 compatibilità e limiti documentati.
@@ -484,12 +497,11 @@ immagine, audio e NVRAM coincidono con la baseline software nei casi confrontati
 La modalità 60 Hz ora forza una nuova immagine dopo ogni ricreazione del contesto,
 anche quando il callback avrebbe duplicato il frame precedente; il percorso
 framebuffer speciale è stato verificato sul title screen di Last Bronx.
-La verifica degli altri sistemi e della compatibilità estesa continua al punto 4.
 Dettagli, limiti e avvio con MoltenVK aggiornato: [GPU.md](GPU.md).
 
 ## 6. Networking, save state e funzioni avanzate
 
-### 6.1 Collegamento tra cabinet — prototipo Daytona conservato
+### 6.1 Collegamento tra cabinet — tutti gli schemi censiti implementati
 
 - Usare direttamente la struttura upstream 0.9.7: `M2Comm` possiede il
   `CommTransport` e conserva il protocollo della communication board Model 2.
@@ -499,30 +511,107 @@ Dettagli, limiti e avvio con MoltenVK aggiornato: [GPU.md](GPU.md).
   configurazione di rete appartiene al core.
 - Conservare il comportamento standalone a cabinet singolo quando la Core
   Option `Linked Cabinets` è lasciata su `Disabled`, valore predefinito.
-- Mantenere `Linked Cabinets` sempre visibile come le altre opzioni non NVRAM,
-  dichiarando che il trasporto Netpacket del core si applica attualmente alla
-  sola famiglia Daytona USA.
+- Esporre `Linked Cabinets` per contenuto come le opzioni NVRAM: ogni set
+  supportato mostra soltanto la propria scelta e non la propaga agli altri giochi.
 
-Il prototipo attuale resta circoscritto alla famiglia Daytona USA e a due
-cabinet. Host e
-client usano lo stesso ROM set e core; `NVRAM Settings` imposta rispettivamente
-`Link ID=Master`/`Car Number=1` e `Link ID=Slave`/`Car Number=2`. Un test reale
+Il trasporto è abilitato per le famiglie Daytona USA e STCC. Daytona accetta da
+due a otto partecipanti; STCC arriva a nove includendo il Relay. Riusa dal core
+Supermodel handshake broadcast, verifica del
+numero atteso e roster ordinato. Il payload Model 3 non viene copiato: ciascun
+frame completo Model 2 viene inviato al successore del roster, conservando in
+`M2Comm` il protocollo ad anello. Host e client usano lo stesso ROM set e core,
+salvo il programma Relay `vonr` nella configurazione Virtual On a tre istanze;
+`NVRAM Settings` imposta `Link ID=Master`/`Car Number=1` sull'host e
+`Link ID=Slave`/`Car Number=2..8` sui client. Un test reale
 con due istanze RetroArch 1.22.2 su macOS ha formato l'anello con ID `01/02` e
 `02/02`, eseguito 3600 frame per istanza e avviato una gara condivisa. Le
 catture finali mostrano l'host rosso `2nd/2`, con l'auto blu `2P` davanti, e il
 client blu `1st/2`, entrambi in movimento nella stessa sessione.
-I test senza ROM verificano inoltre assegnazione degli ID, conteggio dei nodi,
-trasporto integro dei frame, rifiuto di un terzo client e disconnessione.
+I test senza ROM verificano inoltre anelli emulati da 2, 3, 4 e 8 nodi,
+assegnazione univoca degli ID, conteggio, ordine predecessore/successore,
+payload integro, roster incompleto, configurazioni discordanti, capacità massima
+di nove partecipanti, rifiuto del decimo e disconnessione. Un test RetroArch
+isolato a tre istanze ha
+inoltre formato il roster reale con partecipanti 0, 1 e 2; tutti i processi si
+sono chiusi con codice 0, senza terminazione forzata né residui. La gara
+sincronizzata a tre auto resta una verifica separata.
 
-La Core Option è già predisposta con valori da 2 a 8 cabinet, massimo verificato
-nei menu operatore Model 2; le sessioni superiori a due restano da implementare
-nel trasporto Netpacket.
+`daytona93` è escluso: il suo Service Menu acquisito contiene soltanto quattro
+voci e non espone `Link ID` né `Car Number`. `daytonas`, `daytonase` e
+`daytonam` mantengono invece le due impostazioni e restano abilitati fino a
+otto cabinet.
 
-Limiti attuali: due cabinet soltanto e famiglia Daytona soltanto. L'estensione
-agli altri giochi Model 2 con communication board resta sospesa finché il
-porting generale non rende opportuno riprendere questa attività.
+Il primo gruppo non-Daytona comprende `stcc`, `stcca`, `stccb` e `stcco`.
+I valori NVRAM già acquisiti mappano `Car 1` sull'host, `Car 2`…`Car 8` sui
+client giocabili e `Relay` sulla nona istanza. La prova RetroArch massima sul
+parent ha salvato nei nove `.srm` le codifiche 1…9, formato il roster 9/9 su
+tutte le istanze e chiuso tutti i processi con codice 0, senza kill forzato né
+residui. La gara STCC resta nella sezione delle verifiche.
 
-### 6.2 Save state — upstream 0.9.8 disponibile, adattamento Libretro da implementare
+Il gruppo Sega Rally con `Car 1`…`Car 4` e `Relay` usa lo stesso schema combinato
+di STCC. `Linked Cabinets` arriva a cinque contando il Relay.
+Il parent ha formato il roster massimo 5/5 con `Car 1`…`Car 4` e `Relay`,
+codifiche 1…5 verificate negli `.srm`; le revisioni B e C hanno formato roster
+reali a due istanze. Tutte le prove sono terminate senza chiusure forzate o
+processi residui.
+`srallycdx` e `srallycdxa` sono esclusi perché i Service Menu acquisiti non
+espongono né `Cabinet Type` né `Link Type`. Entrambi usano cataloghi NVRAM
+specifici con le sole quattro voci realmente disponibili; nessuno dei due
+riceve la Core Option `Linked Cabinets`. Una gara Sega Rally sincronizzata
+resta nella sezione delle verifiche.
+
+Le integrazioni successive vengono organizzate per meccanismo di collegamento,
+così l'adattamento e le prove del titolo base coprono nello stesso gruppo anche
+i giochi compatibili. Il gruppo con ruoli `Master`/`Slave` e `Cabinet ID`
+separato comprende `indy500`, `indy500d`, `indy500to`, `motoraid`,
+`motoraiddx`, `waverunr` e `skisuprg`. Indy 500 ammette fino a otto cabinet;
+Motor Raid, Wave Runner e Sega Ski Super G fino a quattro. La voce `Live` di
+Motor Raid rappresenta il Relay/live monitor: conta nel totale, è ammessa una
+sola volta e non viene equiparata a un normale client giocabile.
+
+Le prove a due istanze hanno formato il roster per tutti questi set salvo
+`motoraiddx`: il clone DX stabilisce la connessione frontend 2/2 e salva
+correttamente ruolo e ID, ma non porta la communication board al polling del
+roster, coerentemente con il suo stato upstream non funzionante. Tutti i sette
+set hanno prodotto `.srm` con `Master/ID 1` sull'host e `Slave/ID 2` sul client,
+incluse le copie speculari e il layout dedicato di `indy500d`. La verifica in
+gara di Sega Ski Super G richiede ancora di abilitare il bypass opzionale della
+schermata `DRIVE BOARD TROUBLE CODE: FF`; questo consente l'avvio ma non emula la
+Drive Board.
+
+Motor Raid ha inoltre formato un roster reale 3/3 con `Master`, `Slave` e
+`Live`. Gli `.srm` conservano i valori nativi 1, 2 e 3 e gli ID progressivi in
+entrambe le copie EEPROM; tutti i processi sono terminati con codice 0, senza
+forzature o residui. Il runner espone `--include-relay` per usare Live come
+ultima istanza, sempre incluso nel totale selezionato.
+
+Super GT 24h usa `Link Type=Car No.1 Master` sull'host e `Car No.2`…`Car No.4
+Slave` sui client; `Link Max` fissa il totale da due a quattro. La prova reale
+a due istanze ha formato il roster su entrambe le communication board e gli
+SRM conservano `Master/Link Max 2` e `Slave Car No.2`.
+
+Over Rev usa `Link Max=2/3/4 Links` e un `Link Type` che include ruolo e numero.
+Il parent e i due cloni `overrevb`/`overrevba` hanno formato roster reali a due
+istanze; in tutti e tre i casi le due copie EEPROM contengono rispettivamente
+`Master CarNo.1/2 Links` e `Slave CarNo.2/2 Links`.
+
+Manx TT non usa un numero cabinet separato: a due istanze assegna `Master` e
+`Slave`; a tre aggiunge `Relay`. Sia `manxtt` sia `manxttc` hanno formato roster
+reali 3/3 e salvato rispettivamente i valori NVRAM 1, 2 e 3. `manxttdx` resta
+escluso perché il suo Service Menu acquisito non contiene `Cabinet Type` né
+`Link Type`.
+
+Virtual On usa `Network Link Attribute=Master/Slave` sui due programmi Twin e
+il set dedicato `vonr` come terzo partecipante Relay. Poiché il Relay è un ROM
+set distinto, l'adattatore identifica la famiglia Netpacket `von` invece del
+nome esatto del set, seguendo la separazione tra famiglia e ruolo già usata dal
+core Supermodel. Le prove reali hanno formato sia il roster Twin 2/2 sia il
+roster 3/3 con `von`, `von` e `vonr`; gli `.srm` conservano Master, Slave e il
+valore No Link nativo del programma Relay. Tutte le istanze si sono chiuse senza
+forzature o residui. La partita sincronizzata e l'uscita del live monitor restano
+nella sezione delle verifiche.
+
+### 6.2 Save state — implementato
 
 L'upstream 0.9.8 ha già introdotto `Archive`, la serializzazione delle quattro
 varianti di scheda e il ripristino transazionale: magic, versione, gioco e board
@@ -530,28 +619,32 @@ sono verificati prima di modificare la macchina e un payload troncato ripristina
 lo snapshot precedente. Il frontend standalone aggiunge file e slot propri;
 questa parte non va portata nel core, perché RetroArch possiede slot e file.
 
-- Importare la serializzazione frontend-neutral e i fix-up post-caricamento,
-  mantenendo il layout upstream per facilitare gli aggiornamenti successivi.
-- Collegarla a `retro_serialize_size`, `retro_serialize` e
-  `retro_unserialize`, definendo una dimensione Libretro stabile e un contenitore
-  versionato con gioco e board; non introdurre un secondo sistema di slot.
-- Dopo il caricamento invalidare e ricostruire correttamente risorse GPU,
-  generazioni video, code audio e stato dell'adattatore input.
-- Rifiutare o gestire esplicitamente il caricamento durante un collegamento tra
-  cabinet: lo stato della communication board è serializzabile, la sessione
-  Netpacket esterna non lo è.
-- Dichiarare rewind e run-ahead utilizzabili soltanto dopo la matrice di verifica
-  raccolta nella sezione finale.
+Sono importati la serializzazione frontend-neutral e i fix-up delle quattro
+schede. Il core usa un'immagine in memoria versionata, un buffer Libretro fisso
+da 9 MiB compatibile con l'interrogazione anticipata di RetroArch 1.22.2 e non
+introduce un secondo sistema di slot. Dopo il caricamento invalida le risorse
+video derivate e ripulisce code audio, cadenza, rumble e latch input del
+frontend. Stati corrotti, troncati o appartenenti a gioco/board diversi vengono
+rifiutati senza alterare la macchina. Save/load viene rifiutato durante una
+sessione `Linked Cabinets` perché il peer Netpacket esterno non è serializzabile.
 
-## 7. Allineamento selettivo upstream 0.9.8/0.9.9 — completato
+Round-trip e riesecuzione deterministica sono verificati con ROM reali su Model
+2, 2A, 2B e 2C. RetroArch macOS ha caricato uno stato VF2 nei renderer Software
+e Vulkan. La prova manuale dell'utente in RetroArch macOS ha inoltre confermato
+save/load su Indy 500 (Model 2B) dopo l'allineamento dei metadata
+`sm2_libretro.info`; il controllo CI ora impedisce di distribuire nuovamente un
+binario serializzabile con `savestate = "false"`. Rewind e run-ahead restano
+qualifiche separate nella sezione finale.
+
+## 7. Integrazioni derivate dall'upstream 0.9.8/0.9.9
 
 L'analisi è allineata al commit upstream
 `af0be801980e40eb1f7eeff7f72ecc2f8ffe1024` del 19 settembre 2026. Il core
 dichiara 0.9.9 e conserva la provenienza della base iniziale 0.9.4.
 
-| Gruppo upstream | Stato nel core |
+| Integrazione applicabile | Stato nel core |
 | --- | --- |
-| Save state 0.9.8 | Serializzazione frontend-neutral disponibile upstream; adattamento all'API Libretro ancora da implementare nel punto 6.2. |
+| Save state 0.9.8 | Integrati serializzatori delle quattro board, contenitore transazionale e adattamento all'API Libretro; file e slot restano al frontend. |
 | Daytona `start_gear=4` | Integrato con la Core Option globale `Automatic Start Gear`, abilitata per default. |
 | FPS toggle standalone | Coperto da `Timing / FPS Overlay`; tasto e UI SDL esclusi. |
 | Configurazione SDL dei volanti | Esclusa: dispositivi, mapping e conversione degli assi appartengono a RetroArch. |
@@ -559,14 +652,13 @@ dichiara 0.9.9 e conserva la provenienza della base iniziale 0.9.4.
 | Metadata `games.xml` | Integrati `start_gear`, `drive_protocol`, correzioni `drive_board`, clone Daytona MAXX e aggiornamenti approvati. |
 | Bilanciamento audio e timer INTENA | Integrati tramite `Enhanced Audio Balance` e fix macchina permanente. |
 | Filtri xBR/ScaleFX | Integrati come filtri dei livelli 2D prima della composizione 3D. |
-| Texture 3D personalizzate e dump | Non inclusi nello scope corrente; restano un miglioramento renderer opzionale. |
-| Traslucenza blended | Non inclusa nello scope corrente; lo stipple hardware resta il comportamento fedele. |
-| Funzioni GUI, file, slot e backend SDL/evdev | Escluse quando il frontend o la piattaforma possiedono già la funzione. |
 
-Le future revisioni upstream seguiranno la stessa procedura: confronto con il
-clone mainstream pulito, importazione selettiva delle parti applicabili e
-adattamento confinato in `src/libretro/` quando la funzione appartiene al
-frontend.
+Tutte le integrazioni applicabili già individuate nelle release upstream
+analizzate sono ora recepite o escluse esplicitamente. L'allineamento upstream
+non è una voce generica della roadmap: quando `upstream/main` avanzerà, ogni modifica
+applicabile diventerà una specifica voce di implementazione; le modifiche già
+integrate resteranno nella cronologia e quelle non applicabili saranno indicate
+esplicitamente come escluse.
 
 ## Modalità di lavoro
 
@@ -597,11 +689,10 @@ mancanti restano nei rispettivi punti della roadmap.
 | Profili digitali | Prova manuale con un gamepad fisico rappresentativo. |
 | Guida | Prova con volante e pedali reali, comprese calibrazione, polarità, cambio e Handbrake. |
 | Gun | Prova con Lightgun e Mouse fisici sui percorsi dichiarati. |
-| NVRAM/SRAM | Riavvio e separazione per gioco con file mancanti, invalidi e directory non scrivibili; conservazione dei salvataggi esistenti. |
 | Menu e opzioni | Cambio contenuto, profilo, remapping e visibilità delle opzioni per gioco in RetroArch. |
-| Regressione generale | Video, audio, input e NVRAM sulle quattro board con una matrice parent/clone, ZIP/7z e caricamenti falliti. |
+| Regressione generale | Video, audio e input sulle quattro board con una matrice parent/clone, ZIP/7z e caricamenti falliti. |
 | GPU Windows | RetroArch su Windows 11 con GPU dedicata: Vulkan/OpenGL, scale 1×/4×, lifecycle, SRAM, log e screenshot. |
-| Piattaforme | Artefatto Linux arm64 e ulteriori prove RetroArch/Batocera sugli hardware dichiarati. |
-| Networking | Due controller reali, due host fisici, variante Daytona MAXX e future sessioni superiori a due cabinet dopo la relativa implementazione. |
-| Save state | Dopo l'implementazione: determinismo video/audio/macchina sulle quattro board, dati troncati e incompatibili, cicli ripetuti e interazione col networking. |
+| Piattaforme | Verificare la prima esecuzione del job Linux arm64 e provare il relativo artefatto in RetroArch/Batocera su hardware reale. |
+| Networking | Gare RetroArch Daytona e STCC a tre cabinet (entrambi i roster locali a tre sono verificati); gare sincronizzate Super GT 24h, Over Rev e Manx TT; uscita live monitor di Motor Raid e Virtual On; controller reali; due host fisici; variante Daytona MAXX. |
+| Save state | La prova manuale copre Indy 500 (Model 2B). Provare Daytona USA (Model 2), Virtua Fighter 2 (Model 2A) e STCC (Model 2C); successivamente qualificare rewind/run-ahead, cicli prolungati e piattaforme diverse. Save/load resta intenzionalmente rifiutato durante il networking. |
 | Prestazioni e distribuzione | Misure di memoria e velocità sugli hardware target e controllo finale degli avvisi/licenze prima di ampliare la distribuzione. |

@@ -96,10 +96,14 @@ Sega Ski Super G espone `Special: Ski Super G`. D-Pad Up/Down sono `Zoom In` e
 `Select 2`/`Select 3`/`Select 1`. Right Analog X controlla `Inclining` sul
 canale Model 2 0 e Left Analog X controlla `Swing` sul canale Model 2 1. Swing
 applica la polarità invertita dichiarata nei metadata: X+ produce `00` e X-
-produce `FF`. Il profilo e la Save RAM sono validi, ma la partita si
-ferma su `DRIVE BOARD TROUBLE CODE: FF`: il database SM2 non contiene la ROM
-drive-board presente nella definizione MAME.
-Questo limite appartiene all'emulazione comune, non all'adattatore di input.
+produce `FF`. L'emulazione comune non risponde al controllo della Drive Board
+esterna e il gioco si ferma su `DRIVE BOARD TROUBLE CODE: FF`. La Core Option
+specifica `Drive Board Error Bypass (Restart Required)`, disabilitata per
+default, riproduce una singola pressione di Test quando compare quel messaggio.
+Con il bypass abilitato la ROM parent ha superato l'errore ed è arrivata alla
+sequenza sciabile in RetroArch macOS; con il bypass disabilitato conserva il
+comportamento upstream. La funzione non emula la Drive Board e non modifica ROM,
+NVRAM o binding.
 
 Le quattro revisioni Top Skater condividono `Special: Top Skater`. D-Pad
 Left/Right corrispondono a `Select Left`/`Select Right`, South/East a `Jump
@@ -118,12 +122,15 @@ sensor del cabinet resta un dettaglio hardware interno e non viene esposto come
 binding. Il parent ha raggiunto una sessione di gioco in RetroArch macOS con
 profilo registrato, audio non silenzioso e Save RAM valida.
 
-Air Walkers espone P1 e P2 con `Joystick (Standard): Basketball (Air Walkers)`,
-D-Pad e `Button 1`/`Button 2`/`Button 3` nelle posizioni approvate. Coin 2,
-Start 2 e il gameplay P2 raggiungono rispettivamente le linee comuni e `IN2`.
-Il parent ha raggiunto una partita reale con audio e Save RAM validi. Il
-multiplexing P3/P4 documentato da MAME resta un aggiornamento futuro del backend
-I/O.
+Air Walkers espone P1-P4 con `Joystick (Standard): Basketball (Air Walkers)`,
+D-Pad e `Button 1`/`Button 2`/`Button 3` nelle posizioni approvate. Il backend
+riproduce la matrice del cabinet documentata da MAME: il bit 7 della porta F
+seleziona la coppia P1/P2 oppure P3/P4 sulle porte C/D e commuta con essa le
+linee Start. Coin 1-4 rimangono sulle rispettive linee comuni. Il default NVRAM
+del gioco resta `2P Simultaneous`; scegliendo `4P Simultaneous` il gioco usa la
+seconda coppia già pubblicata dal core. Il parent aveva già raggiunto una
+partita reale con audio e Save RAM validi; i quattro percorsi input e la matrice
+sono coperti dai controlli ROM-free.
 
 Royal Ascot II espone `Joystick (Standard): Horse Racing (Royal Ascot II)` a un
 giocatore, usando D-Pad e tre pulsanti generici come consentono i metadata
@@ -321,7 +328,7 @@ Lightgun e Mouse restano da provare manualmente.
   altri 27 usano un template dedicato. Tredici di questi applicano le opzioni
   del parent; `daytona93`, `daytonas`, `dyndeka2`, `dyndeka2b`,
   `motoraiddx`, `stcca`, `stccb`, `stcco`, `vf2a`, `vf2o`, `indy500d`,
-  `vstrikero`, `srallycdxa` e `hotdp` hanno cataloghi specifici verificati dal
+  `vstrikero`, `srallycdx`, `srallycdxa` e `hotdp` hanno cataloghi specifici verificati dal
   rispettivo Service Menu. Tutti i 48 cloni dispongono quindi di un template
   dedicato o di un'eredità parent verificata.
 - Core Option v2 generale `NVRAM Settings`, Disabled per default come nel core
@@ -386,32 +393,75 @@ Quando un gioco non offre gameplay sulla porta 2, quella porta conserva lo stess
 nome del profilo del gioco: i descrittori RetroArch espongono soltanto Coin e
 Start, senza creare un profilo generico separato.
 
-## Collegamento tra cabinet Daytona USA
+## Collegamento tra cabinet
 
 La Core Option System `Linked Cabinets (Restart Required)`, collocata prima di
 `NVRAM Settings`, offre `Disabled`, predefinito, e valori da `2 Cabinets` a
-`8 Cabinets`. I valori superiori a due predispongono l'interfaccia per la futura
-estensione del networking e non attivano ancora il trasporto. `2 Cabinets` usa
-esclusivamente l'interfaccia ufficiale Libretro Netpacket e per ora si applica
-alla famiglia Daytona USA. Come le altre opzioni non NVRAM resta sempre visibile;
-sui giochi non supportati non modifica la macchina. Il core non apre socket:
+`8 Cabinets` per Daytona e Indy 500; STCC arriva a `9 Cabinets` includendo il
+Relay e Sega Rally arriva a `5 Cabinets` includendo il Relay. Motor Raid,
+Wave Runner, Sega Ski Super G, Super GT 24h e Over Rev si fermano a `4 Cabinets`;
+Manx TT e Virtual On offrono `2 Cabinets` e `3 Cabinets`.
+`daytona93` è escluso perché il suo menu acquisito non contiene `Link ID` né
+`Car Number`. L'opzione è specifica per
+contenuto: appare soltanto sui set supportati, così il valore non si propaga a
+contenuti incompatibili. Tutte le dimensioni usano
+esclusivamente l'interfaccia ufficiale Libretro Netpacket. Il core non apre socket:
 RetroArch gestisce host, client e rete, mentre `M2Comm` conserva
 il protocollo della communication board Model 2. La struttura di `M2Comm`, il
 possesso del trasporto e il loopback sono quelli dello standalone upstream
 0.9.7; il core sostituisce il trasporto UDP con l'adattatore Netpacket e attende
-l'effettiva presenza del secondo cabinet.
+che il roster contenga tutti i cabinet configurati. Handshake, conteggio atteso
+e roster ordinato seguono la struttura del core Supermodel; i frame Model 2
+restano completi e vengono inoltrati al successore dell'anello.
 
-Entrambi i partecipanti devono usare lo stesso ROM set, la stessa build del
-core, lo stesso timing e `Linked Cabinets=2 Cabinets`. Con `NVRAM Settings=Enabled`,
+Tutti i partecipanti devono usare la stessa build del core, lo stesso timing e
+lo stesso valore `Linked Cabinets`. Usano inoltre lo stesso ROM set, salvo il
+programma Relay `vonr` richiesto dalla configurazione Virtual On a tre istanze.
+Con `NVRAM Settings=Enabled`,
 configurare e riavviare il contenuto così:
 
 | RetroArch | Link ID | Car Number |
 | --- | --- | --- |
 | Host | Master | 1 |
-| Client | Slave | 2 |
+| Client 1 | Slave | 2 |
+| Client successivi | Slave | 3–8, senza duplicati |
 
-Avviare prima l'host RetroArch e poi collegare il client. Le due istanze devono
-usare directory di salvataggio separate, come accade naturalmente su due
+Per STCC e Sega Rally, `Link Type` contiene già ruolo e numero: usare `Car 1`
+sull'host e numeri progressivi sui client, senza duplicati. Con il valore massimo,
+STCC usa otto istanze `Car 1`…`Car 8` più una `Relay`; Sega Rally usa quattro
+istanze `Car 1`…`Car 4` più una `Relay`. `Linked Cabinets` mostra soltanto il
+numero totale dei partecipanti; il runner assegna automaticamente il Relay
+all'ultima istanza.
+
+Indy 500, Motor Raid, Wave Runner e Sega Ski Super G usano invece due campi
+separati. Impostare `Network Type=Master` e `Cabinet ID=1` sull'host;
+`Network Type=Slave` e ID progressivi sui client. Il limite è 8 per Indy 500 e
+4 per gli altri tre giochi. In Motor Raid, `Live` è il ruolo Relay/live monitor:
+è incluso nel totale, può essere usato da una sola istanza e non sostituisce uno
+dei cabinet giocabili Master/Slave. Il runner lo assegna all'ultima istanza con
+`--include-relay`; la stessa opzione consente un Relay anticipato nelle famiglie
+STCC e Sega Rally.
+
+Super GT 24h usa `Link Type=Car No.1 Master` sull'host e `Car No.2`…`Car No.4
+Slave` sui client; impostare `Link Max` allo stesso totale selezionato in
+`Linked Cabinets`. Over Rev usa `Link Max=2/3/4 Links`, uguale su ogni istanza,
+e `Link Type=Master CarNo.1` sull'host oppure `Slave CarNo.2`…`CarNo.4` sui
+client. Il runner applica automaticamente queste combinazioni.
+
+Manx TT usa `Master` e `Slave` con due cabinet; selezionando tre cabinet aggiunge
+una terza istanza `Relay`. `manxtt` e `manxttc` sono supportati, mentre
+`manxttdx` è escluso perché il relativo menu acquisito non espone `Link Type`.
+
+Virtual On usa due programmi Twin come cabinet giocabili: il primo imposta
+`Network Link Attribute=Master`, il secondo `Slave`. Se `Linked Cabinets=3`,
+la terza istanza deve caricare il programma dedicato `vonr`, che svolge il ruolo
+Relay/live monitor e conserva `Network Link Attribute=No Link`. Il trasporto
+confronta la famiglia di rete `von`, non il nome esatto del set, così Twin e
+Relay possono condividere la sessione. `von`, `vonj`, `vonu` e `vonr` espongono
+la Core Option; è ammesso un solo Relay e non è un cabinet giocabile.
+
+Avviare prima l'host RetroArch e poi collegare i client. Le istanze devono
+usare directory di salvataggio separate, come accade naturalmente su più
 macchine. `Automatic Initial NVRAM Setup` può restare abilitato: le opzioni
 NVRAM selezionate vengono applicate prima del primo frame.
 
@@ -425,8 +475,60 @@ conservano Master/Car 1 e Slave/Car 2 e i processi terminano correttamente.
 
 Questa prova dimostra il collegamento tra le due macchine emulate, lo scambio
 dei frame della communication board e una gara a due auto con input automatici.
-Restano una prova manuale con due controller, una prova tra due host fisici e
-l'estensione oltre due cabinet o ad altri giochi.
+Una seconda prova automatica ha avviato tre istanze isolate di RetroArch Nightly
+1.22.2: l'host ha registrato i collegamenti `2/3` e `3/3`, mentre i partecipanti
+0, 1 e 2 hanno tutti formato lo stesso roster da tre cabinet. Le tre istanze si
+sono chiuse con codice 0, senza terminazione forzata né processi residui. Questa
+prova copre il roster reale oltre due cabinet, ma non equivale ancora a una gara
+sincronizzata a tre auto. Restano una prova manuale con due controller, una
+prova tra due host fisici, la gara a tre e l'estensione ad altri giochi.
+
+La prima estensione non-Daytona ha usato il parent `stcc`. La prova massima ha
+avviato nove istanze isolate con `Car 1`…`Car 8` e `Relay`, codifiche 1…9
+verificate nei rispettivi `.srm`. Tutti i partecipanti hanno formato il roster
+9/9 e tutti i processi sono terminati con codice 0, senza kill forzato né
+residui. La prova conferma configurazione NVRAM, avvio del core e handshake
+Netpacket al limite del gioco; non dimostra ancora una gara STCC sincronizzata.
+
+La famiglia Sega Rally usa lo stesso schema combinato. La prova massima sul
+parent ha avviato cinque istanze con `Car 1`…`Car 4` e `Relay`, codifiche 1…5
+verificate nei rispettivi `.srm`; tutti i partecipanti hanno formato il roster
+5/5 e tutti i processi sono terminati con codice 0, senza chiusure forzate o
+residui. Le revisioni B e C erano già state verificate a due istanze.
+`srallycdx` e `srallycdxa` sono esclusi perché i rispettivi
+Service Menu acquisiti non espongono né `Cabinet Type` né `Link Type`. La
+tabella dei set supportati non dichiara quindi `Linked Cabinets` per queste due
+revisioni. Queste prove confermano configurazione NVRAM e handshake, non ancora
+una gara Sega Rally sincronizzata.
+
+Motor Raid è stato inoltre verificato con tre istanze `Master`, `Slave` e
+`Live`. Tutti i partecipanti hanno formato il roster 3/3; gli `.srm` conservano
+le codifiche native 1, 2 e 3 e gli ID 1, 2 e 3 in entrambe le copie EEPROM. I
+tre processi sono terminati con codice 0, senza chiusure forzate né residui. La
+prova conferma il ruolo Live nel collegamento; l'uscita visiva del live monitor
+resta una verifica manuale.
+
+Super GT 24h e i tre set Over Rev sono stati verificati con due istanze isolate.
+Tutti hanno formato il roster 2/2 sulle communication board, chiuso entrambi i
+processi con codice 0 e lasciato zero processi residui. Gli SRM confermano i
+ruoli e i conteggi descritti sopra, comprese le copie EEPROM speculari dei tre
+Over Rev. Sono prove di avvio, configurazione NVRAM, polling della communication
+board e handshake Netpacket; una gara sincronizzata resta nella sezione delle
+verifiche.
+
+Le prove a tre istanze su `manxtt` e `manxttc` hanno formato roster 3/3 su tutte
+le communication board. I rispettivi SRM conservano `Master=1`, `Slave=2` e
+`Relay=3`; tutti i processi sono terminati con codice 0, senza chiusure forzate
+o residui. La prova non dimostra ancora una gara sincronizzata o il comportamento
+visivo specifico della postazione Relay.
+
+Virtual On è stato provato prima con due istanze `von` Master/Slave e poi con
+tre istanze `von`, `von` e `vonr`. Entrambe le sessioni hanno formato il roster
+completo su ogni partecipante; la seconda ha conservato negli `.srm` i valori
+NVRAM `Master=1`, `Slave=0` e `No Link=2` del programma Relay. Tutti i processi
+sono terminati con codice 0, senza chiusure forzate o residui. Questa prova
+conferma avvio, persistenza e compatibilità Netpacket tra i due programmi; una
+partita sincronizzata e la visualizzazione del Relay restano prove manuali.
 
 Controllo dedicato senza ROM:
 
@@ -434,9 +536,32 @@ Controllo dedicato senza ROM:
 build-libretro-gpu/bin/sm2-libretro-netpacket-checks
 ```
 
-Verifica formazione dell'anello, ID e conteggio cabinet, consegna del payload,
-registrazione Netpacket, ruoli host/client, affidabilità, rifiuto del terzo
-partecipante e reset della board senza perdita della sessione frontend.
+Verifica anelli da 2, 3, 4, 8 e 9 nodi, ID e conteggio cabinet, ordine del roster,
+consegna del payload al predecessore/successore, registrazione Netpacket,
+affidabilità, configurazioni discordanti, disconnessione e rifiuto del decimo
+partecipante.
+
+Runner RetroArch isolato per tutti i set supportati da 2 a 9 partecipanti:
+
+```sh
+python3 scripts/test-retroarch-netpacket.py \
+  --retroarch /percorso/RetroArch.app/Contents/MacOS/RetroArch \
+  --core /percorso/sm2_libretro.dylib \
+  --rom /percorso/roms/daytona.zip \
+  --system-assets /percorso/system/sm2-emu \
+  --cabinets 3
+```
+
+Per STCC o Sega Rally sostituire la ROM e usare rispettivamente `--set-name
+stcc` o `--set-name srallyc`.
+
+Il runner deriva ogni istanza da una copia della configurazione RetroArch
+esistente, applica directory e porte isolate, conserva log e risultato JSON e
+chiude soltanto i PID che ha creato. Se RetroArch è già aperto, non avvia il test.
+Su macOS il runner dispone esplicitamente le sole finestre appartenenti ai PID
+che ha avviato: per default sono affiancate su due colonne. Usare
+`--window-columns N` per cambiare il numero di colonne oppure
+`--window-layout cascade` per ripristinare la disposizione sovrapposta.
 
 ## Prove ripetibili
 
@@ -703,15 +828,53 @@ non rappresenta la forza direzionale di un volante e non gestisce il recoil
 fisico delle lightgun; il recoil `evdev` è annotato nella roadmap come possibile
 integrazione futura.
 
+## Save State Libretro
+
+Il core implementa `retro_serialize_size`, `retro_serialize` e
+`retro_unserialize` usando la serializzazione frontend-neutral introdotta
+dall'upstream 0.9.8 per tutte le quattro varianti Model 2. RetroArch possiede
+slot e file: il core non importa l'interfaccia standalone né crea una propria
+directory degli stati.
+
+La dimensione dichiarata è fissa a 9 MiB ed è disponibile già prima del
+caricamento del gioco, requisito pratico di RetroArch 1.22.2. L'immagine contiene
+magic, versione, nome del set e tipo di scheda; stati di un altro gioco o board,
+intestazioni errate e payload troncati sono rifiutati. Il caricamento troncato è
+transazionale e lascia intatta la macchina corrente. Il formato corrente è
+versione 2 e non promette compatibilità con altre revisioni del core.
+
+Il core usa inoltre la più recente negoziazione pubblica Libretro
+`RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS` per dichiarare che il formato è
+dipendente da piattaforma ed endianness. I frontend che non implementano il
+comando lo ignorano e continuano a usare gli stessi tre callback standard; non
+sono richieste estensioni private di RetroArch.
+
+Dopo un caricamento vengono invalidate le risorse derivate del renderer e
+azzerate code audio frontend, cadenza, rumble e latch input. I test ABI con ROM
+reali hanno verificato round-trip byte-identico e riesecuzione deterministica di
+tre frame su Daytona USA, VF2, Virtual On e STCC, oltre al rifiuto senza effetti
+di stati corrotti e di VF2 caricato in Daytona. RetroArch Nightly 1.22.2 su
+macOS ha caricato lo stesso stato VF2 dal proprio replay sia con Software sia
+con Vulkan, completando 2300 frame con screenshot, audio e SRAM validi.
+
+Save/load è disabilitato durante `Linked Cabinets`: la communication board
+interna è serializzabile, la sessione Netpacket esterna no. Rewind e run-ahead
+restano da qualificare separatamente sulle piattaforme target.
+
 ## Limiti
 
-Cheat e save state non sono implementati; di conseguenza rewind e run-ahead
-non sono supportati. Renderer Vulkan/OpenGL e Core Options Video sono
+I cheat non sono implementati. Save State è disponibile; rewind e run-ahead
+non sono ancora qualificati. Renderer Vulkan/OpenGL e Core Options Video sono
 disponibili nella build descritta in [GPU.md](GPU.md); la geometria nativa
-software resta fissa. Il collegamento Netpacket è attualmente limitato a due
-cabinet della famiglia Daytona USA ed è stato provato localmente sullo stesso
-Mac con input registrati, senza una prova manuale con due controller o tra due
-host fisici.
+software resta fissa. Il collegamento Netpacket è disponibile per tutte le
+famiglie censite: Daytona, STCC, Sega Rally, Indy 500, Motor Raid, Wave Runner,
+Sega Ski Super G, Super GT 24h, Over Rev, Manx TT e Virtual On. Daytona a due
+cabinet è stato provato in una gara con input registrati; le altre prove reali
+coprono roster da 2 a 9 partecipanti, compresi i ruoli Relay/Live di STCC, Sega
+Rally, Motor Raid, Manx TT e Virtual On. Motor Raid DX salva i valori corretti e
+stabilisce la connessione frontend 2/2, ma non elabora la communication board,
+coerentemente con il suo stato upstream non funzionante. Restano da provare le
+gare sincronizzate indicate nella roadmap, più controller fisici e due host.
 
 Le opzioni selezionate per gli altri parent restano rinviate finché il relativo
 formato non è scrivibile con controllo d'integrità dimostrato. `hpyagu98` e
@@ -733,8 +896,9 @@ reset, senza patchare la RAM volatile. La causa originaria resta aperta: in un
 passaggio futuro va seguito il percorso di salvataggio dei due programmi per
 capire perché cambio ed `EXIT` non scrivono né sulla porta EEPROM né nella SRAM
 di backup, e correggere l'emulazione se il mancato commit dipende da SM2-Emu o
-dalla piattaforma Model 2 condivisa con MAME. `rascot2` resta fuori dalla
-campagna corrente.
+dalla piattaforma Model 2 condivisa con MAME. `rascot2` resta fuori dalle Core
+Options NVRAM perché la procedura acquisita consente l’avvio locale ma non
+espone un normale menu Game Settings.
 
 La prova di gameplay usa input sintetici attraverso RetroArch: non convalida
 un controller fisico. CoreAudio e PCM registrato confermano il percorso audio;
