@@ -4,6 +4,7 @@
 
 #include "hw/m2comm.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -62,6 +63,22 @@ void M2Comm::reset()
     m_linkcount  = 0;
     m_zfg_delay  = 0;
     m_transport->reset();
+}
+
+void M2Comm::serialize(Archive& ar)
+{
+    ar.raw(m_zfg);
+    ar.raw(m_cn);
+    ar.raw(m_fg);
+    ar.raw(m_linkenable);
+    ar.raw(m_linktimer);
+    ar.raw(m_linkalive);
+    ar.raw(m_linkid);
+    ar.raw(m_linkcount);
+    ar.raw(m_zfg_delay);
+    ar.raw(m_frame_sync);
+    ar.raw(m_frame_offset);
+    ar.bytes(m_buffer.data(), m_buffer.size());
 }
 
 void M2Comm::cn_write(u8 value)

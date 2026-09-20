@@ -36,6 +36,7 @@
 
 #include "cpu/mb86233/mb86233.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -124,6 +125,45 @@ std::string MB86233::state_string() const
                   m_pc, m_ppc, m_st, m_sp, m_a, m_b, m_d, m_p, m_r, m_x0, m_x1, m_i0,
                   m_i1);
     return buffer;
+}
+
+void MB86233::serialize(Archive& ar)
+{
+    ar.raw(m_st);
+    ar.raw(m_a);
+    ar.raw(m_b);
+    ar.raw(m_d);
+    ar.raw(m_p);
+    ar.raw(m_alu_stmask);
+    ar.raw(m_alu_stset);
+    ar.raw(m_alu_r1);
+    ar.raw(m_alu_r2);
+    ar.raw(m_ppc);
+    ar.raw(m_pc);
+    ar.raw(m_sp);
+    ar.raw(m_b0);
+    ar.raw(m_b1);
+    ar.raw(m_x0);
+    ar.raw(m_x1);
+    ar.raw(m_i0);
+    ar.raw(m_i1);
+    ar.raw(m_vsmr);
+    ar.bytes(m_pcs, 4);
+    ar.raw(m_mask);
+    ar.raw(m_m);
+    ar.raw(m_r);
+    ar.raw(m_rpc);
+    ar.raw(m_c0);
+    ar.raw(m_c1);
+    ar.raw(m_sft);
+    ar.raw(m_vsm);
+    ar.raw(m_gpio0);
+    ar.raw(m_gpio1);
+    ar.raw(m_gpio2);
+    ar.raw(m_gpio3);
+    ar.raw(m_stall);
+    ar.raw(m_halted);
+    ar.raw(m_instructions);
 }
 
 u32 MB86233::set_exp(u32 val, u32 exp)

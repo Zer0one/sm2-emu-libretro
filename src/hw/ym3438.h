@@ -34,6 +34,10 @@
 
 #include <ymfm_opn.h>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 class Ym3438 final : private ymfm::ymfm_interface {
@@ -70,6 +74,10 @@ public:
         bool irq_asserted    = false;
     };
     [[nodiscard]] const Stats& stats() const { return m_stats; }
+
+    /// Save/restore the chip (via ymfm's own save_restore) plus the wrapper's
+    /// timer and resampler POD.
+    void serialize(Archive& ar);
 
 private:
     /// One FM sample is 24 operator slots at a prescale of 6. ymfm hands timer

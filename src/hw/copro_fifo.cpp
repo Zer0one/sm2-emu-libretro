@@ -5,6 +5,8 @@
 
 #include "hw/copro_fifo.h"
 
+#include "core/archive.h"
+
 #include <algorithm>
 
 namespace sm2::hw {
@@ -98,6 +100,15 @@ void CoproFifo::push(u32 value)
             m_on_unempty();
         }
     }
+}
+
+void CoproFifo::serialize(Archive& ar)
+{
+    ar.deque_u32(m_values);
+    ar.deque_u32(m_overflow);
+    ar.raw(m_depth);
+    ar.raw(m_empty_halted);
+    ar.raw(m_full_halted);
 }
 
 }  // namespace sm2::hw

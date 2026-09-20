@@ -172,6 +172,11 @@ public:
     [[nodiscard]] std::span<u8> settings_eeprom() override { return m_eeprom.bytes(); }
     [[nodiscard]] std::span<const u8> settings_eeprom() const override { return m_eeprom.bytes(); }
 
+    [[nodiscard]] bool save_state(const std::string& path) const override;
+    [[nodiscard]] bool load_state(const std::string& path) override;
+    [[nodiscard]] bool save_state(std::vector<u8>& out) const override;
+    [[nodiscard]] bool load_state(const u8* data, usize size) override;
+
     /// Copy the set's shipped EEPROM image over the chip, if it ships one.
     void seed_eeprom_from_rom();
 
@@ -360,6 +365,7 @@ private:
 
     [[nodiscard]] u8 io_port_b_read();
     [[nodiscard]] u8 io_port_c_read();
+    [[nodiscard]] u8 io_port_d_read();
     [[nodiscard]] u8 lightgun_mux_read();
     void             lightgun_mux_write(u8 value);
     [[nodiscard]] u8 lightgun_data_read(u8 offset) const;
@@ -370,6 +376,11 @@ private:
 
     void note_unmapped_read(u32 address, u32 width);
     void note_unmapped_write(u32 address, u32 value, u32 width);
+
+    /// Walk owned components, RAM and board scalars through the archive (same
+    /// shape as Model2C, coprocessor is the MB86233 TGP). See model2c.cpp for
+    /// the load contract.
+    void serialize(Archive& ar);
 
     // -- devices -----------------------------------------------------------
 
@@ -471,6 +482,7 @@ private:
     u32  m_geo_write_start_address = 0;
     u32  m_geo_read_start_address  = 0;
     bool m_ctrlmode       = false;  ///< port B returns EEPROM data instead of IN0
+    bool m_airwlkrs_second_pair = false; ///< port F bit 7 selects P3/P4
 
     /// Which of the lightgun interface board's byte lanes the program selected.
     u8 m_lightgun_mux = 0;
@@ -501,6 +513,9 @@ private:
     u64 m_cycles      = 0;  ///< master cycles since reset, at 25 MHz
     u64 m_frame_start = 0;
     u64 m_frames      = 0;
+
+    /// True only while run_frame() runs; save/load assert it is false. Transient.
+    bool m_in_frame = false;
 
     /// Delayed intena update, matching MAME's 80 ns timer.
     u32  m_pending_intena       = 0;

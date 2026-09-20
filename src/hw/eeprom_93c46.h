@@ -20,6 +20,10 @@
 #include <span>
 #include <string>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 /// 93C46 serial EEPROM, 64 words of 16 bits.
@@ -62,6 +66,9 @@ public:
     /// True when a word has been written since the last save.
     [[nodiscard]] bool dirty() const { return m_dirty; }
     void clear_dirty() { m_dirty = false; }
+
+    /// Save/restore the memory contents and the serial state machine.
+    void serialize(Archive& ar);
 
 private:
     enum class State {

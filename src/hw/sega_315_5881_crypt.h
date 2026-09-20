@@ -11,6 +11,10 @@
 #include <utility>
 #include <vector>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 /// Sega 315-5881 stream cipher, as used on Model 2 security boards.
@@ -70,6 +74,10 @@ public:
 
     [[nodiscard]] static const Sbox& fn1_sbox(int round, int index);
     [[nodiscard]] static const Sbox& fn2_sbox(int round, int index);
+
+    /// Save/restore the decrypt state machine and its buffers. The read
+    /// callback and key are excluded (re-bound / re-supplied in init()).
+    void serialize(Archive& ar);
 
 private:
     /// MAME notes that this ought to be a stream rather than a buffer; two

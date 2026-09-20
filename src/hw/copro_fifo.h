@@ -6,6 +6,10 @@
 #include <deque>
 #include <functional>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 /// A hardware FIFO with flow control, between two processors.
@@ -78,6 +82,10 @@ public:
 
     /// Called when a pop drains the overflow: the source can resume.
     void set_on_unfull(std::function<void()> handler) { m_on_unfull = std::move(handler); }
+
+    /// Save/restore the queued values and halt latches. The flow-control
+    /// callbacks are excluded (re-bound by the owner's wiring).
+    void serialize(Archive& ar);
 
 private:
     /// Values within the configured depth, oldest first. A deque gives O(1)

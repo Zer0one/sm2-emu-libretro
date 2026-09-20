@@ -6,6 +6,7 @@
 #include "nvram_settings.h"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -22,6 +23,7 @@ enum class AspectRatioMode { Automatic, FourThree, SixteenNine };
 
 inline retro_environment_t option_environment = nullptr;
 inline std::string option_game;
+inline std::string option_content_game;
 inline bool nvram_master_visible = false;
 inline bool nvram_game_visible = false;
 inline std::vector<retro_core_option_v2_definition> registered_definitions;
@@ -32,6 +34,75 @@ inline std::deque<std::string> option_value_label_storage;
 inline std::deque<std::string> default_label_storage;
 inline std::deque<std::string> legacy_value_storage;
 inline std::vector<retro_variable> legacy_definitions;
+
+struct LinkedCabinetGame {
+    std::string_view name;
+    std::string_view nvram_game;
+    unsigned max_cabinets;
+};
+
+inline constexpr std::array<LinkedCabinetGame, 28> linked_cabinet_games{{
+    {"daytona", "daytona", 8},
+    {"daytonas", "daytonas", 8}, {"daytonase", "daytona", 8},
+    {"daytonam", "daytona", 8},
+    {"stcc", "stcc", 9}, {"stcca", "stcca", 9}, {"stccb", "stccb", 9},
+    {"stcco", "stcco", 9},
+    {"srallyc", "srallyc", 5}, {"srallycb", "srallyc", 5},
+    {"srallycc", "srallyc", 5},
+    {"indy500", "indy500", 8}, {"indy500d", "indy500d", 8},
+    {"indy500to", "indy500", 8},
+    {"motoraid", "motoraid", 4}, {"motoraiddx", "motoraiddx", 4},
+    {"waverunr", "waverunr", 4}, {"skisuprg", "skisuprg", 4},
+    {"sgt24h", "sgt24h", 4},
+    {"overrev", "overrev", 4}, {"overrevb", "overrev", 4},
+    {"overrevba", "overrev", 4},
+    {"manxtt", "manxtt", 3}, {"manxttc", "manxtt", 3},
+    {"von", "von", 3}, {"vonj", "von", 3}, {"vonu", "von", 3},
+    {"vonr", "von", 3},
+}};
+
+inline constexpr std::array<retro_core_option_value, 9> linked_cabinet_values{{
+    {"disabled", "Disabled"}, {"2", "2 Cabinets"}, {"3", "3 Cabinets"},
+    {"4", "4 Cabinets"}, {"5", "5 Cabinets"}, {"6", "6 Cabinets"},
+    {"7", "7 Cabinets"}, {"8", "8 Cabinets"}, {"9", "9 Cabinets"},
+}};
+
+inline const LinkedCabinetGame* linked_cabinet_game(std::string_view game)
+{
+    const auto found = std::find_if(linked_cabinet_games.begin(), linked_cabinet_games.end(),
+        [game](const auto& candidate) { return candidate.name == game; });
+    return found == linked_cabinet_games.end() ? nullptr : &*found;
+}
+
+inline std::string_view linked_cabinet_network_family(std::string_view game)
+{
+    return game == "von" || game == "vonj" || game == "vonu" || game == "vonr"
+        ? std::string_view{"von"} : game;
+}
+
+inline std::string_view linked_cabinet_rules(const LinkedCabinetGame& linked_game)
+{
+    if (linked_game.name == "vonr")
+        return "This dedicated Relay program is valid only in a 3 Cabinets session with one Master Twin and one Slave Twin; it displays the linked match and is not playable.";
+    const std::string_view game = linked_game.nvram_game;
+    if (game == "daytona" || game == "daytonas")
+        return "Use exactly one Master and one Slave for every remaining cabinet. Car Numbers must be unique and sequential from 1 through the selected total. Relay is not available.";
+    if (game == "stcc" || game == "stcca" || game == "stccb" || game == "stcco")
+        return "Use unique, sequential Car roles from Car 1 through the number of playable cabinets. One optional Relay may be included in the selected total; never configure more than one Relay.";
+    if (game == "srallyc")
+        return "Use unique, sequential Car roles from Car 1 through the number of playable cabinets. One optional Relay may be included in the selected total; never configure more than one Relay.";
+    if (game == "manxtt")
+        return "For 2 Cabinets use Master and Slave. For 3 Cabinets use Master, Slave and one Relay.";
+    if (game == "von")
+        return "For 2 Cabinets use one Twin set as Master and one Twin set as Slave. For 3 Cabinets add exactly one dedicated vonr Relay set; the Relay displays the linked match and is not a playable cabinet.";
+    if (game == "sgt24h")
+        return "Use Car No.1 Master and sequential Slave roles for the remaining cabinets. Link Max must equal the selected total. Relay is not available.";
+    if (game == "overrev")
+        return "Use Master CarNo.1 and sequential Slave roles for the remaining cabinets. Link Max must equal the selected total. Relay is not available.";
+    if (game == "motoraid" || game == "motoraiddx")
+        return "Use exactly one Master and sequential Slave cabinets with unique IDs. Live is the relay/live-monitor role: it is included in the selected total and at most one cabinet should use it.";
+    return "Use exactly one Master and one Slave for every remaining cabinet. Cabinet IDs must be unique and sequential from 1 through the selected total. Relay is not available.";
+}
 
 inline std::string retroarch_option_label(std::string_view label)
 {
@@ -86,7 +157,7 @@ inline void build_option_definitions()
 {
     if (!registered_definitions.empty()) return;
     const auto all = nvram::all_options();
-    registered_definitions.reserve(all.size() + 20);
+    registered_definitions.reserve(all.size() + 28);
 
     retro_core_option_v2_definition initial_nvram{};
     initial_nvram.key = "sm2_initial_nvram_setup";
@@ -98,21 +169,36 @@ inline void build_option_definitions()
     initial_nvram.default_value = "enabled";
     registered_definitions.push_back(initial_nvram);
 
-    retro_core_option_v2_definition linked_cabinets{};
-    linked_cabinets.key = "sm2_linked_cabinets";
-    linked_cabinets.desc = "Linked Cabinets (Restart Required)";
-    linked_cabinets.info = "Set the total number of Model 2 cabinets expected in the RetroArch Netplay session. Disabled preserves the standalone one-node loopback. Two cabinets are currently validated for the Daytona USA family; larger sessions are reserved for the planned networking extension. Every instance must use the same ROM, core and value, then restart content.";
-    linked_cabinets.category_key = "system";
-    linked_cabinets.values[0] = {"disabled", "Disabled"};
-    linked_cabinets.values[1] = {"2", "2 Cabinets"};
-    linked_cabinets.values[2] = {"3", "3 Cabinets"};
-    linked_cabinets.values[3] = {"4", "4 Cabinets"};
-    linked_cabinets.values[4] = {"5", "5 Cabinets"};
-    linked_cabinets.values[5] = {"6", "6 Cabinets"};
-    linked_cabinets.values[6] = {"7", "7 Cabinets"};
-    linked_cabinets.values[7] = {"8", "8 Cabinets"};
-    linked_cabinets.default_value = "disabled";
-    registered_definitions.push_back(linked_cabinets);
+    for (const auto& game : linked_cabinet_games) {
+        option_key_storage.emplace_back("sm2_linked_cabinets_" + std::string(game.name));
+        retro_core_option_v2_definition linked_cabinets{};
+        linked_cabinets.key = option_key_storage.back().c_str();
+        linked_cabinets.desc = "Linked Cabinets (Restart Required)";
+        option_info_storage.emplace_back(
+            "Set the total number of cabinets expected for this game in the RetroArch Netplay session. All displayed totals are supported; there is no even-number requirement. Disabled preserves the standalone one-node loopback. Every instance must use the same core and value, then restart content. Use the same ROM unless the game-specific rules below require a dedicated Relay program. "
+            + std::string(linked_cabinet_rules(game)));
+        linked_cabinets.info = option_info_storage.back().c_str();
+        linked_cabinets.category_key = "system";
+        if (game.name == "vonr") {
+            linked_cabinets.values[0] = linked_cabinet_values[0];
+            linked_cabinets.values[1] = linked_cabinet_values[2];
+        } else {
+            std::copy_n(linked_cabinet_values.begin(), game.max_cabinets,
+                        linked_cabinets.values);
+        }
+        linked_cabinets.default_value = "disabled";
+        registered_definitions.push_back(linked_cabinets);
+    }
+
+    retro_core_option_v2_definition ski_drive_board_bypass{};
+    ski_drive_board_bypass.key = "sm2_skisuprg_drive_board_bypass";
+    ski_drive_board_bypass.desc = "Drive Board Error Bypass (Restart Required)";
+    ski_drive_board_bypass.info = "For Sega Ski Super G, automatically press Test once when the game reaches the DRIVE BOARD TROUBLE CODE: FF screen. This allows play without the unimplemented external Drive Board. Disabled preserves the original SM2-Emu startup behaviour.";
+    ski_drive_board_bypass.category_key = "system";
+    ski_drive_board_bypass.values[0] = {"disabled", "Disabled"};
+    ski_drive_board_bypass.values[1] = {"enabled", "Enabled"};
+    ski_drive_board_bypass.default_value = "disabled";
+    registered_definitions.push_back(ski_drive_board_bypass);
 
     retro_core_option_v2_definition master{};
     master.key = "sm2_nvram_settings";
@@ -589,14 +675,27 @@ inline bool offscreen_reload_shortcut_enabled()
              && option.value && std::strcmp(option.value, "disabled") == 0);
 }
 
-inline unsigned linked_cabinets()
+inline unsigned linked_cabinets(std::string_view game)
 {
-    retro_variable option{"sm2_linked_cabinets", nullptr};
+    const auto* linked_game = linked_cabinet_game(game);
+    if (!linked_game) return 1;
+    const std::string key = "sm2_linked_cabinets_" + std::string(game);
+    retro_variable option{key.c_str(), nullptr};
     if (!option_environment || !option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
         || !option.value || std::strcmp(option.value, "disabled") == 0)
         return 1;
     const unsigned cabinets = static_cast<unsigned>(option.value[0] - '0');
-    return cabinets >= 2 && cabinets <= 8 && option.value[1] == '\0' ? cabinets : 1;
+    const unsigned minimum = game == "vonr" ? 3u : 2u;
+    return cabinets >= minimum && cabinets <= linked_game->max_cabinets
+        && option.value[1] == '\0'
+        ? cabinets : 1;
+}
+
+inline bool ski_super_g_drive_board_bypass_enabled()
+{
+    retro_variable option{"sm2_skisuprg_drive_board_bypass", nullptr};
+    return option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+        && option.value && std::strcmp(option.value, "enabled") == 0;
 }
 
 inline bool update_option_visibility()
@@ -611,6 +710,19 @@ inline bool update_option_visibility()
     option_environment(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &master);
     for (const auto& definition : registered_definitions) {
         if (!definition.key || std::strcmp(definition.key, "sm2_nvram_settings") == 0) continue;
+        const std::string_view key = definition.key;
+        if (key.starts_with("sm2_linked_cabinets_")) {
+            retro_core_option_display display{definition.key,
+                key.substr(std::strlen("sm2_linked_cabinets_")) == option_content_game};
+            option_environment(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &display);
+            continue;
+        }
+        if (key == "sm2_skisuprg_drive_board_bypass") {
+            retro_core_option_display display{definition.key,
+                                               option_content_game == "skisuprg"};
+            option_environment(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &display);
+            continue;
+        }
         if (!std::string_view(definition.key).starts_with("sm2_nvram_")) {
             retro_core_option_display display{definition.key, true};
             option_environment(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &display);
@@ -627,9 +739,10 @@ inline bool update_option_visibility()
     return changed;
 }
 
-inline void set_option_game(std::string game)
+inline void set_option_game(std::string game, std::string content_game = {})
 {
     option_game = std::move(game);
+    option_content_game = content_game.empty() ? option_game : std::move(content_game);
     update_option_visibility();
 }
 

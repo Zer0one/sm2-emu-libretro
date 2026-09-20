@@ -5,6 +5,7 @@
 
 #include "hw/dsbz80.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -82,6 +83,34 @@ void DsbZ80::reset()
     });
 
     m_cpu.reset();
+}
+
+void DsbZ80::serialize(Archive& ar)
+{
+    m_cpu.serialize(ar);
+    m_uart.serialize(ar);
+    ar.bytes(m_ram.data(), m_ram.size());
+    ar.raw(m_mp_start);
+    ar.raw(m_mp_end);
+    ar.raw(m_mp_vol);
+    ar.raw(m_mp_pan);
+    ar.raw(m_mp_state);
+    ar.raw(m_lp_start);
+    ar.raw(m_lp_end);
+    ar.raw(m_start);
+    ar.raw(m_end);
+    ar.raw(m_mp_pos);
+    ar.raw(m_audio_pos);
+    ar.raw(m_audio_avail);
+    ar.raw(m_cycle_debt);
+    ar.raw(m_resample_frac);
+    ar.bytes(m_audio_buf, 1152 * 2);
+
+    bool has_decoder = m_decoder != nullptr;
+    ar.raw(has_decoder);
+    if (has_decoder && m_decoder) {
+        m_decoder->serialize(ar);
+    }
 }
 
 void DsbZ80::write_txd(u8 value)

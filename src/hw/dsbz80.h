@@ -78,6 +78,11 @@ public:
         u64 mpeg_frames     = 0;
     };
     [[nodiscard]] const Counters& counters() const { return m_counters; }
+
+    /// Save/restore the board: Z80, UART, 32 KB RAM, MPEG decoder state, the
+    /// decoded-frame buffer and every playback scalar. ROM spans and the rxd
+    /// callback are excluded (re-bound at attach).
+    void serialize(Archive& ar);
     [[nodiscard]] u32 mp_state() const { return m_mp_state; }
 
 private:

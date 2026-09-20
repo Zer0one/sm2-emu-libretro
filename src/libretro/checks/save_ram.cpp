@@ -133,7 +133,18 @@ int main()
     const auto* gamepad_rumble = find_definition("sm2_gamepad_rumble");
     const auto* audio_balance = find_definition("sm2_audio_balance");
     const auto* crosshairs = find_definition("sm2_crosshairs");
-    const auto* linked_cabinets = find_definition("sm2_linked_cabinets");
+    const auto* linked_cabinets = find_definition("sm2_linked_cabinets_daytona");
+    const auto* stcc_linked_cabinets = find_definition("sm2_linked_cabinets_stcc");
+    const auto* rally_linked_cabinets = find_definition("sm2_linked_cabinets_srallyc");
+    const auto* indy_linked_cabinets = find_definition("sm2_linked_cabinets_indy500");
+    const auto* motor_linked_cabinets = find_definition("sm2_linked_cabinets_motoraid");
+    const auto* sgt24h_linked_cabinets = find_definition("sm2_linked_cabinets_sgt24h");
+    const auto* overrev_linked_cabinets = find_definition("sm2_linked_cabinets_overrev");
+    const auto* manxtt_linked_cabinets = find_definition("sm2_linked_cabinets_manxtt");
+    const auto* von_linked_cabinets = find_definition("sm2_linked_cabinets_von");
+    const auto* vonr_linked_cabinets = find_definition("sm2_linked_cabinets_vonr");
+    const auto* ski_drive_board_bypass =
+        find_definition("sm2_skisuprg_drive_board_bypass");
     const auto* nvram_settings = find_definition("sm2_nvram_settings");
     expect(difficulty && std::string_view(difficulty->values[0].label) == "Normal (Default)"
                && std::string_view(difficulty->values[1].label) == "Hard",
@@ -187,25 +198,144 @@ int main()
     expect(crosshairs && std::string_view(crosshairs->default_value) == "auto"
                && std::string_view(crosshairs->values[0].label) == "Automatic",
            "crosshair option uses one game-aware Automatic default");
-    expect(linked_cabinets && nvram_settings && linked_cabinets < nvram_settings
+    expect(linked_cabinets && stcc_linked_cabinets && rally_linked_cabinets
+               && indy_linked_cabinets
+               && motor_linked_cabinets && sgt24h_linked_cabinets
+               && overrev_linked_cabinets && manxtt_linked_cabinets
+               && von_linked_cabinets && vonr_linked_cabinets
+               && nvram_settings
+               && linked_cabinets < stcc_linked_cabinets
+               && stcc_linked_cabinets < rally_linked_cabinets
+               && rally_linked_cabinets < indy_linked_cabinets
+               && indy_linked_cabinets < motor_linked_cabinets
+               && motor_linked_cabinets < nvram_settings
                && std::string_view(linked_cabinets->default_value) == "disabled"
                && std::string_view(linked_cabinets->values[0].value) == "disabled"
                && std::string_view(linked_cabinets->values[0].label) == "Disabled"
                && std::string_view(linked_cabinets->values[1].value) == "2"
                && std::string_view(linked_cabinets->values[1].label) == "2 Cabinets"
                && std::string_view(linked_cabinets->values[7].value) == "8"
-               && std::string_view(linked_cabinets->values[7].label) == "8 Cabinets",
-           "Linked Cabinets precedes NVRAM Settings and reserves two to eight cabinets");
-    option_values["sm2_linked_cabinets"] = "2";
-    expect(libretro::linked_cabinets() == 2,
+               && std::string_view(linked_cabinets->values[7].label) == "8 Cabinets"
+               && std::string_view(indy_linked_cabinets->values[7].label) == "8 Cabinets"
+               && std::string_view(stcc_linked_cabinets->values[8].label) == "9 Cabinets"
+               && std::string_view(rally_linked_cabinets->values[4].label) == "5 Cabinets"
+               && rally_linked_cabinets->values[5].value == nullptr
+               && std::string_view(motor_linked_cabinets->values[3].label) == "4 Cabinets"
+               && motor_linked_cabinets->values[4].value == nullptr
+               && std::string_view(sgt24h_linked_cabinets->values[3].label) == "4 Cabinets"
+               && sgt24h_linked_cabinets->values[4].value == nullptr
+               && std::string_view(overrev_linked_cabinets->values[3].label) == "4 Cabinets"
+               && overrev_linked_cabinets->values[4].value == nullptr
+               && std::string_view(manxtt_linked_cabinets->values[2].label) == "3 Cabinets"
+               && manxtt_linked_cabinets->values[3].value == nullptr
+               && std::string_view(von_linked_cabinets->values[2].label) == "3 Cabinets"
+               && von_linked_cabinets->values[3].value == nullptr
+               && std::string_view(vonr_linked_cabinets->values[1].label) == "3 Cabinets"
+               && vonr_linked_cabinets->values[2].value == nullptr,
+           "Linked Cabinets precedes NVRAM Settings and applies each game's cabinet limit");
+    expect(std::string_view(stcc_linked_cabinets->info).find("One optional Relay")
+               != std::string_view::npos,
+           "STCC Linked Cabinets documents its optional single Relay");
+    expect(std::string_view(rally_linked_cabinets->info).find("One optional Relay")
+               != std::string_view::npos,
+           "Sega Rally Linked Cabinets documents its optional single Relay");
+    expect(std::string_view(manxtt_linked_cabinets->info).find(
+               "For 3 Cabinets use Master, Slave and one Relay") != std::string_view::npos,
+           "Manx TT Linked Cabinets documents its fixed three-participant combination");
+    expect(std::string_view(von_linked_cabinets->info).find(
+               "one dedicated vonr Relay set") != std::string_view::npos,
+           "Virtual On Linked Cabinets documents its dedicated Relay program");
+    expect(std::string_view(vonr_linked_cabinets->info).find(
+               "valid only in a 3 Cabinets session") != std::string_view::npos,
+           "Virtual On Relay documents its only valid participant count");
+    expect(std::string_view(linked_cabinets->info).find("Relay is not available")
+               != std::string_view::npos,
+           "Daytona Linked Cabinets documents that Relay is unavailable");
+    expect(ski_drive_board_bypass
+               && std::string_view(ski_drive_board_bypass->desc)
+                    == "Drive Board Error Bypass (Restart Required)"
+               && std::string_view(ski_drive_board_bypass->default_value) == "disabled"
+               && std::string_view(ski_drive_board_bypass->values[0].label) == "Disabled"
+               && std::string_view(ski_drive_board_bypass->values[1].label) == "Enabled",
+           "Sega Ski Super G Drive Board bypass is optional and disabled by default");
+    option_values["sm2_linked_cabinets_daytona"] = "2";
+    expect(libretro::linked_cabinets("daytona") == 2,
            "Linked Cabinets reads the validated two-cabinet value");
-    option_values["sm2_linked_cabinets"] = "8";
-    expect(libretro::linked_cabinets() == 8,
-           "Linked Cabinets reads the reserved eight-cabinet value");
-    option_values["sm2_linked_cabinets"] = "enabled";
-    expect(libretro::linked_cabinets() == 1,
+    option_values["sm2_linked_cabinets_daytona"] = "8";
+    expect(libretro::linked_cabinets("daytona") == 8,
+           "Linked Cabinets reads the eight-cabinet value");
+    expect(libretro::linked_cabinets("daytona93") == 1,
+           "Daytona 1993 stays excluded because its menu has no link settings");
+    option_values["sm2_linked_cabinets_daytona93"] = "4";
+    expect(libretro::linked_cabinets("daytona93") == 1,
+           "A stale Daytona 1993 option cannot enable linked cabinets");
+    option_values["sm2_linked_cabinets_stcc"] = "9";
+    expect(libretro::linked_cabinets("stcc") == 9,
+           "STCC accepts eight cars plus its Relay cabinet");
+    expect(libretro::linked_cabinets("stcca") == 1,
+           "STCC clone values remain independent from the parent");
+    option_values["sm2_linked_cabinets_srallycc"] = "5";
+    expect(libretro::linked_cabinets("srallycc") == 5,
+           "Sega Rally revision C accepts four cars plus its Relay cabinet");
+    expect(libretro::linked_cabinets("srallycdx") == 1
+               && libretro::linked_cabinets("srallycdxa") == 1,
+           "Sega Rally Deluxe sets stay excluded from linked play");
+    option_values["sm2_linked_cabinets_indy500to"] = "8";
+    expect(libretro::linked_cabinets("indy500to") == 8,
+           "Indy 500 clone accepts the family's eight-cabinet limit");
+    option_values["sm2_linked_cabinets_motoraid"] = "4";
+    expect(libretro::linked_cabinets("motoraid") == 4,
+           "Motor Raid accepts four linked cabinets");
+    option_values["sm2_linked_cabinets_motoraid"] = "5";
+    expect(libretro::linked_cabinets("motoraid") == 1,
+           "Motor Raid rejects a cabinet count above its hardware limit");
+    option_values["sm2_linked_cabinets_sgt24h"] = "4";
+    expect(libretro::linked_cabinets("sgt24h") == 4,
+           "Super GT 24h accepts its four-cabinet limit");
+    option_values["sm2_linked_cabinets_overrevba"] = "4";
+    expect(libretro::linked_cabinets("overrevba") == 4,
+           "Over Rev Revision A accepts its four-cabinet limit");
+    option_values["sm2_linked_cabinets_manxttc"] = "3";
+    expect(libretro::linked_cabinets("manxttc") == 3,
+           "Manx TT Revision C accepts Master, Slave and Relay");
+    expect(libretro::linked_cabinets("manxttdx") == 1,
+           "Manx TT Deluxe stays excluded because its menu has no Link Type");
+    option_values["sm2_linked_cabinets_von"] = "3";
+    option_values["sm2_linked_cabinets_vonr"] = "3";
+    expect(libretro::linked_cabinets("von") == 3
+               && libretro::linked_cabinets("vonr") == 3,
+           "Virtual On Twin and dedicated Relay programs share a three-participant limit");
+    option_values["sm2_linked_cabinets_vonr"] = "2";
+    expect(libretro::linked_cabinets("vonr") == 1,
+           "Virtual On Relay rejects a session without both Twin participants");
+    expect(libretro::linked_cabinet_network_family("von") == "von"
+               && libretro::linked_cabinet_network_family("vonj") == "von"
+               && libretro::linked_cabinet_network_family("vonu") == "von"
+               && libretro::linked_cabinet_network_family("vonr") == "von"
+               && libretro::linked_cabinet_network_family("daytona") == "daytona",
+           "Virtual On programs use one compatible Netpacket family");
+    expect(libretro::linked_cabinets("vf2") == 1,
+           "Linked Cabinets does not leak into an unrelated game");
+    option_values["sm2_linked_cabinets_daytona"] = "enabled";
+    expect(libretro::linked_cabinets("daytona") == 1,
            "Linked Cabinets rejects the obsolete Enabled value");
-    option_values.erase("sm2_linked_cabinets");
+    option_values.erase("sm2_linked_cabinets_daytona");
+    option_values.erase("sm2_linked_cabinets_daytona93");
+    option_values.erase("sm2_linked_cabinets_stcc");
+    option_values.erase("sm2_linked_cabinets_srallycc");
+    option_values.erase("sm2_linked_cabinets_indy500to");
+    option_values.erase("sm2_linked_cabinets_motoraid");
+    option_values.erase("sm2_linked_cabinets_sgt24h");
+    option_values.erase("sm2_linked_cabinets_overrevba");
+    option_values.erase("sm2_linked_cabinets_manxttc");
+    option_values.erase("sm2_linked_cabinets_von");
+    option_values.erase("sm2_linked_cabinets_vonr");
+    expect(!libretro::ski_super_g_drive_board_bypass_enabled(),
+           "Sega Ski Super G Drive Board bypass defaults to disabled");
+    option_values["sm2_skisuprg_drive_board_bypass"] = "enabled";
+    expect(libretro::ski_super_g_drive_board_bypass_enabled(),
+           "Sega Ski Super G Drive Board bypass reads the enabled value");
+    option_values.erase("sm2_skisuprg_drive_board_bypass");
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
     const auto* texture_filter = find_definition("sm2_texture_filter");
     const auto* upscale_2d = find_definition("sm2_upscale_2d");
@@ -263,12 +393,21 @@ int main()
            "only the loaded game's NVRAM option group is visible");
     for (const auto* definition = definitions; definition->key; ++definition) {
         const std::string_view key = definition->key;
-        if (key != "sm2_nvram_settings" && !key.starts_with("sm2_nvram_"))
+        if (key != "sm2_nvram_settings" && !key.starts_with("sm2_nvram_")
+            && !key.starts_with("sm2_linked_cabinets_")
+            && key != "sm2_skisuprg_drive_board_bypass")
             expect(option_visibility[definition->key],
                    "all non-NVRAM options remain visible for Daytona");
     }
-    expect(option_visibility["sm2_linked_cabinets"],
+    expect(option_visibility["sm2_linked_cabinets_daytona"],
            "Linked Cabinets is visible for the supported Daytona family");
+    expect(!option_visibility["sm2_skisuprg_drive_board_bypass"],
+           "Sega Ski Super G Drive Board bypass is hidden for Daytona");
+    option_visibility.clear();
+    libretro::set_option_game("von", "vonr");
+    expect(option_visibility["sm2_linked_cabinets_vonr"]
+               && !option_visibility["sm2_linked_cabinets_von"],
+           "Virtual On Relay exposes only its own Linked Cabinets option");
     option_values["sm2_nvram_settings"] = "disabled";
     std::set<std::string> nvram_games;
     for (const auto& option : libretro::nvram::all_options())
@@ -282,15 +421,36 @@ int main()
                 expect_game(!option_visibility[definition->key], game,
                             "NVRAM child option is hidden when NVRAM Settings is disabled");
         }
-        expect_game(option_visibility["sm2_linked_cabinets"], game,
-                    "Linked Cabinets follows the always-visible non-NVRAM convention");
+        for (const auto& linked_game : libretro::linked_cabinet_games) {
+            const std::string key = "sm2_linked_cabinets_" + std::string(linked_game.name);
+            expect_game(option_visibility[key] == (game == linked_game.name), game,
+                        "only the loaded game's Linked Cabinets option is visible");
+        }
     }
     option_values.clear();
+    libretro::set_option_game("daytona");
+    for (const auto& game : libretro::linked_cabinet_games) {
+        option_visibility.clear();
+        libretro::set_option_game(std::string(game.nvram_game), std::string(game.name));
+        for (const auto& linked_game : libretro::linked_cabinet_games) {
+            const std::string key = "sm2_linked_cabinets_" + std::string(linked_game.name);
+            expect_game(option_visibility[key] == (game.name == linked_game.name), game.name,
+                        "parent and clones expose only their own networking option");
+        }
+    }
+    option_visibility.clear();
+    libretro::set_option_game("skisuprg", "skisuprg");
+    expect(option_visibility["sm2_skisuprg_drive_board_bypass"],
+           "Sega Ski Super G exposes its Drive Board bypass");
+    option_visibility.clear();
+    libretro::set_option_game("vf2", "vf2");
+    expect(!option_visibility["sm2_skisuprg_drive_board_bypass"],
+           "Sega Ski Super G Drive Board bypass does not leak to other games");
     libretro::set_option_game("daytona");
     {
         const auto options = libretro::nvram::all_options();
         std::set<std::string> keys;
-        expect(options.size() == 289, "reviewed NVRAM option catalog has 289 entries");
+        expect(options.size() == 293, "reviewed NVRAM option catalog has 293 entries");
         for (const auto& option : options) {
             const std::string key = std::string(option.game) + ":" + option.suffix;
             expect(keys.insert(key).second, "NVRAM option keys are unique");
@@ -326,8 +486,21 @@ int main()
         expect(libretro::nvram::options_for_game("dyndeka2").size() == 3
                    && libretro::nvram::options_for_game("dyndeka2b").size() == 3,
                "Dynamite Deka 2 revisions expose the three reviewed editable settings");
-        expect(libretro::nvram::options_for_game("motoraiddx").size() == 8,
+        const auto motoraiddx_options = libretro::nvram::options_for_game("motoraiddx");
+        expect(motoraiddx_options.size() == 8,
                "Motor Raid Deluxe omits read-only Engine Volume and adds Cabinet Type");
+        static constexpr std::string_view motoraiddx_order[] = {
+            "game_difficulty", "race_mode", "enemy_level", "advertise_sound",
+            "country", "network_type", "cabinet_id", "cabinet_type",
+        };
+        expect(std::equal(motoraiddx_options.begin(), motoraiddx_options.end(),
+                          std::begin(motoraiddx_order), std::end(motoraiddx_order),
+                          [](const auto& option, const auto suffix) {
+                              return std::string_view(option.suffix) == suffix;
+                          }),
+               "Motor Raid Deluxe options follow the acquired Service Menu order");
+        expect(libretro::nvram::options_for_game("srallycdx").size() == 4,
+               "Sega Rally Deluxe exposes its reduced Game Assignments menu");
         expect(libretro::nvram::options_for_game("srallycdxa").size() == 4,
                "Sega Rally Deluxe revision A exposes its reduced Game Assignments menu");
         expect(libretro::nvram::options_for_game("hotdp").size() == 4,
@@ -335,7 +508,7 @@ int main()
 
         std::set<std::string> games;
         for (const auto& option : options) games.insert(option.game);
-        expect(games.size() == 49, "initial NVRAM catalog covers 49 reviewed sets");
+        expect(games.size() == 50, "initial NVRAM catalog covers 50 reviewed sets");
         const std::set<std::pair<std::string, std::string>> offline = {
             {"daytona", "link_id"}, {"daytonas", "link_id"},
             {"manxtt", "link_type"}, {"motoraiddx", "network_type"}, {"indy500d", "network_type"},
@@ -440,13 +613,13 @@ int main()
             {"zerogunaj", "zeroguna"}, {"zerogunj", "zerogun"},
             {"daytonase", "daytona"}, {"indy500to", "indy500"},
             {"manxttc", "manxtt"}, {"sfight", "schamp"},
-            {"srallycdx", "srallyc"}, {"doaa", "doa"},
+            {"doaa", "doa"},
             {"doaab", "doa"}, {"doaae", "doa"}, {"doab", "doa"},
             {"dynamcopb", "dynamcop"}, {"dynamcopc", "dynamcop"},
             {"manxttdx", "manxtt"}, {"vf2b", "vf2"},
         };
-        expect(std::size(parent_catalog_clones) == 34,
-               "34 clone Service Menus reuse the reviewed parent catalog");
+        expect(std::size(parent_catalog_clones) == 33,
+               "33 clone Service Menus reuse the reviewed parent catalog");
         for (const auto& [clone, parent] : parent_catalog_clones) {
             expect_game(libretro::nvram::options_for_game(clone).empty(), clone,
                         "parent-compatible clone does not shadow the parent catalog");
@@ -456,11 +629,11 @@ int main()
 
         static constexpr std::string_view clone_specific_catalogs[] = {
             "daytona93", "daytonas", "dyndeka2", "dyndeka2b", "hotdp",
-            "indy500d", "motoraiddx", "srallycdxa", "stcca", "stccb",
+            "indy500d", "motoraiddx", "srallycdx", "srallycdxa", "stcca", "stccb",
             "stcco", "vf2a", "vf2o", "vstrikero",
         };
-        expect(std::size(clone_specific_catalogs) == 14,
-               "14 clone Service Menus use a reviewed clone-specific catalog");
+        expect(std::size(clone_specific_catalogs) == 15,
+               "15 clone Service Menus use a reviewed clone-specific catalog");
         for (const auto clone : clone_specific_catalogs)
             expect_game(!libretro::nvram::options_for_game(clone).empty(), clone,
                         "clone-specific catalog is available");
@@ -468,7 +641,7 @@ int main()
         static constexpr std::pair<std::string_view, std::string_view> clone_templates[] = {
             {"daytonase", "daytona"}, {"indy500to", "indy500"},
             {"manxttc", "manxtt"}, {"sfight", "schamp"},
-            {"srallycdx", "srallyc"},
+            {"srallycdx", "srallycdx"},
             {"doaa", "doa"}, {"doaab", "doa"}, {"doaae", "doa"}, {"doab", "doa"},
             {"dynamcopb", "dynamcop"}, {"dynamcopc", "dynamcop"},
             {"dyndeka2", "dyndeka2"}, {"dyndeka2b", "dyndeka2b"},

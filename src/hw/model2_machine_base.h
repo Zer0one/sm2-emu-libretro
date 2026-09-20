@@ -65,6 +65,7 @@
 #include <chrono>
 #include <span>
 #include <string>
+#include <vector>
 
 namespace sm2::hw {
 
@@ -109,6 +110,27 @@ struct Inputs {
 
     /// Player 2, same layout.
     u8 in2 = 0xff;
+
+    /// Air Walkers players 3 and 4. Its port-F matrix selects either in1/in2
+    /// or this second pair on the same two physical I/O lanes.
+    u8 in3 = 0xff;
+    u8 in4 = 0xff;
+
+    /// Air Walkers Start 1-4, active low in bits 0-3. The selected pair is
+    /// presented on the ordinary Start 1/2 lines by the same matrix.
+    u8 player_starts = 0xff;
+
+    [[nodiscard]] u8 player_port(unsigned player) const
+    {
+        const u8* ports[] = {&in1, &in2, &in3, &in4};
+        return player < std::size(ports) ? *ports[player] : 0xff;
+    }
+
+    [[nodiscard]] u8 start_pair(bool second_pair) const
+    {
+        const unsigned shift = second_pair ? 2 : 0;
+        return static_cast<u8>(((player_starts >> shift) & 0x03) << 4);
+    }
 
     /// The CPU board's eight-position SW3.
     u8 dipswitches = 0xff;
@@ -223,6 +245,36 @@ public:
     virtual void set_nvram_directory(const std::string& directory) = 0;
     virtual void load_nvram()                                      = 0;
     virtual void save_nvram() const                                = 0;
+
+    /// Snapshot the whole machine to `path` / restore it. Both must be called
+    /// only between frames (see run_frame). Default: unsupported, so a board
+    /// that has not implemented save-states yet returns false rather than
+    /// failing to compile. Return false on any error, leaving a running machine
+    /// untouched on a failed load.
+    [[nodiscard]] virtual bool save_state(const std::string& path) const
+    {
+        (void)path;
+        return false;
+    }
+    [[nodiscard]] virtual bool load_state(const std::string& path)
+    {
+        (void)path;
+        return false;
+    }
+
+    /// In-memory form of the same state envelope, for frontends such as
+    /// Libretro that own storage and pass the core a caller-provided buffer.
+    [[nodiscard]] virtual bool save_state(std::vector<u8>& out) const
+    {
+        (void)out;
+        return false;
+    }
+    [[nodiscard]] virtual bool load_state(const u8* data, usize size)
+    {
+        (void)data;
+        (void)size;
+        return false;
+    }
 
     /// Raw battery-backed storage, exposed for frontend-managed persistence.
     [[nodiscard]] virtual std::span<u8> backup_ram() = 0;

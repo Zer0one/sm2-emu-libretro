@@ -6,6 +6,10 @@
 #include <array>
 #include <functional>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 /// Sega 315-5649 I/O controller.
@@ -63,6 +67,10 @@ public:
         m_serial2_read  = std::move(read_handler);
         m_serial2_write = std::move(write_handler);
     }
+
+    /// Save/restore the latched port values, direction register and mux state.
+    /// The input/output/serial callbacks are excluded (re-bound in reset()).
+    void serialize(Archive& ar);
 
 private:
     std::array<InputHandler, kPortCount>   m_input{};

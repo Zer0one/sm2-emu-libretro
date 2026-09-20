@@ -41,6 +41,10 @@
 #include <memory>
 #include <span>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 class M2Comm {
@@ -96,6 +100,12 @@ public:
     /// Whether the underlying transport still believes it can carry frames.
     /// Always true for the loopback; a socket transport reports the peer state.
     [[nodiscard]] bool transport_connected() const;
+
+    /// Save/restore the link registers and frame-assembly buffer. The shared
+    /// RAM span is excluded (serialized once at the machine level and re-bound);
+    /// the transport is excluded (any queued cross-cabinet frame does not
+    /// survive a load, which is acceptable for a single cabinet).
+    void serialize(Archive& ar);
 
 private:
     void tick();

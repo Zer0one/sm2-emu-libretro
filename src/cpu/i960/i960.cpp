@@ -26,6 +26,7 @@
 
 #include "cpu/i960/i960.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 #include "cpu/mame_compat.h"
 
@@ -2422,6 +2423,33 @@ std::string I960::state_string() const
                   m_r[I960_PFP], m_r[I960_SP], m_r[I960_RIP], m_r[I960_FP],
                   m_r[I960_G0], m_r[I960_G1], m_r[I960_G2], m_r[I960_G3]);
     return buffer;
+}
+
+void I960::serialize(Archive& ar)
+{
+    ar.raw(m_stall_state);
+    ar.raw(m_stalled);
+    ar.raw(m_halted);
+    ar.raw(m_faulted);
+    ar.bytes(m_r, 0x20);
+    for (auto& frame : m_rcache) {
+        ar.bytes(frame, 0x10);
+    }
+    ar.bytes(m_rcache_frame_addr, I960_RCACHE_SIZE);
+    ar.raw(m_rcache_pos);
+    ar.bytes(m_fp, 4);
+    ar.raw(m_SAT);
+    ar.raw(m_PRCB);
+    ar.raw(m_PC);
+    ar.raw(m_AC);
+    ar.raw(m_IP);
+    ar.raw(m_PIP);
+    ar.raw(m_ICR);
+    ar.raw(m_immediate_irq);
+    ar.raw(m_immediate_vector);
+    ar.raw(m_immediate_pri);
+    ar.bytes(m_irq_line_state, 4);
+    ar.raw(m_instruction_count);
 }
 
 }  // namespace sm2::cpu::i960

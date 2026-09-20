@@ -4,6 +4,7 @@
 
 #include "hw/z80pio.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 namespace sm2::hw {
@@ -22,6 +23,20 @@ void Z80Pio::reset()
         port.mask   = 0;
         port.vector = 0;
         port.next   = NextControl::Any;
+    }
+}
+
+void Z80Pio::serialize(Archive& ar)
+{
+    for (Port& port : m_port) {
+        ar.raw(port.mode);
+        ar.raw(port.input);
+        ar.raw(port.output);
+        ar.raw(port.ior);
+        ar.raw(port.icw);
+        ar.raw(port.mask);
+        ar.raw(port.vector);
+        ar.raw(port.next);
     }
 }
 

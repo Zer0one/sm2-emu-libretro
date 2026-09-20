@@ -4,6 +4,7 @@
 
 #include "hw/dsb2.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -90,6 +91,38 @@ void Dsb2::reset()
     });
 
     m_cpu.reset();
+}
+
+void Dsb2::serialize(Archive& ar)
+{
+    m_cpu.serialize(ar);
+    m_uart.serialize(ar);
+    ar.bytes(m_ram.data(), m_ram.size());
+    ar.raw(m_mp_start);
+    ar.raw(m_mp_end);
+    ar.raw(m_mp_vol);
+    ar.raw(m_mp_pan);
+    ar.raw(m_start);
+    ar.raw(m_end);
+    ar.raw(m_rom_bank);
+    ar.raw(m_mp_pos);
+    ar.raw(m_audio_pos);
+    ar.raw(m_audio_avail);
+    ar.raw(m_playing);
+    ar.raw(m_command);
+    ar.raw(m_cycle_debt);
+    ar.raw(m_timer_debt);
+    ar.raw(m_resample_frac);
+    ar.bytes(m_audio_buf, 1152 * 2);
+
+    // The decoder exists only on a set that actually carries a DSB2. Save/load
+    // are always the same game, so its presence is symmetric; a flag guards the
+    // inert case regardless.
+    bool has_decoder = m_decoder != nullptr;
+    ar.raw(has_decoder);
+    if (has_decoder && m_decoder) {
+        m_decoder->serialize(ar);
+    }
 }
 
 void Dsb2::write_txd(u8 value)

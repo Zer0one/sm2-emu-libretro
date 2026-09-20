@@ -15,6 +15,10 @@
 #include <span>
 #include <vector>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 /// A vertex, in whatever space the current stage works in.
@@ -255,6 +259,12 @@ public:
     /// the "geometry engine" profiler stage, separated from the i960's own
     /// instruction time (run_frame() interleaves the two).
     [[nodiscard]] u64 last_run_nanoseconds() const { return m_last_run_ns; }
+
+    /// Save/restore only the durable scalars (read-start address, CRTC offsets,
+    /// double-sided ROM range). The per-frame working set (m_raster / m_geo and
+    /// their intrusive poly pools) is excluded and re-derived from the
+    /// display-list buffer next vblank.
+    void serialize(Archive& ar);
 
 private:
     // Everything below keeps MAME's names so the ported body reads the same as

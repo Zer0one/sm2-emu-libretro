@@ -6,6 +6,8 @@
 // the code uses, and the definitions are wrapped in the project namespace.
 #include "hw/mpeg_audio.h"
 
+#include "core/archive.h"
+
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
@@ -34,6 +36,28 @@ void mpeg_audio::clear()
 	memset(m_audio_buffer, 0, sizeof(m_audio_buffer));
 	m_audio_buffer_pos[0] = 16*32;
 	m_audio_buffer_pos[1] = 16*32;
+}
+
+void mpeg_audio::serialize(sm2::Archive &ar)
+{
+	ar.raw(m_sampling_rate);
+	ar.raw(m_last_frame_number);
+	ar.raw(m_param_index);
+	ar.raw(m_cbr_param_index);
+	ar.raw(m_channel_count);
+	ar.raw(m_total_bands);
+	ar.raw(m_joint_bands);
+	ar.bytes(&m_band_param[0][0], 2 * 32);
+	ar.bytes(&m_scfsi[0][0], 2 * 32);
+	ar.bytes(&m_scf[0][0][0], 2 * 3 * 32);
+	ar.bytes(&m_amp_values[0][0][0], 2 * 3 * 32);
+	ar.bytes(&m_bdata[0][0][0], 2 * 3 * 32);
+	ar.bytes(&m_subbuffer[0][0], 2 * 32);
+	ar.bytes(&m_audio_buffer[0][0], 2 * 32 * 32);
+	ar.bytes(m_audio_buffer_pos, 2);
+	ar.bytes(&m_cos_cache[0][0], 32 * 32);
+	ar.raw(m_current_pos);
+	ar.raw(m_current_limit);
 }
 
 bool mpeg_audio::decode_buffer(int &pos, int limit, short *output,

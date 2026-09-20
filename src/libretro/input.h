@@ -8,6 +8,8 @@
 
 namespace sm2::libretro {
 constexpr unsigned kNoServiceDevice = RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 0);
+constexpr unsigned kMaxInputPorts = 4;
+using InputDevices = std::array<unsigned, kMaxInputPorts>;
 
 enum class InputProfile {
     Unsupported,
@@ -88,10 +90,10 @@ struct InputRuntime {
 };
 
 struct ControllerConfiguration {
-    std::array<std::string, 2> base_names;
-    std::array<std::string, 2> full_names;
-    std::array<std::array<retro_controller_description, 2>, 2> descriptions{};
-    std::array<retro_controller_info, 3> ports{};
+    std::array<std::string, kMaxInputPorts> base_names;
+    std::array<std::string, kMaxInputPorts> full_names;
+    std::array<std::array<retro_controller_description, 2>, kMaxInputPorts> descriptions{};
+    std::array<retro_controller_info, kMaxInputPorts + 1> ports{};
 };
 
 InputProfile recognize_profile(const rom::GameSpec& game);
@@ -101,11 +103,11 @@ bool digital_profile(const rom::GameSpec& game);
 void configure_controllers(const rom::GameSpec& game, ControllerConfiguration& configuration,
                            GunInputMode gun_mode = GunInputMode::Hybrid);
 std::vector<retro_input_descriptor> descriptors(
-    const rom::GameSpec& game, const std::array<unsigned, 2>& devices,
+    const rom::GameSpec& game, const InputDevices& devices,
     GunInputMode gun_mode = GunInputMode::Hybrid,
     bool offscreen_reload_shortcut = true);
 void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
-                const std::array<unsigned, 2>& devices, InputRuntime& runtime,
+                const InputDevices& devices, InputRuntime& runtime,
                 bool h_gate_shifter, retro_input_state_t state,
                 GunInputMode gun_mode = GunInputMode::Hybrid,
                 bool offscreen_reload_shortcut = true,

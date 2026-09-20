@@ -13,6 +13,8 @@
 
 #include "hw/scsp_dsp.h"
 
+#include "core/archive.h"
+
 #include <algorithm>
 #include <cstring>
 #include <iterator>
@@ -325,6 +327,23 @@ void ScspDsp::Start()
 			break;
 	}
 	LastStep = i + 1;
+}
+
+void ScspDsp::serialize(Archive& ar)
+{
+	ar.raw(RBP);
+	ar.raw(RBL);
+	ar.bytes(COEF, 64);
+	ar.bytes(MADRS, 32);
+	ar.bytes(MPRO, 128 * 4);
+	ar.bytes(TEMP, 128);
+	ar.bytes(MEMS, 32);
+	ar.raw(DEC);
+	ar.bytes(MIXS, 16);
+	ar.bytes(EXTS, 2);
+	ar.bytes(EFREG, 16);
+	ar.raw(Stopped);
+	ar.raw(LastStep);
 }
 
 }  // namespace sm2::hw

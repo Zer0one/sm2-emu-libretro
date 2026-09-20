@@ -31,6 +31,10 @@
 #include <array>
 #include <functional>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 class Sega3155338a {
@@ -59,6 +63,10 @@ public:
 
     void set_serial_read(SerialReadHandler handler) { m_serial_read = std::move(handler); }
     void set_serial_write(SerialWriteHandler handler) { m_serial_write = std::move(handler); }
+
+    /// Save/restore the latched port values, direction register and serial-side
+    /// state. Callbacks excluded (re-bound by the owner).
+    void serialize(Archive& ar);
 
 private:
     std::array<InputHandler, kPortCount>  m_input{};

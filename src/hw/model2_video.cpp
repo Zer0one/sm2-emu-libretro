@@ -6,6 +6,7 @@
 
 #include "hw/model2_video.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -80,6 +81,18 @@ void Model2Video::reset()
     m_crtc_x_offset = 84;
     m_crtc_y_offset = 130;
     refresh_pens();
+}
+
+void Model2Video::serialize(Archive& ar)
+{
+    ar.raw(m_crtc_x_offset);
+    ar.raw(m_crtc_y_offset);
+    if (ar.loading() && !ar.failed()) {
+        // The decode caches are re-derived from the (restored) tile/char RAM;
+        // the pens from the (restored) palette RAM.
+        m_tiles.invalidate_all();
+        refresh_pens();
+    }
 }
 
 void Model2Video::refresh_pens()

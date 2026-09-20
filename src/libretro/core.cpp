@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cstring>
 #include <cstdio>
 #include <exception>
 #include <filesystem>
@@ -42,11 +43,19 @@ retro_audio_sample_batch_t audio_batch_cb = nullptr;
 retro_input_poll_t input_poll_cb = nullptr;
 retro_input_state_t input_state_cb = nullptr;
 retro_log_printf_t log_cb = nullptr;
-std::array<unsigned, 2> devices{RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD};
+libretro::InputDevices devices{
+    RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD,
+    RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD,
+};
 libretro::SaveRam save_ram{};
 constexpr unsigned width = hw::SoftRenderer::kWidth;
 constexpr unsigned height = hw::SoftRenderer::kHeight;
 enum class RendererApi { Software, Vulkan, OpenGL, OpenGLES };
+// RetroArch 1.22 queries this before loading content and caches a zero as
+// "unsupported". All four board images fit below 8 MiB in the real-ROM matrix;
+// one extra MiB keeps bounded FIFO growth from changing the frontend contract.
+constexpr size_t libretro_state_size = 9 * 1024 * 1024;
+constexpr u64 ski_super_g_drive_board_test_frame = 900;
 
 struct Content {
     rom::GameSpec game;
@@ -78,6 +87,7 @@ struct Content {
     bool can_dupe = false;
     bool timing_overlay = false;
     bool timing_overlay_visible = false;
+    bool external_link_active = false;
     float aspect_ratio = 4.0f / 3.0f;
     std::chrono::steady_clock::time_point previous_run_start{};
     bool have_previous_run_start = false;
@@ -156,6 +166,23 @@ void reset_timing_measurements(Content& c)
     c.timing_machine_ms = c.timing_video_ms = c.timing_audio_ms = 0;
     c.timing_run_ms = c.timing_interval_ms = c.timing_worst_ms = 0;
     c.timing_callbacks = c.timing_intervals = c.timing_machine_frames = 0;
+}
+
+void reset_frontend_after_state_load(Content& c)
+{
+    c.rumble.stop();
+    c.machine->sound_board().clear_pending_samples();
+    c.machine->sound_board().set_audio_balance_enabled(
+        libretro::audio_balance_enabled());
+    c.audio.clear();
+    c.input_runtime = {};
+    c.cadence_accumulator = 60.0 - c.native_fps;
+    c.audio_frame_remainder = 0;
+    c.audio_frames_due = 0;
+    c.have_previous_run_start = false;
+    c.hardware_frame_valid = false;
+    reset_timing_measurements(c);
+    update_aspect_ratio(c);
 }
 
 void publish_timing_overlay(Content& c)
@@ -528,6 +555,11 @@ void retro_init()
     if (environment && environment(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &logger)) log_cb = logger.log;
     if (!libretro::register_netpacket_interface(environment, log_cb))
         message(RETRO_LOG_WARN, "Libretro Netpacket is unavailable; linked cabinets are disabled");
+    if (environment) {
+        uint64_t quirks = RETRO_SERIALIZATION_QUIRK_ENDIAN_DEPENDENT
+                        | RETRO_SERIALIZATION_QUIRK_PLATFORM_DEPENDENT;
+        environment(RETRO_ENVIRONMENT_SET_SERIALIZATION_QUIRKS, &quirks);
+    }
     devices.fill(RETRO_DEVICE_JOYPAD);
 }
 void retro_deinit()
@@ -586,32 +618,36 @@ bool retro_load_game(const retro_game_info* game)
         if (!next->machine) throw std::runtime_error("Machine initialization failed");
         next->machine->sound_board().set_audio_balance_enabled(
             libretro::audio_balance_enabled());
-        const bool daytona_family = next->game.name == "daytona"
-            || next->game.parent == "daytona";
-        const unsigned linked_cabinets = libretro::linked_cabinets();
+        next->nvram_game = !libretro::nvram::options_for_game(next->game.name).empty()
+            ? next->game.name : next->game.parent;
+        libretro::set_option_game(next->nvram_game, next->game.name);
+        const unsigned linked_cabinets = libretro::linked_cabinets(next->game.name);
         if (linked_cabinets > 1) {
-            if (!daytona_family) {
+            auto network = std::make_unique<libretro::NetpacketTransport>();
+            network->configure(libretro::linked_cabinet_network_family(next->game.name),
+                               linked_cabinets);
+            next->machine->comm().set_transport(std::move(network));
+            next->external_link_active = true;
+            if (!libretro::netpacket_interface_supported())
                 message(RETRO_LOG_WARN,
-                        "Linked Cabinets currently applies only to the Daytona USA family");
-            } else if (linked_cabinets > 2) {
-                message(RETRO_LOG_WARN,
-                        "Linked Cabinets sessions larger than two cabinets are not implemented yet");
-            } else {
-                auto network = std::make_unique<libretro::NetpacketTransport>();
-                network->configure(next->game.name, linked_cabinets);
-                next->machine->comm().set_transport(std::move(network));
-                if (!libretro::netpacket_interface_supported())
-                    message(RETRO_LOG_WARN,
-                            "Linked Cabinets is enabled but the frontend has no Netpacket support");
-                else
-                    message(RETRO_LOG_INFO,
-                            "Daytona USA 2-cabinet communication enabled through RetroArch Netplay");
+                        "Linked Cabinets is enabled but the frontend has no Netpacket support");
+            else {
+                const std::string link_message = "Linked-cabinet communication enabled for "
+                    + next->game.name + " through RetroArch Netplay";
+                message(RETRO_LOG_INFO, link_message.c_str());
             }
         }
         next->native_nvram_available = native_nvram_available(save_path, next->game.name);
         next->machine->set_nvram_directory(save_path.string());
         next->machine->load_nvram();
         next->machine->reset();
+        if (!next->external_link_active) {
+            std::vector<u8> initial_state;
+            if (!next->machine->save_state(initial_state) || initial_state.empty())
+                throw std::runtime_error("Cannot initialize save-state support");
+            if (initial_state.size() > libretro_state_size)
+                throw std::runtime_error("Machine state exceeds the Libretro buffer");
+        }
         next->rate = next->machine->sound_board().sample_rate();
         if (!next->rate) throw std::runtime_error("Sound board reported zero sample rate");
         next->native_fps = game_fps(next->game.board);
@@ -621,8 +657,6 @@ bool retro_load_game(const retro_game_info* game)
         next->cadence_accumulator = 60.0 - next->native_fps;
         next->timing_overlay = libretro::timing_overlay_enabled();
         environment(RETRO_ENVIRONMENT_GET_CAN_DUPE, &next->can_dupe);
-        next->nvram_game = !libretro::nvram::options_for_game(next->game.name).empty()
-            ? next->game.name : next->game.parent;
         next->nvram_values = libretro::selected_nvram_values(next->nvram_game);
         next->option_pending = !next->nvram_values.empty() && libretro::nvram_settings_enabled();
         next->audio.reserve(static_cast<size_t>(next->rate) * 2);
@@ -630,7 +664,7 @@ bool retro_load_game(const retro_game_info* game)
         content = std::move(next);
         if (libretro::aspect_ratio_mode() == libretro::AspectRatioMode::SixteenNine)
             content->aspect_ratio = 16.0f / 9.0f;
-        libretro::set_option_game(content->nvram_game);
+        libretro::set_option_game(content->nvram_game, content->game.name);
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
         select_renderer(*content);
 #endif
@@ -736,6 +770,13 @@ void retro_run()
                                  libretro::driving_analog_options(),
                                  libretro::desert_elevation_options(),
                                  libretro::automatic_start_gear_enabled());
+            if (content->game.name == "skisuprg"
+                && content->machine->frames() == ski_super_g_drive_board_test_frame
+                && libretro::ski_super_g_drive_board_bypass_enabled()) {
+                content->machine->inputs().in0 &= static_cast<u8>(~0x04);
+                message(RETRO_LOG_INFO,
+                        "Sega Ski Super G Drive Board error bypass: pressed Test");
+            }
             const auto machine_start = std::chrono::steady_clock::now();
             content->machine->run_frame();
             update_aspect_ratio(*content);
@@ -830,9 +871,61 @@ void retro_run()
     } catch (const std::exception& error) { failure(error.what()); }
     catch (...) { failure("Unexpected frame execution failure"); }
 }
-size_t retro_serialize_size() { return 0; }
-bool retro_serialize(void*, size_t) { return false; }
-bool retro_unserialize(const void*, size_t) { return false; }
+size_t retro_serialize_size()
+{
+    return libretro_state_size;
+}
+bool retro_serialize(void* data, size_t size)
+{
+    if (content && content->external_link_active) {
+        message(RETRO_LOG_WARN,
+                "Save states are unavailable during a Linked Cabinets session");
+        return false;
+    }
+    if (!content || !data || size < libretro_state_size) {
+        return false;
+    }
+    try {
+        std::vector<u8> state;
+        if (!content->machine->save_state(state)
+            || state.size() > libretro_state_size) {
+            message(RETRO_LOG_ERROR, "Save-state buffer capacity exceeded");
+            return false;
+        }
+        std::memcpy(data, state.data(), state.size());
+        std::memset(static_cast<u8*>(data) + state.size(), 0,
+                    libretro_state_size - state.size());
+        return true;
+    } catch (const std::exception& error) {
+        message(RETRO_LOG_ERROR, error.what());
+        return false;
+    } catch (...) {
+        message(RETRO_LOG_ERROR, "Unexpected save-state serialization failure");
+        return false;
+    }
+}
+bool retro_unserialize(const void* data, size_t size)
+{
+    if (content && content->external_link_active) {
+        message(RETRO_LOG_WARN,
+                "Save states are unavailable during a Linked Cabinets session");
+        return false;
+    }
+    if (!content || !data || size == 0)
+        return false;
+    try {
+        if (!content->machine->load_state(static_cast<const u8*>(data), size))
+            return false;
+        reset_frontend_after_state_load(*content);
+        return true;
+    } catch (const std::exception& error) {
+        message(RETRO_LOG_ERROR, error.what());
+        return false;
+    } catch (...) {
+        message(RETRO_LOG_ERROR, "Unexpected save-state load failure");
+        return false;
+    }
+}
 void retro_cheat_reset() {}
 void retro_cheat_set(unsigned, bool, const char*) {}
 bool retro_load_game_special(unsigned, const retro_game_info*, size_t) { return false; }

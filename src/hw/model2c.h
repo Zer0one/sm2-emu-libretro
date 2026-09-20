@@ -141,6 +141,11 @@ public:
     void fifo_in_clear() override { m_fifo_in.clear(); }
     void fifo_out_clear() override { m_fifo_out.clear(); }
 
+    /// Save/restore the coprocessor: its CPU, both FIFOs, the uploaded
+    /// microcode RAM and the control/upload scalars. The data-ROM and
+    /// buffer-RAM spans are excluded (re-bound by attach()).
+    void serialize(Archive& ar);
+
 private:
     cpu::mb86235::MB86235 m_cpu;
 
@@ -255,6 +260,11 @@ public:
     [[nodiscard]] std::span<u8> settings_eeprom() override { return m_eeprom.bytes(); }
     [[nodiscard]] std::span<const u8> settings_eeprom() const override { return m_eeprom.bytes(); }
 
+    [[nodiscard]] bool save_state(const std::string& path) const override;
+    [[nodiscard]] bool load_state(const std::string& path) override;
+    [[nodiscard]] bool save_state(std::vector<u8>& out) const override;
+    [[nodiscard]] bool load_state(const u8* data, usize size) override;
+
     /// Copy the set's shipped EEPROM image over the chip, if it ships one.
     void seed_eeprom_from_rom();
 
@@ -368,6 +378,11 @@ private:
     void note_unmapped_read(u32 address, u32 width);
     void note_unmapped_write(u32 address, u32 value, u32 width);
 
+    /// Walk every owned component, RAM region and board scalar through the
+    /// archive in a fixed order. Save and load call this identically; load adds
+    /// the fix-ups afterwards (see load_state).
+    void serialize(Archive& ar);
+
     // -- devices -----------------------------------------------------------
 
     cpu::i960::I960 m_cpu;
@@ -449,6 +464,11 @@ private:
     u64 m_cycles      = 0;
     u64 m_frame_start = 0;
     u64 m_frames      = 0;
+
+    /// True only while run_frame() is executing. save_state/load_state assert
+    /// this is false so a snapshot is never taken mid-frame (see design §7).
+    /// Transient — never serialized.
+    bool m_in_frame = false;
 
     u32  m_pending_intena       = 0;
     u64  m_pending_intena_cycle = 0;

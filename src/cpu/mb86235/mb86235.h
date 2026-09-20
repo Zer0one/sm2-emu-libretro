@@ -19,6 +19,10 @@
 #include <cstdint>
 #include <string>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::cpu::mb86235 {
 
 // ============================================================================
@@ -134,6 +138,10 @@ public:
         m_trace_hook    = hook;
         m_trace_context = context;
     }
+
+    /// Save/restore the register/execution state (on-chip RAM, registers, PC
+    /// stack, flags, FIFO-stall latches). Bus and trace hook are excluded.
+    void serialize(Archive& ar);
 
 private:
     // -- status word (ST) bits ---------------------------------------------

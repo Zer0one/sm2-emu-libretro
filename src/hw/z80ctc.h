@@ -28,6 +28,10 @@
 #include <array>
 #include <functional>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 class Z80Ctc {
@@ -72,6 +76,10 @@ public:
 
     /// Reti, which releases the channel currently being serviced.
     void return_from_interrupt();
+
+    /// Save/restore all four channels and the interrupt vector/line. Callbacks
+    /// excluded.
+    void serialize(Archive& ar);
 
 private:
     // Control word bits, named as MAME names them.

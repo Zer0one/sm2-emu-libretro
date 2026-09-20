@@ -766,6 +766,36 @@ def activate_process(process: subprocess.Popen[bytes], timeout: float = 3.0) -> 
     )
 
 
+def position_process_window(
+    process: subprocess.Popen[bytes], x: int, y: int, timeout: float = 3.0,
+) -> None:
+    """Move the first window owned by process without touching other instances."""
+    script = (
+        'tell application "System Events" to tell first application process '
+        f'whose unix id is {process.pid} to set position of window 1 to {{{x}, {y}}}'
+    )
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            raise RuntimeError(
+                f"RetroArch exited before its window could be positioned "
+                f"(code {process.returncode})"
+            )
+        completed = subprocess.run(
+            ["/usr/bin/osascript", "-e", script],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+        if completed.returncode == 0:
+            return
+        time.sleep(0.10)
+    raise RuntimeError(
+        "could not position the new RetroArch window; check macOS automation "
+        "and accessibility permissions"
+    )
+
+
 def close_retroarch(process: subprocess.Popen[bytes], settings: Settings) -> None:
     if process.poll() is not None:
         raise RuntimeError(f"RetroArch exited before CLOSE (code {process.returncode})")

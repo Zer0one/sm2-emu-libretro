@@ -17,6 +17,7 @@
 
 #include "hw/i8251.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 namespace sm2::hw {
@@ -67,6 +68,23 @@ void I8251::reset()
     m_mode             = 0;
     m_command          = 0;
     m_counters         = Counters{};
+}
+
+void I8251::serialize(Archive& ar)
+{
+    ar.raw(m_byte_cycles);
+    ar.raw(m_tx_holding_empty);
+    ar.raw(m_tx_shift_empty);
+    ar.raw(m_rx_full);
+    ar.raw(m_dsr);
+    ar.raw(m_errors);
+    ar.raw(m_rx_data);
+    ar.raw(m_tx_data);
+    ar.raw(m_tx_shift_data);
+    ar.raw(m_tx_remaining);
+    ar.raw(m_expect_mode);
+    ar.raw(m_mode);
+    ar.raw(m_command);
 }
 
 bool I8251::tx_enabled() const

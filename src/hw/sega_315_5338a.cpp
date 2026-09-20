@@ -4,6 +4,7 @@
 
 #include "hw/sega_315_5338a.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 namespace sm2::hw {
@@ -18,6 +19,15 @@ void Sega3155338a::reset()
     m_serial_output = 0;
     m_command       = 0;
     m_address       = 0;
+}
+
+void Sega3155338a::serialize(Archive& ar)
+{
+    ar.bytes(m_port_value.data(), m_port_value.size());
+    ar.raw(m_port_config);
+    ar.raw(m_serial_output);
+    ar.raw(m_command);
+    ar.raw(m_address);
 }
 
 void Sega3155338a::set_input(u32 port, InputHandler handler)

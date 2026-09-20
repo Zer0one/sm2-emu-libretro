@@ -18,6 +18,7 @@
 
 #include "cpu/m68000/m68000.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <cassert>
@@ -183,6 +184,28 @@ u32 M68000::address_reg(int index) const
 {
     make_current();
     return m68k_get_reg(nullptr, static_cast<m68k_register_t>(M68K_REG_A0 + (index & 7)));
+}
+
+void M68000::serialize(Archive& ar)
+{
+    if (ar.saving()) {
+        // The live state is in Musashi's globals when this instance is current,
+        // so pull it back into m_context before writing. make_current also
+        // flushes whatever other instance was current into its own blob.
+        make_current();
+        m68k_get_context(m_context.data());
+    }
+    ar.vector_pod(m_context);
+    ar.raw(m_irq_mask);
+    ar.raw(m_total_cycles);
+    if (ar.loading() && !ar.failed()) {
+        // Install the restored blob. g_current is left pointing here with the
+        // restored context loaded; the next entry point on any instance will
+        // save/swap correctly. Never zero-fill (documented to segfault).
+        g_current = nullptr;  // force make_current to actually set the context
+        make_current();
+        apply_irq();
+    }
 }
 
 std::string M68000::state_string() const

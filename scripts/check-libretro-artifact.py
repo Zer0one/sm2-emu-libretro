@@ -10,6 +10,9 @@ import sys
 core = Path(sys.argv[1]).resolve()
 root = Path(__file__).resolve().parents[1]
 expected = set(re.findall(r"retro_\w+", (root / "src/libretro/exports.map").read_text()))
+info_text = (root / "sm2_libretro.info").read_text()
+assert re.search(r'^savestate = "true"$', info_text, re.M)
+assert re.search(r'^libretro_saves = "true"$', info_text, re.M)
 
 def command(*args, verbose=True):
     result = subprocess.check_output(args, text=True)
@@ -63,7 +66,7 @@ for _ in range(3):
     assert info.name and info.version and info.extensions == b"zip|7z"
     assert info.fullpath and info.block_extract
     assert not lib.retro_load_game(None)
-    assert lib.retro_serialize_size() == 0
+    assert lib.retro_serialize_size() > 0
     lib.retro_run()
     lib.retro_reset()
     lib.retro_unload_game()

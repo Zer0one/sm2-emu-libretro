@@ -7,6 +7,10 @@
 
 #include "core/types.h"
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 /// Sega 315-5838/317-0229 compression and encryption chip, DOA hack mode only.
@@ -34,6 +38,9 @@ public:
     /// no-op, matching `data_w_doa`, so the address decode still names every
     /// register the real chip has.
     void data_w_doa(u32 /*value*/) {}
+
+    /// Save/restore the sequential read offset (the only durable state).
+    void serialize(Archive& ar);
 
 private:
     [[nodiscard]] u8 next_byte();

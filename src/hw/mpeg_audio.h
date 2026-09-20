@@ -16,6 +16,10 @@
 #include <cstdint>
 #include <cstring>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 class mpeg_audio {
@@ -62,6 +66,12 @@ public:
 
 	// Clear audio buffer
 	void clear();
+
+	// Save/restore the decoder's mid-stream DSP state. The base ROM pointer and
+	// the bit-getter function pointer are excluded (re-established at
+	// construction). The static lookup tables and the computed m_cos_cache are
+	// not per-instance state; m_cos_cache is carried anyway for simplicity.
+	void serialize(sm2::Archive& ar);
 
 private:
 	struct limit_hit {};

@@ -14,6 +14,7 @@
 //
 #include "hw/eeprom_93c46.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <cstdio>
@@ -287,6 +288,23 @@ bool Eeprom93c46::save(const std::string& path) const
     const usize written = std::fwrite(m_memory.data(), 1, kByteCount, handle);
     std::fclose(handle);
     return written == kByteCount;
+}
+
+void Eeprom93c46::serialize(Archive& ar)
+{
+    ar.bytes(m_memory.data(), m_memory.size());
+    ar.raw(m_state);
+    ar.raw(m_cs);
+    ar.raw(m_clk);
+    ar.raw(m_di);
+    ar.raw(m_do);
+    ar.raw(m_shift);
+    ar.raw(m_bits);
+    ar.raw(m_address);
+    ar.raw(m_read_data);
+    ar.raw(m_read_bit);
+    ar.raw(m_write_enabled);
+    ar.raw(m_dirty);
 }
 
 }  // namespace sm2::hw

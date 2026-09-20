@@ -24,6 +24,10 @@
 #include <array>
 #include <functional>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 class Msm6253 {
@@ -52,6 +56,9 @@ public:
     /// the I/O board's firmware rotates the byte it read, and zeros there would
     /// corrupt the bits already assembled if it ever masked the wrong way.
     [[nodiscard]] u8 d0_read();
+
+    /// Save/restore the shift register (the only durable state).
+    void serialize(Archive& ar);
 
 private:
     /// Shift one bit out of the register, zero filling behind it.

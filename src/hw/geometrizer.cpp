@@ -36,6 +36,7 @@
 
 #include "hw/geometrizer.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -135,6 +136,15 @@ void Geometrizer::reset()
     m_unknown_command_warned = false;
 
     render_frame_start();
+}
+
+void Geometrizer::serialize(Archive& ar)
+{
+    ar.raw(m_geo_read_start_address);
+    ar.raw(m_crtc_xoffset);
+    ar.raw(m_crtc_yoffset);
+    ar.raw(m_double_sided_lo);
+    ar.raw(m_double_sided_hi);
 }
 
 void Geometrizer::set_z_clip(u8 value)

@@ -53,6 +53,14 @@ def main():
     parser.add_argument('--reference', type=Path)
     parser.add_argument('--backpressure', action='store_true')
     parser.add_argument('--exercise', action='store_true')
+    parser.add_argument('--save-state-test', action='store_true',
+                        help='Verify deterministic Libretro save/load and corrupt-state rejection')
+    parser.add_argument('--state-output', type=Path,
+                        help='Write the final Libretro state image for a frontend integration test')
+    parser.add_argument('--reject-state', type=Path,
+                        help='Verify that a foreign state is rejected without changing the machine')
+    parser.add_argument('--expect-save-state-unavailable', action='store_true',
+                        help='Verify that the loaded configuration rejects save states')
     parser.add_argument('--switch-rom', type=Path, help='Exercise a second board/rate in the same library instance')
     parser.add_argument('--press', action='store_true', help='Coin then Start then action buttons (not an idle comparison)')
     parser.add_argument('--av-timing', choices=['native','60hz'], default='native')
@@ -99,6 +107,7 @@ def main():
     duplicates = 0; statuses = []; geometry_updates = []
     rumble_calls = 0; rumble_peak = [0, 0]
     errors = []; reject_pixel = False; shutdown = False
+    serialization_quirks = None
     @RUMBLE
     def rumble(port, effect, strength):
         nonlocal rumble_calls
@@ -108,7 +117,7 @@ def main():
         return True
     @ENV
     def env(cmd, data):
-        nonlocal shutdown
+        nonlocal shutdown, serialization_quirks
         if cmd in directories:
             C.cast(data, C.POINTER(C.c_char_p))[0] = directories[cmd]; return True
         if cmd == 10: return not reject_pixel and C.cast(data, C.POINTER(C.c_int))[0] == 1
@@ -125,6 +134,9 @@ def main():
             return True
         if cmd == 60:
             statuses.append(C.cast(data,C.POINTER(MessageExt)).contents.msg.decode()); return True
+        if cmd == 87:
+            serialization_quirks = C.cast(data, C.POINTER(C.c_uint64))[0]
+            return True
         if cmd == 7: shutdown = True; return True
         if cmd in (11, 18): return True
         return False
@@ -167,10 +179,11 @@ def main():
     for name, callback in zip(['environment','video_refresh','audio_sample','audio_sample_batch','input_poll','input_state'],callbacks):
         getattr(lib, 'retro_set_'+name)(callback)
     lib.retro_init()
+    assert serialization_quirks == (1 << 5) | (1 << 6)
     info = System(); lib.retro_get_system_info(C.byref(info))
     assert lib.retro_api_version() == 1 and info.fullpath and info.block_extract
     assert info.extensions == b'zip|7z'
-    assert lib.retro_serialize_size() == 0
+    assert lib.retro_serialize_size() > 0
     assert not lib.retro_serialize(None,0) and not lib.retro_unserialize(None,0)
     assert lib.retro_get_memory_size(0) == 16576 and lib.retro_get_memory_data(0)
     lib.retro_run(); lib.retro_reset()  # no content: safe no-op
@@ -192,6 +205,64 @@ def main():
         lib.retro_run()
         assert not shutdown, 'Core requested shutdown'
     assert videos == polls == args.frames and not errors
+    state_report = None
+    if args.save_state_test:
+        state_size = lib.retro_serialize_size()
+        assert state_size > 0
+
+        def save_state():
+            data = C.create_string_buffer(state_size)
+            assert lib.retro_serialize(data, state_size)
+            return data.raw
+
+        state_a = save_state()
+        observer = (pixels, bytes(pcm), videos, polls, batches, duplicates,
+                    list(statuses), list(geometry_updates), rumble_calls,
+                    list(rumble_peak))
+        for _ in range(3): lib.retro_run()
+        state_b = save_state()
+        assert state_a != state_b
+        state_a_buffer = C.create_string_buffer(state_a)
+        assert lib.retro_unserialize(state_a_buffer, len(state_a))
+        assert save_state() == state_a
+        for _ in range(3): lib.retro_run()
+        assert save_state() == state_b
+
+        truncated = C.create_string_buffer(state_a[:len(state_a)//2])
+        assert not lib.retro_unserialize(truncated, len(truncated))
+        assert save_state() == state_b
+        wrong_magic = bytearray(state_b); wrong_magic[0] ^= 0xff
+        wrong_magic_buffer = C.create_string_buffer(bytes(wrong_magic))
+        assert not lib.retro_unserialize(wrong_magic_buffer, len(wrong_magic))
+        assert save_state() == state_b
+
+        state_a_buffer = C.create_string_buffer(state_a)
+        assert lib.retro_unserialize(state_a_buffer, len(state_a))
+        (pixels, saved_pcm, videos, polls, batches, duplicates,
+         statuses, geometry_updates, rumble_calls, rumble_peak) = observer
+        pcm[:] = saved_pcm
+        state_report = {'size': state_size, 'round_trip': True,
+                        'deterministic_replay': True,
+                        'corrupt_state_rejected': True}
+    if args.state_output:
+        state_size = lib.retro_serialize_size()
+        state_data = C.create_string_buffer(state_size)
+        assert lib.retro_serialize(state_data, state_size)
+        args.state_output.resolve().write_bytes(state_data.raw)
+    if args.reject_state:
+        state_size = lib.retro_serialize_size()
+        before = C.create_string_buffer(state_size)
+        assert lib.retro_serialize(before, state_size)
+        foreign = args.reject_state.resolve(strict=True).read_bytes()
+        foreign_data = C.create_string_buffer(foreign)
+        assert not lib.retro_unserialize(foreign_data, len(foreign))
+        after = C.create_string_buffer(state_size)
+        assert lib.retro_serialize(after, state_size)
+        assert after.raw == before.raw
+    if args.expect_save_state_unavailable:
+        state_size = lib.retro_serialize_size()
+        state_data = C.create_string_buffer(state_size)
+        assert not lib.retro_serialize(state_data, state_size)
     current_av = AV(); lib.retro_get_system_av_info(C.byref(current_av))
     expected_aspect = 16/9 if args.expect_aspect == '16:9' else 4/3
     assert abs(current_av.geometry.aspect-expected_aspect) < 1e-6
@@ -231,6 +302,8 @@ def main():
               'audio_frames':len(pcm)//4,'video_sha256':sha(ppm),'audio_sha256':sha(pcm),
               'nvram':nvram,'save_layout':'frontend directory only',
               'abi_checks':True,'backpressure':args.backpressure}
+    if state_report:
+        report['save_state'] = state_report
     if args.reference:
         assert args.av_timing=='native','Headless byte comparison requires native timing'
         reference=args.reference

@@ -99,6 +99,14 @@ public:
     /// How many of the 32 slots are currently sounding.
     [[nodiscard]] u32 active_slots() const;
 
+    /// Save/restore the whole chip: control registers, all 32 slots, ring
+    /// buffer, IRQ/timer/MIDI/DMA state, the effects DSP and the fixed-seed RNG.
+    /// The big constant tables (EG/pan/LFO/AR/DR) are excluded — rebuilt at
+    /// construction — as are the LFO table/scale pointers inside each slot,
+    /// which are re-derived from the slot registers on load. The ScspMemory
+    /// back-pointer and the three callbacks are excluded (re-bound by wiring).
+    void serialize(Archive& ar);
+
 private:
     enum SCSP_STATE { SCSP_ATTACK, SCSP_DECAY1, SCSP_DECAY2, SCSP_RELEASE };
 

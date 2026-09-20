@@ -4,11 +4,18 @@
 
 #include "hw/mb8421.h"
 
+#include "core/archive.h"
+
 namespace sm2::hw {
 
 void Mb8421::reset()
 {
     m_ram.fill(0);
+}
+
+void Mb8421::serialize(Archive& ar)
+{
+    ar.bytes(m_ram.data(), m_ram.size());
 }
 
 u8 Mb8421::left_read(u32 offset) const

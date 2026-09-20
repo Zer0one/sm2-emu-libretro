@@ -6,6 +6,7 @@
 
 #include "hw/model1io2.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -117,6 +118,24 @@ void Model1io2::reset()
     m_cycle_debt = 0;
     m_counters   = Counters{};
     m_cpu.reset();
+}
+
+void Model1io2::serialize(Archive& ar)
+{
+    m_cpu.serialize(ar);
+    m_io.serialize(ar);
+    m_adc.serialize(ar);
+    m_eeprom.serialize(ar);
+    m_ctc.serialize(ar);
+    m_pio.serialize(ar);
+    ar.bytes(m_ram.data(), m_ram.size());
+    ar.raw(m_dsw2);
+    ar.raw(m_dsw3);
+    ar.raw(m_secondary_controls);
+    ar.raw(m_fpga_counter);
+    ar.raw(m_lcd_data);
+    ar.raw(m_sio_pointer);
+    ar.raw(m_cycle_debt);
 }
 
 // ---------------------------------------------------------------------------

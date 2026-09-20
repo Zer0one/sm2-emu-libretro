@@ -4,6 +4,8 @@
 
 #include "hw/z80ctc.h"
 
+#include "core/archive.h"
+
 namespace sm2::hw {
 
 void Z80Ctc::reset()
@@ -13,6 +15,15 @@ void Z80Ctc::reset()
     }
     m_vector    = 0;
     m_int_line  = false;
+}
+
+void Z80Ctc::serialize(Archive& ar)
+{
+    for (Channel& channel : m_channel) {
+        ar.raw(channel);
+    }
+    ar.raw(m_vector);
+    ar.raw(m_int_line);
 }
 
 u8 Z80Ctc::read(u32 channel)

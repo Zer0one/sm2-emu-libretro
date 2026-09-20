@@ -113,6 +113,11 @@ public:
 
     [[nodiscard]] std::span<const u32> program() const { return m_program; }
 
+    /// Save/restore the TGP, both FIFOs, the uploaded microcode + data RAM,
+    /// control/upload/bank scalars and the math-unit argument latches. Spans
+    /// and the diagnostic Activity are excluded.
+    void serialize(Archive& ar);
+
     // -- cpu::mb86233::Bus -------------------------------------------------
 
     u32  fetch(u16 address) override;

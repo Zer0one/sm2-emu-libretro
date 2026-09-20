@@ -115,6 +115,11 @@ public:
     /// Copro status register at 0x00980014.
     [[nodiscard]] u32 status() const { return m_upload_count == 0 ? 0xffffffffu : 0u; }
 
+    /// Save/restore the SHARC, both FIFOs and the control/upload scalars. The
+    /// SHARC keeps its program on-chip (in its own SRAM, saved by its
+    /// serialize), so there is no program RAM here. Spans excluded (attach()).
+    void serialize(Archive& ar);
+
     // -- cpu::sharc::Bus ---------------------------------------------------
 
     [[nodiscard]] u64 pm_read48(u32 address) override;
@@ -235,6 +240,11 @@ public:
     [[nodiscard]] std::span<u8> settings_eeprom() override { return m_eeprom.bytes(); }
     [[nodiscard]] std::span<const u8> settings_eeprom() const override { return m_eeprom.bytes(); }
 
+    [[nodiscard]] bool save_state(const std::string& path) const override;
+    [[nodiscard]] bool load_state(const std::string& path) override;
+    [[nodiscard]] bool save_state(std::vector<u8>& out) const override;
+    [[nodiscard]] bool load_state(const u8* data, usize size) override;
+
     /// Copy the set's shipped EEPROM image over the chip, if it ships one.
     void seed_eeprom_from_rom();
 
@@ -343,6 +353,11 @@ private:
     void note_unmapped_read(u32 address, u32 width);
     void note_unmapped_write(u32 address, u32 value, u32 width);
 
+    /// Walk owned components, RAM and board scalars through the archive in a
+    /// fixed order (same shape as Model2C, differing only in the coprocessor
+    /// and the DOA compression chip). See model2c.cpp for the load contract.
+    void serialize(Archive& ar);
+
     // -- devices -----------------------------------------------------------
 
     cpu::i960::I960 m_cpu;
@@ -427,6 +442,9 @@ private:
     u64 m_cycles      = 0;
     u64 m_frame_start = 0;
     u64 m_frames      = 0;
+
+    /// True only while run_frame() runs; save/load assert it is false. Transient.
+    bool m_in_frame = false;
 
     u32  m_pending_intena       = 0;
     u64  m_pending_intena_cycle = 0;

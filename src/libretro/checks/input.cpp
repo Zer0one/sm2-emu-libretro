@@ -11,17 +11,18 @@
 
 using namespace sm2;
 namespace {
-std::array<unsigned, 2> pressed{};
-std::array<std::array<std::array<s16, 2>, 2>, 2> axes{};
-std::array<std::array<s16, 16>, 2> analog_buttons{};
-std::array<std::array<s16, 2>, 2> mouse_axes{};
-std::array<unsigned, 2> mouse_buttons{};
-std::array<std::array<s16, 2>, 2> lightgun_axes{};
-std::array<unsigned, 2> lightgun_buttons{};
+std::array<unsigned, libretro::kMaxInputPorts> pressed{};
+std::array<std::array<std::array<s16, 2>, 2>, libretro::kMaxInputPorts> axes{};
+std::array<std::array<s16, 16>, libretro::kMaxInputPorts> analog_buttons{};
+std::array<std::array<s16, 2>, libretro::kMaxInputPorts> mouse_axes{};
+std::array<unsigned, libretro::kMaxInputPorts> mouse_buttons{};
+std::array<std::array<s16, 2>, libretro::kMaxInputPorts> lightgun_axes{};
+std::array<unsigned, libretro::kMaxInputPorts> lightgun_buttons{};
 
 int16_t state(unsigned port, unsigned device, unsigned index, unsigned id)
 {
-    if (port >= 2) throw std::runtime_error("Invalid frontend input port");
+    if (port >= libretro::kMaxInputPorts)
+        throw std::runtime_error("Invalid frontend input port");
     if (device == RETRO_DEVICE_JOYPAD) {
         if (index != 0 || id >= 16) throw std::runtime_error("Invalid joypad query");
         return (pressed[port] & (1u << id)) != 0;
@@ -226,7 +227,10 @@ int main()
          "Button 1", "Button 2", "Button 3"},
         {"vstriker", "Joystick (Standard): Soccer", "Short Pass", "Long Pass", "Shoot"},
     };
-    std::array<unsigned, 2> full_devices{RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD};
+    libretro::InputDevices full_devices{
+        RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD,
+        RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD,
+    };
     for (const auto& approved : approved_descriptions) {
         auto approved_game = game(approved.root);
         check(std::string_view(libretro::profile_name(libretro::recognize_profile(approved_game)))
@@ -270,7 +274,10 @@ int main()
               && controllers.ports[1].num_types == 2,
           "Player 2 exposes full and reduced profile variants");
 
-    std::array<unsigned, 2> devices{RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD};
+    libretro::InputDevices devices{
+        RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD,
+        RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD,
+    };
     auto desc = libretro::descriptors(vf2, devices);
     check(has_descriptor(desc, 0, RETRO_DEVICE_JOYPAD, 0,
                          RETRO_DEVICE_ID_JOYPAD_UP, "Joystick Up"),
@@ -1283,36 +1290,60 @@ int main()
     check(airwlkrs != nullptr, "Air Walkers parent exists");
     check(libretro::recognize_profile(*airwlkrs)
               == libretro::InputProfile::BasketballAirWalkers
-          && libretro::profile_players(libretro::InputProfile::BasketballAirWalkers) == 2,
-          "Air Walkers exposes the two-player cabinet path supported by SM2");
+          && libretro::profile_players(libretro::InputProfile::BasketballAirWalkers) == 4,
+          "Air Walkers exposes all four cabinet players");
     libretro::configure_controllers(*airwlkrs, controllers);
     check(std::string_view(controllers.descriptions[0][0].desc)
               == "Joystick (Standard): Basketball (Air Walkers) + Test/Service slots"
           && std::string_view(controllers.descriptions[1][0].desc)
-              == "Joystick (Standard): Basketball (Air Walkers) + Test/Service slots",
-          "Air Walkers exposes gameplay controls on both RetroPad ports");
-    devices = {RETRO_DEVICE_JOYPAD, RETRO_DEVICE_JOYPAD};
+              == "Joystick (Standard): Basketball (Air Walkers) + Test/Service slots"
+          && std::string_view(controllers.descriptions[2][0].desc)
+              == "Joystick (Standard): Basketball (Air Walkers) + Test/Service slots"
+          && std::string_view(controllers.descriptions[3][0].desc)
+              == "Joystick (Standard): Basketball (Air Walkers) + Test/Service slots"
+          && controllers.ports[4].num_types == 0,
+          "Air Walkers exposes the approved profile on four RetroPad ports");
+    devices.fill(RETRO_DEVICE_JOYPAD);
     auto airwlkrs_desc = libretro::descriptors(*airwlkrs, devices);
-    check(has_descriptor(airwlkrs_desc, 1, RETRO_DEVICE_JOYPAD, 0,
+    check(has_descriptor(airwlkrs_desc, 2, RETRO_DEVICE_JOYPAD, 0,
                          RETRO_DEVICE_ID_JOYPAD_UP, "Joystick Up")
-              && has_descriptor(airwlkrs_desc, 1, RETRO_DEVICE_JOYPAD, 0,
+              && has_descriptor(airwlkrs_desc, 2, RETRO_DEVICE_JOYPAD, 0,
                                 RETRO_DEVICE_ID_JOYPAD_B, "Button 1")
-              && has_descriptor(airwlkrs_desc, 1, RETRO_DEVICE_JOYPAD, 0,
+              && has_descriptor(airwlkrs_desc, 3, RETRO_DEVICE_JOYPAD, 0,
                                 RETRO_DEVICE_ID_JOYPAD_A, "Button 2")
-              && has_descriptor(airwlkrs_desc, 1, RETRO_DEVICE_JOYPAD, 0,
+              && has_descriptor(airwlkrs_desc, 3, RETRO_DEVICE_JOYPAD, 0,
                                 RETRO_DEVICE_ID_JOYPAD_Y, "Button 3"),
-          "Air Walkers publishes the approved P2 directions and buttons");
-    pressed = {0, (1u << RETRO_DEVICE_ID_JOYPAD_UP)
-                      | (1u << RETRO_DEVICE_ID_JOYPAD_B)
-                      | (1u << RETRO_DEVICE_ID_JOYPAD_A)
-                      | (1u << RETRO_DEVICE_ID_JOYPAD_Y)
-                      | (1u << RETRO_DEVICE_ID_JOYPAD_SELECT)
-                      | (1u << RETRO_DEVICE_ID_JOYPAD_START)};
+          "Air Walkers publishes the approved P3/P4 directions and buttons");
+    pressed = {
+        (1u << RETRO_DEVICE_ID_JOYPAD_UP)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_B)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_SELECT)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_START),
+        (1u << RETRO_DEVICE_ID_JOYPAD_DOWN)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_A),
+        (1u << RETRO_DEVICE_ID_JOYPAD_LEFT)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_Y)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_SELECT)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_START),
+        (1u << RETRO_DEVICE_ID_JOYPAD_RIGHT)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_B)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_A)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_Y)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_SELECT)
+            | (1u << RETRO_DEVICE_ID_JOYPAD_START),
+    };
     axes = {};
     analog_buttons = {};
     libretro::poll_input(inputs, *airwlkrs, devices, runtime, true, state);
-    check(inputs.in0 == 0xdd && inputs.in1 == 0xff && inputs.in2 == 0xd8,
-          "Air Walkers maps P2 Coin, Start, joystick and all three buttons");
+    check(inputs.in0 == 0x3e && inputs.player_starts == 0xf2
+              && inputs.in1 == 0xde && inputs.in2 == 0xed
+              && inputs.in3 == 0x7b && inputs.in4 == 0xb8,
+          "Air Walkers maps four independent players, coins and starts");
+    check(inputs.player_port(0) == 0xde && inputs.player_port(1) == 0xed
+              && inputs.player_port(2) == 0x7b && inputs.player_port(3) == 0xb8
+              && inputs.start_pair(false) == 0x20
+              && inputs.start_pair(true) == 0x00,
+          "Air Walkers matrix exposes the selected player and Start pair");
 
     const auto* hpyagu98 = database.find("hpyagu98");
     check(hpyagu98 != nullptr, "Hanguk Pro Yagu 98 parent exists");

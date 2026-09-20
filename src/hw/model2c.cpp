@@ -24,7 +24,9 @@
 
 #include "hw/model2c.h"
 
+#include "core/archive.h"
 #include "core/log.h"
+#include "hw/save_state_io.h"
 
 #include <algorithm>
 #include <bit>
@@ -196,6 +198,18 @@ void CoproTgpx4::reset()
     //
     // There are also no set_flag_input calls here: those were the SHARC's way of
     // learning the FIFO state and have no counterpart on this part.
+}
+
+void CoproTgpx4::serialize(Archive& ar)
+{
+    m_cpu.serialize(ar);
+    m_fifo_in.serialize(ar);
+    m_fifo_out.serialize(ar);
+    // The uploaded microcode is board RAM the host writes at runtime, not ROM,
+    // so it is part of the state (see reset()'s note on why reset leaves it).
+    ar.bytes(m_program.data(), m_program.size());
+    ar.raw(m_control);
+    ar.raw(m_upload_count);
 }
 
 s32 CoproTgpx4::run(s32 cycles)
@@ -519,6 +533,7 @@ void Model2C::reset()
 void Model2C::run_frame()
 {
     reset_core_profile();  // per-core --profile split; see Model2::run_frame
+    m_in_frame = true;
 
     for (u32 line = 0; line < kVerticalTotal; ++line) {
         const u64 line_end   = m_frame_start + static_cast<u64>(line + 1) * kCyclesPerLine;
@@ -615,6 +630,8 @@ void Model2C::run_frame()
             wf(0x5a2230 + 4, ycenter);    wf(0x5a0224 + 4, yscale);    // P2 Y
         }
     }
+
+    m_in_frame = false;
 }
 
 void Model2C::step_copro(u32 host_cycles)
@@ -1597,6 +1614,136 @@ void Model2C::save_nvram() const
     }
 
     (void)m_eeprom.save((base / (m_game.name + ".eeprom")).string());
+}
+
+// ---------------------------------------------------------------------------
+// Save states
+// ---------------------------------------------------------------------------
+
+void Model2C::serialize(Archive& ar)
+{
+    // Owned components. Each serializes its own POD; the spans/callbacks they
+    // hold are excluded and stay bound from init(), because a load restores into
+    // this same, already-wired machine.
+    m_cpu.serialize(ar);
+    m_copro.serialize(ar);
+    m_sound.serialize(ar);
+    m_io.serialize(ar);
+    m_eeprom.serialize(ar);
+    m_video.serialize(ar);
+    m_geometry.serialize(ar);
+    m_comm.serialize(ar);
+    m_uart.serialize(ar);
+    m_crypt.serialize(ar);
+
+    // RAM regions. The buffer/comm RAM are shared into the copro/comm devices
+    // through spans, so they are serialized once, here, not by those devices.
+    ar.bytes(m_work_ram.data(), m_work_ram.size());
+    ar.bytes(m_scratch_ram.data(), m_scratch_ram.size());
+    ar.bytes(m_buffer_ram.data(), m_buffer_ram.size());
+    ar.bytes(m_tile_ram.data(), m_tile_ram.size());
+    ar.bytes(m_char_ram.data(), m_char_ram.size());
+    ar.bytes(m_palette_ram.data(), m_palette_ram.size());
+    ar.bytes(m_colorxlat.data(), m_colorxlat.size());
+    ar.bytes(m_luma_ram.data(), m_luma_ram.size());
+    ar.bytes(m_texture_ram0.data(), m_texture_ram0.size());
+    ar.bytes(m_texture_ram1.data(), m_texture_ram1.size());
+    ar.bytes(m_framebuffer_a.data(), m_framebuffer_a.size());
+    ar.bytes(m_framebuffer_b.data(), m_framebuffer_b.size());
+    ar.bytes(m_nvram.data(), m_nvram.size());
+    ar.bytes(m_cpu_control.data(), m_cpu_control.size());
+    ar.bytes(m_comm_ram.data(), m_comm_ram.size());
+    ar.bytes(m_crypt_ram.data(), m_crypt_ram.size());
+
+    // Interrupt latch.
+    ar.raw(m_intreq);
+    ar.raw(m_intena);
+
+    // Timers.
+    for (Timer& timer : m_timers) {
+        ar.raw(timer);
+    }
+
+    // Video / coprocessor registers.
+    ar.raw(m_videocontrol);
+    ar.raw(m_render_mode);
+    ar.raw(m_render_test);
+    ar.raw(m_render_unk);
+    ar.raw(m_geoctl);
+    ar.raw(m_geocnt);
+    ar.raw(m_geo_write_start_address);
+    ar.raw(m_geo_read_start_address);
+    ar.raw(m_ctrlmode);
+
+    // Misc latches.
+    ar.raw(m_gear_selected);
+    ar.raw(m_drive_board_latch);
+    ar.raw(m_lightgun_mux);
+
+    // Scheduling / interleave base — captured together with the cores above so
+    // the resumed interleave stays consistent (design §7).
+    ar.raw(m_cycles);
+    ar.raw(m_frame_start);
+    ar.raw(m_frames);
+    ar.raw(m_pending_intena);
+    ar.raw(m_pending_intena_cycle);
+    ar.raw(m_pending_intena_valid);
+    ar.raw(m_copro_debt);
+
+    // Inputs latch (small POD; harmless to carry so a state is self-contained).
+    ar.raw(m_inputs);
+}
+
+bool Model2C::save_state(const std::string& path) const
+{
+    // serialize is non-const (Save refreshes each 68000's context blob first),
+    // so a const save walks a non-const view — sound, because a save reads state
+    // rather than changing emulation behaviour.
+    auto* self = const_cast<Model2C*>(this);
+    return save_state_to_file(path, m_game.name, static_cast<u32>(m_game.board),
+                              m_in_frame, [self](Archive& ar) { self->serialize(ar); });
+}
+
+bool Model2C::save_state(std::vector<u8>& out) const
+{
+    auto* self = const_cast<Model2C*>(this);
+    return save_state_to_buffer(out, m_game.name,
+                                static_cast<u32>(m_game.board), m_in_frame,
+                                [self](Archive& ar) { self->serialize(ar); });
+}
+
+bool Model2C::load_state(const std::string& path)
+{
+    if (!load_state_from_file(path, m_game.name, static_cast<u32>(m_game.board),
+                              m_in_frame, [this](Archive& ar) { serialize(ar); })) {
+        return false;
+    }
+
+    // Bump the generation counters rather than serializing them, forcing the
+    // renderer to re-derive its caches from the restored RAM.
+    ++m_texture_generation;
+    ++m_table_generation;
+    ++m_tile_generation;
+    ++m_char_generation;
+    m_palette_dirty = true;
+    m_render_list.clear();
+    return true;
+}
+
+bool Model2C::load_state(const u8* data, usize size)
+{
+    if (!load_state_from_buffer(data, size, m_game.name,
+                                static_cast<u32>(m_game.board), m_in_frame,
+                                [this](Archive& ar) { serialize(ar); })) {
+        return false;
+    }
+    ++m_texture_generation;
+    ++m_table_generation;
+    ++m_tile_generation;
+    ++m_char_generation;
+    m_palette_dirty = true;
+    m_render_list.clear();
+    return true;
 }
 
 }  // namespace sm2::hw

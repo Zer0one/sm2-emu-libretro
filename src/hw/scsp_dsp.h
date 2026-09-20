@@ -13,6 +13,10 @@
 
 #include "core/types.h"
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 /// The 16-bit memory the SCSP addresses in its own right.
@@ -61,6 +65,10 @@ struct ScspDsp {
     void SetSample(s32 sample, s32 SEL, s32 MXL);
     void Step();
     void Start();
+
+    /// Save/restore the DSP's program/coefficient RAM and working registers.
+    /// The `memory` back-pointer is excluded (re-bound by Init).
+    void serialize(Archive& ar);
 };
 
 }  // namespace sm2::hw

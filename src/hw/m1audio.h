@@ -44,6 +44,10 @@
 #include <span>
 #include <vector>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 class M1Audio final : public SoundBoard, public cpu::Bus {
@@ -124,6 +128,11 @@ public:
     [[nodiscard]] std::span<const u8> ram() const { return m_ram; }
     [[nodiscard]] const MultiPcm& pcm(u32 index) const { return m_pcm[index & 1]; }
     [[nodiscard]] const Ym3438& ym() const { return m_ym; }
+
+    /// Save/restore the board: 68000, UART, both MultiPCMs, the YM3438, 64 KB
+    /// RAM and clock carries. Program/sample ROM spans, the rxd callback and
+    /// pending-sample scratch are excluded.
+    void serialize(Archive& ar);
 
 private:
     /// Plain memory behind an address, or null for anything with side effects.

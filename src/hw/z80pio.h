@@ -23,6 +23,10 @@
 #include <array>
 #include <functional>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 class Z80Pio {
@@ -59,6 +63,9 @@ public:
     /// Never asserted here, because the firmware leaves both enables clear. Kept
     /// so the daisy chain has one shape for every peripheral on it.
     [[nodiscard]] bool interrupt_pending() const { return false; }
+
+    /// Save/restore both ports' register state. The port callbacks are excluded.
+    void serialize(Archive& ar);
 
 private:
     enum class NextControl : u8 { Any, DataDirection, Mask };

@@ -147,6 +147,11 @@ public:
     u8   io_read8(u16 port) override;
     void io_write8(u16 port, u8 value) override;
 
+    /// Save/restore the board: its Z80, the I/O expander, the ADC, the EEPROM,
+    /// 8 KB RAM, the control-panel switch state and the clock carry. ROM span
+    /// and callbacks excluded (re-bound at attach).
+    void serialize(Archive& ar);
+
 private:
     // Expander callbacks, named after MAME's model1io_device members.
     [[nodiscard]] u8 io_read(u32 address);

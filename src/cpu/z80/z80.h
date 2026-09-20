@@ -28,6 +28,10 @@
 #include <string>
 #include <type_traits>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::cpu::z80 {
 
 // ============================================================================
@@ -213,6 +217,11 @@ public:
         m_trace_hook    = hook;
         m_trace_context = context;
     }
+
+    /// Save/restore the whole register set (including the alternate set and the
+    /// deferred-flag struct), interrupt/line state and cycle carry. Bus and
+    /// trace hook are excluded.
+    void serialize(Archive& ar);
 
 private:
     // -- flag bits ----------------------------------------------------------

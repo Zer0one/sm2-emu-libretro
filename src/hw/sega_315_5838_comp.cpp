@@ -6,6 +6,8 @@
 
 #include "hw/sega_315_5838_comp.h"
 
+#include "core/archive.h"
+
 namespace sm2::hw {
 namespace {
 
@@ -33,6 +35,11 @@ u8 Sega3155838Comp::next_byte()
 u16 Sega3155838Comp::data_r()
 {
     return static_cast<u16>((next_byte() << 8) | next_byte());
+}
+
+void Sega3155838Comp::serialize(Archive& ar)
+{
+    ar.raw(m_srcoffset);
 }
 
 }  // namespace sm2::hw

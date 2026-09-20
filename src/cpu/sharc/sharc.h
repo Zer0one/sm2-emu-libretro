@@ -15,6 +15,10 @@
 #include <cstdint>
 #include <string>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::cpu::sharc {
 
 // ============================================================================
@@ -102,6 +106,11 @@ public:
         m_trace_hook    = hook;
         m_trace_context = context;
     }
+
+    /// Save/restore the whole register/SRAM/DMA/interrupt state. The member-fn
+    /// dispatch tables (m_sharc_op/m_op_index) are EXCLUDED and rebuilt via
+    /// build_opcode_table() on load; the bus and trace hook are excluded too.
+    void serialize(Archive& ar);
 
 private:
     // -- ASTAT flags --------------------------------------------------------

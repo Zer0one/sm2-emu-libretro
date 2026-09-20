@@ -37,6 +37,10 @@
 
 #include <functional>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 class I8251 {
@@ -95,6 +99,11 @@ public:
         u64 data_writes    = 0;
     };
     [[nodiscard]] const Counters& counters() const { return m_counters; }
+
+    /// Save/restore the register/transmitter state. The two callbacks are
+    /// excluded (re-bound by the owner). m_byte_cycles is re-set by configure()
+    /// but saved anyway so a restore is self-contained.
+    void serialize(Archive& ar);
 
 private:
     /// Status register bits, as the programming model defines them.

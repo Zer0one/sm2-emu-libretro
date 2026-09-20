@@ -26,6 +26,7 @@
 
 #include "cpu/z80/z80.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <cstdio>
@@ -2220,5 +2221,45 @@ std::string Z80::state_string() const
 #undef TDAT_H
 #undef TDAT_L
 #undef TDAT8
+
+void Z80::serialize(Archive& ar)
+{
+    ar.raw(m_prvpc);
+    ar.raw(m_pc);
+    ar.raw(m_sp);
+    ar.raw(m_af);
+    ar.raw(m_bc);
+    ar.raw(m_de);
+    ar.raw(m_hl);
+    ar.raw(m_ix);
+    ar.raw(m_iy);
+    ar.raw(m_wz);
+    ar.raw(m_af2);
+    ar.raw(m_bc2);
+    ar.raw(m_de2);
+    ar.raw(m_hl2);
+    ar.raw(m_f);  // deferred-flag struct incl. q/qtemp — save raw, not get_f()
+    ar.raw(m_r);
+    ar.raw(m_r2);
+    ar.raw(m_i);
+    ar.raw(m_iff1);
+    ar.raw(m_iff2);
+    ar.raw(m_halt);
+    ar.raw(m_im);
+    ar.raw(m_nmi_state);
+    ar.raw(m_irq_state);
+    ar.raw(m_wait_state);
+    ar.raw(m_ea);
+    ar.raw(m_service_attention);
+    ar.raw(m_tmp_irq_vector);
+    ar.raw(m_shared_data);
+    ar.raw(m_shared_data2);
+    ar.raw(m_cycle_debt);
+    ar.raw(m_m1_cycles);
+    ar.raw(m_mreq_cycles);
+    ar.raw(m_iorq_cycles);
+    ar.raw(m_total_cycles);
+    ar.raw(m_instruction_count);
+}
 
 }  // namespace sm2::cpu::z80

@@ -116,6 +116,11 @@ public:
 
     [[nodiscard]] bool secondary_controls() const { return m_secondary_controls; }
 
+    /// Save/restore the board: Z80, I/O expander, ADC, EEPROM, CTC, PIO, 8 KB
+    /// RAM, the FPGA/LCD/SIO latches and clock carry. ROM span and callbacks
+    /// excluded (re-bound at attach).
+    void serialize(Archive& ar);
+
     struct Counters {
         u64 dual_port_reads  = 0;
         u64 dual_port_writes = 0;

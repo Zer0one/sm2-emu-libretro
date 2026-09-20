@@ -74,6 +74,11 @@ public:
     };
     [[nodiscard]] const Counters& counters() const { return m_counters; }
 
+    /// Save/restore the board: 68000, UART, 128 KB RAM, the MPEG decoder's
+    /// mid-stream state, the decoded-frame buffer and every playback/FIFO/timer
+    /// scalar. ROM spans and the rxd callback are excluded (re-bound at attach).
+    void serialize(Archive& ar);
+
 private:
     // The FIFO command state machine, MAME's mpeg_command_t.
     enum class Command : u8 {

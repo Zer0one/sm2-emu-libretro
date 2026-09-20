@@ -18,6 +18,7 @@
 
 #include "hw/scsp.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -239,6 +240,67 @@ void Scsp::reset()
 
 	irq_cb(0, false);
 	main_irq_cb(false);
+}
+
+void Scsp::serialize(Archive& ar)
+{
+	ar.bytes(m_udata.datab, sizeof(m_udata.datab));
+
+	for (SCSP_SLOT& slot : m_Slots) {
+		// Every field except the two LFO table/scale pointers, which point into
+		// the constant LFO tables and are re-derived below.
+		ar.bytes(slot.udata.datab, sizeof(slot.udata.datab));
+		ar.raw(slot.Backwards);
+		ar.raw(slot.active);
+		ar.raw(slot.cur_addr);
+		ar.raw(slot.nxt_addr);
+		ar.raw(slot.step);
+		ar.raw(slot.EG);
+		ar.raw(slot.PLFO.phase);
+		ar.raw(slot.PLFO.phase_step);
+		ar.raw(slot.ALFO.phase);
+		ar.raw(slot.ALFO.phase_step);
+		ar.raw(slot.slot);
+		ar.raw(slot.Prev);
+	}
+
+	ar.bytes(m_RINGBUF, 128);
+	ar.raw(m_BUFPTR);
+	ar.raw(m_IrqTimA);
+	ar.raw(m_IrqTimBC);
+	ar.raw(m_IrqMidi);
+	ar.raw(m_IrqCPU);
+	ar.raw(m_IrqDMA);
+	ar.raw(m_latched_MSLC);
+	ar.raw(m_latched_MSLC_data);
+	ar.bytes(m_MidiOutStack, 32);
+	ar.raw(m_MidiOutW);
+	ar.raw(m_MidiOutR);
+	ar.bytes(m_MidiStack, 32);
+	ar.raw(m_MidiW);
+	ar.raw(m_MidiR);
+	ar.bytes(m_TimPris, 3);
+	ar.bytes(m_TimCnt, 3);
+	ar.bytes(m_TimDeadline, 3);
+	ar.raw(m_dma);
+	ar.raw(m_mcieb);
+	ar.raw(m_mcipd);
+	m_DSP.serialize(ar);
+	ar.raw(m_master_gain);
+	ar.bytes(m_slot_gain, 32);
+	ar.raw(m_slot_gain_active);
+	ar.raw(m_sample_count);
+	ar.raw(m_midi_out_countdown);
+	ar.raw(m_midi_transmit_byte);
+	ar.raw(m_random_state);
+
+	if (ar.loading() && !ar.failed()) {
+		// Re-bind each slot's LFO table/scale pointers from its (restored)
+		// registers, exactly as a register write to LFO control would.
+		for (SCSP_SLOT& slot : m_Slots) {
+			Compute_LFO(&slot);
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------

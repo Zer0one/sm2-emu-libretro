@@ -14,7 +14,10 @@
 
 #include "hw/ym3438.h"
 
+#include "core/archive.h"
+
 #include <algorithm>
+#include <vector>
 
 namespace sm2::hw {
 
@@ -39,6 +42,30 @@ void Ym3438::reset()
     m_stats               = Stats{};
 
     m_chip.reset();
+}
+
+void Ym3438::serialize(Archive& ar)
+{
+    // The FM engine's state goes through ymfm's own save_restore, carried as a
+    // length-prefixed byte blob so the layout is ymfm's to define.
+    std::vector<u8> blob;
+    if (ar.saving()) {
+        ymfm::ymfm_saved_state ss(blob, /*saving=*/true);
+        m_chip.save_restore(ss);
+    }
+    ar.vector_pod(blob);
+    if (ar.loading() && !ar.failed()) {
+        ymfm::ymfm_saved_state ss(blob, /*saving=*/false);
+        m_chip.save_restore(ss);
+    }
+
+    ar.bytes(m_timer_deadline, 2);
+    ar.bytes(m_timer_running, 2);
+    ar.raw(m_samples_run);
+    ar.raw(m_step);
+    ar.raw(m_position);
+    ar.bytes(m_prev, 2);
+    ar.bytes(m_next, 2);
 }
 
 u8 Ym3438::read(u32 offset)

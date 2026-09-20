@@ -99,6 +99,8 @@ def main():
     p.add_argument('--vf2-difficulty',choices=['normal','hard','hardest','easy'],default='normal')
     p.add_argument('--vf2-display-type',choices=['projector','crt'],default='projector')
     p.add_argument('--initial-srm',type=Path,help='Optional frontend save RAM copied in before launch')
+    p.add_argument('--initial-state',type=Path,
+                   help='Optional Libretro state embedded in the replay and loaded by RetroArch')
     p.add_argument('--replay-reader', choices=['1.21','1.22'], default='1.21',
                    help='1.22 reads 40 header bytes even for a stateless v1 replay')
     p.add_argument('--audio-driver', default='coreaudio' if platform.system()=='Darwin' else 'alsa')
@@ -115,11 +117,15 @@ def main():
         (out/directory).mkdir()
     if a.initial_srm:
         (out/'saves'/f'{a.set_name}.srm').write_bytes(a.initial_srm.resolve(strict=True).read_bytes())
-    movie=bytearray(struct.pack('<6I',0x42535632,1,0,0,1,0))
+    initial_state=a.initial_state.resolve(strict=True).read_bytes() if a.initial_state else b''
+    movie=bytearray(struct.pack('<6I',0x42535632,1,0,len(initial_state),1,0))
     # RetroArch 1.22.2 bsv_movie_reset_playback reads 40 bytes and only
-    # seeks back to byte 24 when a v1 save state exists. This core has none.
-    # Pad this test fixture for that reader; keep the actual v1 input records.
-    if a.replay_reader=='1.22': movie += bytes(16)
+    # seeks back to byte 24 only when a v1 save state exists. Without one, pad
+    # this fixture for that reader while keeping the actual v1 input records.
+    if initial_state:
+        movie += initial_state
+    elif a.replay_reader=='1.22':
+        movie += bytes(16)
     for frame in range(2400):
         pressed=set()
         if 800<=frame<810 or 820<=frame<830:pressed.add(2)  # Select / coin
@@ -277,6 +283,7 @@ def main():
     report={'set_name':a.set_name,'recording_format':recording_format,'renderer':a.renderer,'internal_scale':a.scale,
             'texture_filter':a.texture_filter,'upscale_2d':a.upscale_2d,
             'gamepad_rumble':a.gamepad_rumble,
+            'initial_state':bool(initial_state),
             'av_timing':a.av_timing,'timing_overlay':a.timing_overlay,'audio_balance':a.audio_balance,
             'aspect_ratio':a.aspect_ratio,
             'crosshairs':a.crosshairs,'save_ram_size':len(srm),'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,

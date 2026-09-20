@@ -4,6 +4,7 @@
 
 #include "hw/io_315_5649.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 namespace sm2::hw {
@@ -16,6 +17,14 @@ void Io315_5649::reset()
     m_port_config    = 0xff;
     m_mode           = 0;
     m_analog_channel = 0;
+}
+
+void Io315_5649::serialize(Archive& ar)
+{
+    ar.bytes(m_port_value.data(), m_port_value.size());
+    ar.raw(m_port_config);
+    ar.raw(m_mode);
+    ar.raw(m_analog_channel);
 }
 
 u8 Io315_5649::read(u32 offset)

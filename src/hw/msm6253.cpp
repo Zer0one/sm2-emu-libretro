@@ -4,11 +4,18 @@
 
 #include "hw/msm6253.h"
 
+#include "core/archive.h"
+
 namespace sm2::hw {
 
 void Msm6253::reset()
 {
     m_shift_register = 0;
+}
+
+void Msm6253::serialize(Archive& ar)
+{
+    ar.raw(m_shift_register);
 }
 
 void Msm6253::set_input(u32 channel, InputHandler handler)

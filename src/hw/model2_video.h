@@ -26,6 +26,10 @@
 #include <span>
 #include <vector>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 /// The video output stage: palette conversion and 2D composition.
@@ -131,6 +135,12 @@ public:
 
     [[nodiscard]] s16 crtc_x_offset() const { return m_crtc_x_offset; }
     [[nodiscard]] s16 crtc_y_offset() const { return m_crtc_y_offset; }
+
+    /// Save/restore the CRTC offsets. On load the tilemap decode caches and the
+    /// pen table are re-derived rather than serialized: the decoded pixmaps come
+    /// straight from tile/char RAM (invalidate_all) and the pens from palette
+    /// RAM (a palette_dirty bump at the machine level), both of which ARE saved.
+    void serialize(Archive& ar);
 
 private:
     /// One component of the tone curve: the translation table entry for this

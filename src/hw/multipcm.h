@@ -30,6 +30,10 @@
 #include <array>
 #include <span>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 class MultiPcm {
@@ -68,6 +72,13 @@ public:
 
     [[nodiscard]] u32 sample_rate() const { return m_rate_hz; }
     [[nodiscard]] u32 active_voices() const;
+
+    /// Save/restore the bank and all 28 voices. Each voice's two LFO
+    /// table/scale pointers are EXCLUDED and re-derived on load (from the saved
+    /// lfo_frequency/vibrato/tremolo), like the SCSP. The constant tables and
+    /// sample-ROM span are excluded. The derived rate fields are re-set at
+    /// construction.
+    void serialize(Archive& ar);
 
     /// Not in the MAME original. Enough to tell "the chip is running and making
     /// noise" from "the chip is running and silent" in the headless report, which

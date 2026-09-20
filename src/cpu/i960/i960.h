@@ -18,6 +18,10 @@
 #include <exception>
 #include <string>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::cpu::i960 {
 
 /// Register file indices, also used by the debugger and state export.
@@ -142,6 +146,10 @@ public:
         m_trace_hook    = hook;
         m_trace_context = context;
     }
+
+    /// Save/restore the whole register/execution state. The bus and trace hook
+    /// are excluded (re-bound by construction / left null).
+    void serialize(Archive& ar);
 
 private:
     [[noreturn]] void fatal(const char* format, ...)

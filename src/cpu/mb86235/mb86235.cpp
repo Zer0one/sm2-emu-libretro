@@ -34,6 +34,7 @@
 
 #include "cpu/mb86235/mb86235.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <bit>
@@ -1957,5 +1958,41 @@ std::string MB86235::state_string() const
 #undef GETMI1
 #undef GETMI2
 #undef GETMO
+
+void MB86235::serialize(Archive& ar)
+{
+    ar.bytes(m_ram_a, kInternalRamWords);
+    ar.bytes(m_ram_b, kInternalRamWords);
+    ar.raw(m_pc);
+    ar.raw(m_delay_pc);
+    ar.raw(m_ppc);
+    ar.bytes(m_aa, 8);
+    ar.bytes(m_ab, 8);
+    ar.bytes(m_ma, 8);
+    ar.bytes(m_mb, 8);
+    ar.bytes(m_ar, 8);
+    ar.raw(m_sp);
+    ar.raw(m_eb);
+    ar.raw(m_eo);
+    ar.raw(m_rpc);
+    ar.raw(m_lpc);
+    ar.raw(m_prp);
+    ar.raw(m_pwp);
+    ar.bytes(m_pr, 24);
+    ar.raw(m_mod);
+    ar.raw(m_flags);
+    ar.raw(m_st);
+    ar.raw(m_pcp);
+    ar.bytes(m_pcs, 4);
+    ar.raw(m_pdr);
+    ar.raw(m_ddr);
+    ar.raw(m_delay_slot);
+    ar.raw(m_fifo_state);
+    ar.raw(m_fifo_out_pending);
+    ar.raw(m_fifo_out_pending_value);
+    ar.raw(m_halted);
+    ar.raw(m_faulted);
+    ar.raw(m_instruction_count);
+}
 
 }  // namespace sm2::cpu::mb86235

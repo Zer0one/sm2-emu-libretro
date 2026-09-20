@@ -5,6 +5,7 @@
 
 #include "hw/copro_tgp.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -95,6 +96,23 @@ void CoproTgp::reset()
     std::fill(std::begin(m_atan_base), std::end(m_atan_base), 0u);
 
     m_activity = Activity{};
+}
+
+void CoproTgp::serialize(Archive& ar)
+{
+    m_cpu.serialize(ar);
+    m_fifo_in.serialize(ar);
+    m_fifo_out.serialize(ar);
+    ar.bytes(m_program.data(), m_program.size());
+    ar.bytes(m_data_low.data(), m_data_low.size());
+    ar.bytes(m_data_high.data(), m_data_high.size());
+    ar.raw(m_control);
+    ar.raw(m_upload_count);
+    ar.raw(m_bank);
+    ar.raw(m_sincos_base);
+    ar.raw(m_inverse_base);
+    ar.raw(m_inverse_sqrt_base);
+    ar.bytes(m_atan_base, 4);
 }
 
 s32 CoproTgp::run(s32 cycles)

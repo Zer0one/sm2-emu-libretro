@@ -18,6 +18,7 @@
 # ---------------------------------------------------------------------------
 
 add_library(sm2_core STATIC
+    core/archive.cpp
     core/config.cpp
     core/log.cpp
 )
@@ -231,6 +232,7 @@ add_library(sm2_hw STATIC
     hw/model2c.cpp
     hw/model2_debug.cpp
     hw/model2_original.cpp
+    hw/save_state_io.cpp
     hw/model2_sound.cpp
     hw/model2_softrender.cpp
     hw/model2_video.cpp

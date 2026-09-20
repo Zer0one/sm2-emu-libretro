@@ -10,6 +10,7 @@
 
 #include "hw/sega_315_5881_crypt.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <cassert>
@@ -472,6 +473,31 @@ void Sega3155881Crypt::reset()
     m_line_buffer_pos  = 0;
     m_line_buffer_size = 0;
     m_buffer_bit       = 0;
+}
+
+void Sega3155881Crypt::serialize(Archive& ar)
+{
+    ar.raw(m_key);
+    ar.raw(m_first_read);
+    ar.vector_pod(m_buffer);
+    ar.vector_pod(m_line_buffer);
+    ar.vector_pod(m_line_buffer_prev);
+    ar.raw(m_prot_cur_address);
+    ar.raw(m_subkey);
+    ar.raw(m_dec_hist);
+    ar.raw(m_dec_header);
+    ar.raw(m_enc_ready);
+    ar.raw(m_buffer_pos);
+    ar.raw(m_line_buffer_pos);
+    ar.raw(m_line_buffer_size);
+    ar.raw(m_buffer_bit);
+    ar.raw(m_buffer_bit2);
+    ar.bytes(m_buffer2, 2);
+    ar.raw(m_buffer2a);
+    ar.raw(m_block_size);
+    ar.raw(m_block_pos);
+    ar.raw(m_block_numlines);
+    ar.raw(m_done_compression);
 }
 
 // ---------------------------------------------------------------------------

@@ -7,6 +7,8 @@
 
 #include "cpu/sharc/sharc.h"
 
+#include "core/archive.h"
+
 #include <algorithm>
 #include <bit>
 #include <cmath>
@@ -2594,5 +2596,77 @@ std::string SHARC::state_string() const
 #undef REG
 #undef FREG
 #undef UIREG
+
+void SHARC::serialize(Archive& ar)
+{
+    // On-chip SRAM (256 KB). Program and data memory are windows onto this.
+    for (auto& bank : m_blocks) {
+        ar.bytes(bank, kBlockWords);
+    }
+    ar.raw(m_short_word_sign_extend);
+    ar.bytes(m_r, 16);
+    ar.bytes(m_reg_alt, 16);
+    ar.raw(m_pc);
+    ar.raw(m_daddr);
+    ar.raw(m_faddr);
+    ar.raw(m_nfaddr);
+    ar.raw(m_mrf);
+    ar.raw(m_mrb);
+    ar.bytes(m_pcstack, 30);
+    ar.bytes(m_lcstack, 6);
+    ar.bytes(m_lastack, 6);
+    ar.raw(m_lstkp);
+    ar.raw(m_pcstk);
+    ar.raw(m_pcstkp);
+    ar.raw(m_laddr);
+    ar.raw(m_curlcntr);
+    ar.raw(m_lcntr);
+    ar.raw(m_dag1);
+    ar.raw(m_dag2);
+    ar.raw(m_dag1_alt);
+    ar.raw(m_dag2_alt);
+    ar.bytes(m_dma, 12);
+    ar.bytes(m_dma_op, 12);
+    ar.raw(m_dma_status);
+    ar.raw(m_mode1);
+    ar.raw(m_mode2);
+    ar.raw(m_astat);
+    ar.raw(m_stky);
+    ar.raw(m_irptl);
+    ar.raw(m_imask);
+    ar.raw(m_imaskp);
+    ar.raw(m_ustat1);
+    ar.raw(m_ustat2);
+    ar.bytes(m_flag, 4);
+    ar.raw(m_syscon);
+    ar.raw(m_sysstat);
+    ar.bytes(m_status_stack, 5);
+    ar.raw(m_status_stkp);
+    ar.raw(m_px);
+    ar.raw(m_opcode);
+    ar.raw(m_idle);
+    ar.raw(m_irq_pending);
+    ar.raw(m_active_irq_num);
+    ar.raw(m_interrupt_active);
+    ar.raw(m_delay_slot1);
+    ar.raw(m_delay_slot2);
+    ar.raw(m_systemreg_latency_cycles);
+    ar.raw(m_systemreg_latency_reg);
+    ar.raw(m_systemreg_latency_data);
+    ar.raw(m_systemreg_previous_data);
+    ar.raw(m_astat_old);
+    ar.raw(m_astat_old_old);
+    ar.raw(m_astat_old_old_old);
+    ar.raw(m_extdma_shift);
+    ar.raw(m_iop_write_num);
+    ar.raw(m_iop_data);
+    ar.raw(m_halted);
+    ar.raw(m_write_stalled);
+    ar.raw(m_instruction_count);
+    // m_sharc_op / m_op_index are member-fn-ptr dispatch tables — never
+    // serialized. They are already built (construction) and unchanged by a
+    // load, so nothing to do; build_opcode_table() would only re-derive the
+    // same table. m_icount is per-slice scratch (always 0 between frames).
+}
 
 }  // namespace sm2::cpu::sharc

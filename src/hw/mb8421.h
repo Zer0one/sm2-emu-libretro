@@ -24,6 +24,10 @@
 #include <array>
 #include <span>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::hw {
 
 /// 2048 bytes reachable from two independent byte-wide ports.
@@ -52,6 +56,9 @@ public:
 
     /// Contents, for diagnostics. MAME's peek().
     [[nodiscard]] std::span<const u8> bytes() const { return m_ram; }
+
+    /// Save/restore the 2 KB shared RAM.
+    void serialize(Archive& ar);
 
 private:
     static constexpr u32 kAddressMask = kSize - 1;

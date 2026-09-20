@@ -143,6 +143,12 @@ public:
     [[nodiscard]] const Scsp& scsp() const { return m_scsp; }
     [[nodiscard]] std::span<const u8> ram() const { return m_ram; }
 
+    /// Save/restore the whole sound board: the 68000, the SCSP, both MPEG
+    /// boards, the 512 KB work RAM, banking, balance gains and clock carries.
+    /// The program/sample ROM spans and the pending-sample scratch are
+    /// excluded. Between-frames only.
+    void serialize(Archive& ar);
+
 private:
     /// Resolves a 68000 address to a byte pointer, or null for anything that is
     /// not plain memory. `writable` is false for ROM.

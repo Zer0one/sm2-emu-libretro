@@ -9,9 +9,9 @@
 
 namespace sm2::libretro {
 
-/// Official Libretro Netpacket wire for two linked Model 2 cabinets.
+/// Official Libretro Netpacket wire for a linked Model 2 cabinet ring.
 /// The emulated ring remains in hw::M2Comm; this class only carries complete
-/// communication-board frames between two frontend instances.
+/// communication-board frames to the next frontend instance in the roster.
 class NetpacketTransport final : public hw::CommTransport {
 public:
     void configure(std::string_view game, unsigned cabinets);

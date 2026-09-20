@@ -17,6 +17,7 @@
 
 #include "hw/model2_sound.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -156,6 +157,27 @@ void Model2Sound::reset()
     }
 
     m_cpu.reset();
+}
+
+void Model2Sound::serialize(Archive& ar)
+{
+    ar.bytes(m_ram.data(), m_ram.size());
+    m_cpu.serialize(ar);
+    m_scsp.serialize(ar);
+    m_dsb.serialize(ar);
+    m_dsb2.serialize(ar);
+    ar.raw(m_balance_profile_active);
+    ar.raw(m_audio_balance_enabled);
+    ar.raw(m_flat_gain);
+    ar.raw(m_music_gain);
+    ar.raw(m_sfx_gain);
+    ar.raw(m_announcer_gain);
+    ar.raw(m_voice_gain);
+    ar.raw(m_bank4_offset);
+    ar.raw(m_bank5_offset);
+    ar.raw(m_cycle_debt);
+    ar.raw(m_cycle_overshoot);
+    ar.raw(m_sample_debt);
 }
 
 void Model2Sound::run(u32 host_cycles)

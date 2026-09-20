@@ -39,6 +39,10 @@
 #include <string>
 #include <vector>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::cpu::m68000 {
 
 /// The seven autovectored interrupt levels. The SCSP drives these directly.
@@ -113,6 +117,12 @@ public:
 
     /// One-line register dump.
     [[nodiscard]] std::string state_string() const;
+
+    /// Save/restore the whole 68000 state. On save this first makes the
+    /// instance current and refreshes its context blob from Musashi; on load it
+    /// installs the restored blob via make_current(). The bus is excluded
+    /// (bound at construction). Never zero-fills a context.
+    void serialize(Archive& ar);
 
 private:
     void apply_irq() const;

@@ -5,6 +5,7 @@
 
 #include "hw/multipcm.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -138,6 +139,44 @@ void MultiPcm::reset()
     m_address  = 0;
     m_bank     = 0;
     m_stats    = Stats{};
+}
+
+void MultiPcm::serialize(Archive& ar)
+{
+    ar.raw(m_bank);
+    ar.raw(m_cur_slot);
+    ar.raw(m_address);
+    for (Slot& slot : m_slots) {
+        ar.raw(slot.regs);
+        ar.raw(slot.playing);
+        ar.raw(slot.sample);
+        ar.raw(slot.offset);
+        ar.raw(slot.octave);
+        ar.raw(slot.pitch);
+        ar.raw(slot.step);
+        ar.raw(slot.reverse);
+        ar.raw(slot.pan);
+        ar.raw(slot.total_level);
+        ar.raw(slot.dest_total_level);
+        ar.raw(slot.total_level_step);
+        ar.raw(slot.prev_sample);
+        ar.raw(slot.envelope);
+        ar.raw(slot.lfo_frequency);
+        // The two LFOs' table/scale pointers are re-derived below; only their
+        // phase/phase_step are durable.
+        ar.raw(slot.pitch_lfo.phase);
+        ar.raw(slot.pitch_lfo.phase_step);
+        ar.raw(slot.vibrato);
+        ar.raw(slot.amplitude_lfo.phase);
+        ar.raw(slot.amplitude_lfo.phase_step);
+        ar.raw(slot.tremolo);
+    }
+    if (ar.loading() && !ar.failed()) {
+        for (Slot& slot : m_slots) {
+            lfo_compute_step(slot.pitch_lfo, slot.lfo_frequency, slot.vibrato, false);
+            lfo_compute_step(slot.amplitude_lfo, slot.lfo_frequency, slot.tremolo, true);
+        }
+    }
 }
 
 u32 MultiPcm::value_to_fixed(u32 bits, float value)

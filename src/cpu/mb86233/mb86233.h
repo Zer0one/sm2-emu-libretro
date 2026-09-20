@@ -12,6 +12,10 @@
 
 #include <string>
 
+namespace sm2 {
+class Archive;
+}
+
 namespace sm2::cpu::mb86233 {
 
 /// The geometry coprocessor of Model 1, Model 2 and Model 2A.
@@ -114,6 +118,10 @@ public:
     [[nodiscard]] std::string state_string() const;
 
     /// Called after each instruction fetch with the instruction's own address.
+    /// Save/restore the whole register/execution state (all POD; no dispatch
+    /// tables). Bus and trace hook excluded.
+    void serialize(Archive& ar);
+
     using TraceHook = void (*)(void* context, u16 address);
     void set_trace_hook(TraceHook hook, void* context)
     {

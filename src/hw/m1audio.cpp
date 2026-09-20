@@ -14,6 +14,7 @@
 
 #include "hw/m1audio.h"
 
+#include "core/archive.h"
 #include "core/log.h"
 
 #include <algorithm>
@@ -153,6 +154,19 @@ void M1Audio::reset()
     // Last, because the 68000 fetches its stack pointer and PC from the first
     // eight bytes of ROM as part of reset.
     m_cpu.reset();
+}
+
+void M1Audio::serialize(Archive& ar)
+{
+    m_cpu.serialize(ar);
+    m_uart.serialize(ar);
+    m_pcm[0].serialize(ar);
+    m_pcm[1].serialize(ar);
+    m_ym.serialize(ar);
+    ar.bytes(m_ram.data(), m_ram.size());
+    ar.raw(m_cpu_debt);
+    ar.raw(m_sample_debt);
+    ar.raw(m_cycle_overshoot);
 }
 
 // ---------------------------------------------------------------------------

@@ -517,6 +517,7 @@ const char* profile_name(InputProfile profile)
 unsigned profile_players(InputProfile profile)
 {
     if (profile == InputProfile::Unsupported) return 0;
+    if (profile == InputProfile::BasketballAirWalkers) return 4;
     return profile == InputProfile::Twin || profile == InputProfile::Driving4SpeedVR4
         || profile == InputProfile::Driving4SpeedVR1Handbrake
         || profile == InputProfile::DrivingSequentialVR2
@@ -557,7 +558,8 @@ void configure_controllers(const rom::GameSpec& game, ControllerConfiguration& c
                            GunInputMode gun_mode)
 {
     const auto profile = recognize_profile(game);
-    for (unsigned port = 0; port < 2; ++port) {
+    const unsigned port_count = std::max(2u, profile_players(profile));
+    for (unsigned port = 0; port < port_count; ++port) {
         const std::string game_profile = gun_profile(profile)
             ? gun_profile_name(profile, gun_mode) : profile_name(profile);
         configuration.base_names[port] = game_profile;
@@ -568,15 +570,17 @@ void configure_controllers(const rom::GameSpec& game, ControllerConfiguration& c
         configuration.descriptions[port][1] = {base, kNoServiceDevice};
         configuration.ports[port] = {configuration.descriptions[port].data(), 2};
     }
-    configuration.ports[2] = {nullptr, 0};
+    for (unsigned port = port_count; port < configuration.ports.size(); ++port)
+        configuration.ports[port] = {nullptr, 0};
 }
 std::vector<retro_input_descriptor> descriptors(
-    const rom::GameSpec& game, const std::array<unsigned, 2>& devices,
+    const rom::GameSpec& game, const InputDevices& devices,
     GunInputMode gun_mode, bool offscreen_reload_shortcut)
 {
     std::vector<retro_input_descriptor> result;
     const auto profile = recognize_profile(game);
-    for (unsigned p = 0; p < 2; ++p) {
+    const unsigned port_count = std::max(2u, profile_players(profile));
+    for (unsigned p = 0; p < port_count; ++p) {
         const auto add = [&](unsigned device, unsigned index, unsigned id, const char* label) {
             result.push_back({p, device, index, id, label});
         };
@@ -816,28 +820,37 @@ std::vector<retro_input_descriptor> descriptors(
     return result;
 }
 void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
-                const std::array<unsigned, 2>& devices, InputRuntime& runtime,
+                const InputDevices& devices, InputRuntime& runtime,
                 bool h_gate_shifter, retro_input_state_t state,
                 GunInputMode gun_mode, bool offscreen_reload_shortcut,
                 DrivingAnalogOptions driving_options,
                 DesertElevationOptions desert_elevation_options,
                 bool automatic_start_gear)
 {
-    inputs.in0 = inputs.in1 = inputs.in2 = 0xff;
+    inputs.in0 = inputs.in1 = inputs.in2 = inputs.in3 = inputs.in4 = 0xff;
+    inputs.player_starts = 0xff;
     const auto profile = recognize_profile(game);
     if (profile == InputProfile::Driving4SpeedVR1Handbrake) inputs.in2 = 0x00;
     if (profile == InputProfile::SpecialSkiSuperG) inputs.in2 = 0x00;
     if (profile == InputProfile::SpecialWaveRunner) inputs.in2 = 0xf7;
     // Preserve calibrated idle analogue/gun positions initialized by the machine.
     if (!state) return;
-    for (unsigned p = 0; p < 2; ++p) {
+    const unsigned port_count = std::max(2u, profile_players(profile));
+    for (unsigned p = 0; p < port_count; ++p) {
         if (!joypad_enabled(devices[p])) continue;
         const auto pressed = [&](unsigned id) { return state(p, RETRO_DEVICE_JOYPAD, 0, id) != 0; };
-        if (pressed(RETRO_DEVICE_ID_JOYPAD_SELECT)) clear(inputs.in0, p == 0 ? 0x01 : 0x02);
+        if (pressed(RETRO_DEVICE_ID_JOYPAD_SELECT)) {
+            static constexpr u8 coin_bits[] = {0x01, 0x02, 0x40, 0x80};
+            clear(inputs.in0, coin_bits[p]);
+        }
         if (pressed(RETRO_DEVICE_ID_JOYPAD_START)) {
-            const u8 start = profile == InputProfile::SpecialWaterSki
-                ? 0x40 : (game.start1_bit ? game.start1_bit : 0x10);
-            clear(inputs.in0, p == 0 ? start : 0x20);
+            if (profile == InputProfile::BasketballAirWalkers) {
+                clear(inputs.player_starts, static_cast<u8>(1u << p));
+            } else {
+                const u8 start = profile == InputProfile::SpecialWaterSki
+                    ? 0x40 : (game.start1_bit ? game.start1_bit : 0x10);
+                clear(inputs.in0, p == 0 ? start : 0x20);
+            }
         }
         if (service_enabled(devices[p])) {
             const bool bel = profile == InputProfile::GunBehindEnemyLines;
@@ -1249,7 +1262,8 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 clear(inputs.in1, 0x20);
             continue;
         }
-        u8& port = p == 0 ? inputs.in1 : inputs.in2;
+        u8* player_ports[] = {&inputs.in1, &inputs.in2, &inputs.in3, &inputs.in4};
+        u8& port = *player_ports[p];
         for (const auto& binding : directions)
             if (pressed(binding.id)) clear(port, binding.bit);
         size_t count = 0;
