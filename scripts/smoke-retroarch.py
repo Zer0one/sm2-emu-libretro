@@ -91,6 +91,7 @@ def main():
     p.add_argument('--av-timing',choices=['native','60hz'],default='native')
     p.add_argument('--timing-overlay',choices=['disabled','enabled'],default='disabled')
     p.add_argument('--audio-balance',choices=['enabled','disabled'],default='enabled')
+    p.add_argument('--music-volume',choices=[str(value) for value in range(0,201,10)],default='100')
     p.add_argument('--aspect-ratio',choices=['auto','4_3','16_9'],default='auto')
     p.add_argument('--initial-nvram-setup',choices=['enabled','disabled'],default='enabled')
     p.add_argument('--nvram-settings',choices=['disabled','enabled'],default='disabled')
@@ -223,6 +224,7 @@ def main():
         f'sm2_av_timing = "{a.av_timing}"\n'
         f'sm2_timing_overlay = "{a.timing_overlay}"\n'
         f'sm2_audio_balance = "{a.audio_balance}"\n'
+        f'sm2_music_volume = "{a.music_volume}"\n'
         f'sm2_aspect_ratio = "{a.aspect_ratio}"\n'
         f'sm2_gun_input = "{"analog" if gun_inputs else "hybrid"}"\n'
         f'sm2_offscreen_reload_shortcut = "{a.offscreen_reload_shortcut}"\n'
@@ -284,7 +286,8 @@ def main():
             'texture_filter':a.texture_filter,'upscale_2d':a.upscale_2d,
             'gamepad_rumble':a.gamepad_rumble,
             'initial_state':bool(initial_state),
-            'av_timing':a.av_timing,'timing_overlay':a.timing_overlay,'audio_balance':a.audio_balance,
+            'av_timing':a.av_timing,'timing_overlay':a.timing_overlay,
+            'audio_balance':a.audio_balance,'music_volume':a.music_volume,
             'aspect_ratio':a.aspect_ratio,
             'crosshairs':a.crosshairs,'save_ram_size':len(srm),'elapsed_seconds':elapsed,'exit_code':result.returncode,'audio_frames':params.nframes,'audio_rate':params.framerate,
             'audio_peak':peak,'audio_sha256':hashlib.sha256(pcm).hexdigest(),

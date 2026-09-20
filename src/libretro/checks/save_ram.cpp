@@ -132,6 +132,7 @@ int main()
     const auto* brake_range = find_definition("sm2_brake_output_range");
     const auto* gamepad_rumble = find_definition("sm2_gamepad_rumble");
     const auto* audio_balance = find_definition("sm2_audio_balance");
+    const auto* music_volume = find_definition("sm2_music_volume");
     const auto* crosshairs = find_definition("sm2_crosshairs");
     const auto* linked_cabinets = find_definition("sm2_linked_cabinets_daytona");
     const auto* stcc_linked_cabinets = find_definition("sm2_linked_cabinets_stcc");
@@ -195,6 +196,14 @@ int main()
                && std::string_view(audio_balance->default_value) == "enabled"
                && std::string_view(audio_balance->category_key) == "audio",
            "upstream audio balance is enabled globally by default in Audio");
+    expect(music_volume
+               && std::string_view(music_volume->desc) == "Music Volume"
+               && std::string_view(music_volume->default_value) == "100"
+               && std::string_view(music_volume->category_key) == "audio"
+               && std::string_view(music_volume->values[0].label) == "0%"
+               && std::string_view(music_volume->values[10].label) == "100%"
+               && std::string_view(music_volume->values[20].label) == "200%",
+           "DSB music volume matches the Supermodel range and default");
     expect(crosshairs && std::string_view(crosshairs->default_value) == "auto"
                && std::string_view(crosshairs->values[0].label) == "Automatic",
            "crosshair option uses one game-aware Automatic default");
@@ -357,6 +366,7 @@ int main()
         {"sm2_brake_output_range", "80"},
         {"sm2_gamepad_rumble", "disabled"},
         {"sm2_audio_balance", "disabled"},
+        {"sm2_music_volume", "170"},
     };
     const auto driving_options = libretro::driving_analog_options();
     expect(driving_options.steering_response == libretro::SteeringResponse::FBNeoLogarithmic
@@ -368,6 +378,11 @@ int main()
            "gamepad rumble switch reads the frontend value");
     expect(!libretro::audio_balance_enabled(),
            "per-game audio balance switch reads the frontend value");
+    expect(libretro::music_volume_percent() == 170,
+           "music volume reads the frontend value");
+    option_values["sm2_music_volume"] = "999";
+    expect(libretro::music_volume_percent() == 200,
+           "music volume clamps invalid high values");
     option_values["sm2_texture_filter"] = "8";
     option_values["sm2_upscale_2d"] = "scalefx";
     expect(libretro::texture_filter_quality() == 8 && libretro::upscale_2d_mode() == 2,

@@ -330,6 +330,35 @@ inline void build_option_definitions()
     audio_balance.default_value = "enabled";
     registered_definitions.push_back(audio_balance);
 
+    retro_core_option_v2_definition music_volume{};
+    music_volume.key = "sm2_music_volume";
+    music_volume.desc = "Music Volume";
+    music_volume.info = "Adjust the separate DSB/DSB2 MPEG music volume in supported games. Other audio remains unchanged. Changes take effect immediately.";
+    music_volume.category_key = "audio";
+    music_volume.values[0] = {"0", "0%"};
+    music_volume.values[1] = {"10", "10%"};
+    music_volume.values[2] = {"20", "20%"};
+    music_volume.values[3] = {"30", "30%"};
+    music_volume.values[4] = {"40", "40%"};
+    music_volume.values[5] = {"50", "50%"};
+    music_volume.values[6] = {"60", "60%"};
+    music_volume.values[7] = {"70", "70%"};
+    music_volume.values[8] = {"80", "80%"};
+    music_volume.values[9] = {"90", "90%"};
+    music_volume.values[10] = {"100", "100%"};
+    music_volume.values[11] = {"110", "110%"};
+    music_volume.values[12] = {"120", "120%"};
+    music_volume.values[13] = {"130", "130%"};
+    music_volume.values[14] = {"140", "140%"};
+    music_volume.values[15] = {"150", "150%"};
+    music_volume.values[16] = {"160", "160%"};
+    music_volume.values[17] = {"170", "170%"};
+    music_volume.values[18] = {"180", "180%"};
+    music_volume.values[19] = {"190", "190%"};
+    music_volume.values[20] = {"200", "200%"};
+    music_volume.default_value = "100";
+    registered_definitions.push_back(music_volume);
+
     retro_core_option_v2_definition crosshair{};
     crosshair.key = "sm2_crosshairs";
     crosshair.desc = "Show Crosshair";
@@ -590,6 +619,15 @@ inline bool audio_balance_enabled()
     retro_variable option{"sm2_audio_balance", nullptr};
     return !(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
              && option.value && std::strcmp(option.value, "disabled") == 0);
+}
+
+inline unsigned music_volume_percent()
+{
+    retro_variable option{"sm2_music_volume", nullptr};
+    const char* value = option_environment
+            && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+            && option.value ? option.value : "100";
+    return static_cast<unsigned>(std::clamp(std::atoi(value), 0, 200));
 }
 
 inline DrivingAnalogOptions driving_analog_options()

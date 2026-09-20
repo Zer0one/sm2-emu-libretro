@@ -55,7 +55,7 @@ public:
     /// Decode and mix `frames` stereo frames at `out_rate` Hz into `dst`
     /// (added to what is there). The decoder runs at 32000 Hz; a linear
     /// resampler bridges the difference.
-    void mix(s16* dst, u32 frames, u32 out_rate);
+    void mix(s16* dst, u32 frames, u32 out_rate, unsigned volume_percent);
 
     // -- cpu::Bus (68000, big-endian) ---------------------------------------
 

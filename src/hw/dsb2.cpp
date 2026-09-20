@@ -346,7 +346,7 @@ void Dsb2::decode_next()
     }
 }
 
-void Dsb2::mix(s16* dst, u32 frames, u32 out_rate)
+void Dsb2::mix(s16* dst, u32 frames, u32 out_rate, unsigned volume_percent)
 {
     if (!present() || out_rate == 0) {
         return;
@@ -377,8 +377,8 @@ void Dsb2::mix(s16* dst, u32 frames, u32 out_rate)
                 r = static_cast<s32>(rraw) * static_cast<s32>(m_mp_vol);
                 break;
         }
-        l >>= 7;
-        r >>= 7;
+        l = (l >> 7) * static_cast<s32>(volume_percent) / 100;
+        r = (r >> 7) * static_cast<s32>(volume_percent) / 100;
 
         const s32 ol = static_cast<s32>(dst[i * 2]) + l;
         const s32 orr = static_cast<s32>(dst[i * 2 + 1]) + r;

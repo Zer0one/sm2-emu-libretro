@@ -174,6 +174,8 @@ void reset_frontend_after_state_load(Content& c)
     c.machine->sound_board().clear_pending_samples();
     c.machine->sound_board().set_audio_balance_enabled(
         libretro::audio_balance_enabled());
+    c.machine->sound_board().set_music_volume_percent(
+        libretro::music_volume_percent());
     c.audio.clear();
     c.input_runtime = {};
     c.cadence_accumulator = 60.0 - c.native_fps;
@@ -618,6 +620,8 @@ bool retro_load_game(const retro_game_info* game)
         if (!next->machine) throw std::runtime_error("Machine initialization failed");
         next->machine->sound_board().set_audio_balance_enabled(
             libretro::audio_balance_enabled());
+        next->machine->sound_board().set_music_volume_percent(
+            libretro::music_volume_percent());
         next->nvram_game = !libretro::nvram::options_for_game(next->game.name).empty()
             ? next->game.name : next->game.parent;
         libretro::set_option_game(next->nvram_game, next->game.name);
@@ -746,6 +750,8 @@ void retro_run()
             if (!libretro::gamepad_rumble_enabled()) content->rumble.stop();
             content->machine->sound_board().set_audio_balance_enabled(
                 libretro::audio_balance_enabled());
+            content->machine->sound_board().set_music_volume_percent(
+                libretro::music_volume_percent());
             publish_controls();
         }
         if (!content->save_ram_initialized) initialize_frontend_save(*content);

@@ -245,12 +245,12 @@ void Model2Sound::generate_audio(u32 host_cycles)
     if (m_dsb.present()) {
         m_dsb.run(host_cycles);
         m_dsb.mix(m_pending.data() + offset, static_cast<u32>(frames),
-                  m_scsp.sample_rate());
+                  m_scsp.sample_rate(), m_music_volume_percent);
     }
     if (m_dsb2.present()) {
         m_dsb2.run(host_cycles);
         m_dsb2.mix(m_pending.data() + offset, static_cast<u32>(frames),
-                   m_scsp.sample_rate());
+                   m_scsp.sample_rate(), m_music_volume_percent);
     }
 
     const usize limit = kMaxPendingFrames * 2;
@@ -427,6 +427,11 @@ void Model2Sound::set_audio_balance_enabled(bool enabled)
     if (m_audio_balance_enabled == enabled) return;
     m_audio_balance_enabled = enabled;
     apply_flat_gain(enabled ? m_flat_gain : u16{256});
+}
+
+void Model2Sound::set_music_volume_percent(unsigned percent)
+{
+    m_music_volume_percent = std::min(percent, 200u);
 }
 
 void Model2Sound::update_balance_gains()

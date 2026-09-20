@@ -349,7 +349,7 @@ void DsbZ80::decode_next()
     m_audio_avail = 0;
 }
 
-void DsbZ80::mix(s16* dst, u32 frames, u32 out_rate)
+void DsbZ80::mix(s16* dst, u32 frames, u32 out_rate, unsigned volume_percent)
 {
     if (!present() || out_rate == 0) {
         return;
@@ -384,8 +384,8 @@ void DsbZ80::mix(s16* dst, u32 frames, u32 out_rate)
                 break;
         }
         // Down from the 32768*128 full-scale to 16 bits.
-        l >>= 7;
-        r >>= 7;
+        l = (l >> 7) * static_cast<s32>(volume_percent) / 100;
+        r = (r >> 7) * static_cast<s32>(volume_percent) / 100;
 
         const s32 ol = static_cast<s32>(dst[i * 2]) + l;
         const s32 or_ = static_cast<s32>(dst[i * 2 + 1]) + r;

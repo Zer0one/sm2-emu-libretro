@@ -59,6 +59,10 @@ public:
     /// Enable the optional upstream per-game balance profile. Sound boards
     /// without such a profile keep their native output unchanged.
     virtual void set_audio_balance_enabled(bool) {}
+
+    /// Scale the separate MPEG music board, where present. Other sound boards
+    /// have no distinct music path and keep their native output unchanged.
+    virtual void set_music_volume_percent(unsigned) {}
 };
 
 }  // namespace sm2::hw
