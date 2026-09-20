@@ -16,6 +16,7 @@ import os
 import shutil
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 from dataclasses import asdict, dataclass
@@ -26,6 +27,7 @@ from libretro_nvram_samples import (
     free_udp_port,
     position_process_window,
     post_escape_to_pid,
+    take_screenshot,
     wait_while_alive,
 )
 
@@ -96,6 +98,7 @@ class InstanceResult:
     forced_kill: bool = False
     roster_ready: bool = False
     log: str = ""
+    screenshot: str | None = None
 
 
 def parse_args() -> argparse.Namespace:
@@ -125,6 +128,17 @@ def parse_args() -> argparse.Namespace:
         help="Set with verified linked-cabinet NVRAM options",
     )
     parser.add_argument("--cabinets", type=int, choices=range(2, 10), default=3)
+    parser.add_argument(
+        "--instance-indices",
+        help=(
+            "Comma-separated zero-based cabinet indices launched on this host; "
+            "default launches every cabinet"
+        ),
+    )
+    parser.add_argument(
+        "--connect-host", default="127.0.0.1",
+        help="Netpacket host used by client instances (default: 127.0.0.1)",
+    )
     parser.add_argument("--port", type=int, default=55435)
     parser.add_argument("--startup-wait", type=float, default=5.0)
     parser.add_argument("--settle", type=float, default=10.0)
@@ -145,11 +159,35 @@ def parse_args() -> argparse.Namespace:
         "--dry-run", action="store_true",
         help="Create and validate the isolated environments without launching RetroArch",
     )
+    parser.add_argument(
+        "--capture-screenshots", action="store_true",
+        help="Capture one frontend screenshot from every local instance",
+    )
+    parser.add_argument(
+        "--input-replay", type=Path,
+        help="Optional RetroArch input replay applied to every local instance",
+    )
     return parser.parse_args()
 
 
 def quote_config(value: Path | str) -> str:
     return str(value).replace("\\", "\\\\").replace('"', '\\"')
+
+
+def local_instance_indices(value: str | None, cabinets: int) -> list[int]:
+    if value is None:
+        return list(range(cabinets))
+    try:
+        indices = [int(item.strip()) for item in value.split(",")]
+    except ValueError as error:
+        raise RuntimeError("--instance-indices must contain integers") from error
+    if not indices or len(set(indices)) != len(indices):
+        raise RuntimeError("--instance-indices must contain distinct cabinet indices")
+    if any(index < 0 or index >= cabinets for index in indices):
+        raise RuntimeError(
+            f"--instance-indices must be between 0 and {cabinets - 1}"
+        )
+    return indices
 
 
 def window_position(index: int, layout: str, columns: int) -> tuple[int, int]:
@@ -195,6 +233,8 @@ def port_available(port: int) -> bool:
 
 
 def read_ignore_state() -> bool | None:
+    if sys.platform != "darwin":
+        return None
     completed = subprocess.run(
         ["/usr/bin/defaults", "read", PREFERENCES_DOMAIN, IGNORE_STATE_KEY],
         capture_output=True,
@@ -211,6 +251,8 @@ def read_ignore_state() -> bool | None:
 
 
 def write_ignore_state(value: bool | None) -> None:
+    if sys.platform != "darwin":
+        return
     if value is None:
         subprocess.run(
             ["/usr/bin/defaults", "delete", PREFERENCES_DOMAIN, IGNORE_STATE_KEY],
@@ -229,7 +271,10 @@ def write_ignore_state(value: bool | None) -> None:
 def write_config(root: Path, assets: Path, base_config: Path, port: int,
                  command_port: int, cabinets: int, window_x: int,
                  window_y: int) -> list[str]:
-    for directory in ("system/sm2-emu", "saves", "states", "logs", "config", "remaps"):
+    for directory in (
+        "system/sm2-emu", "saves", "states", "logs", "config", "remaps",
+        "screenshots",
+    ):
         (root / directory).mkdir(parents=True, exist_ok=True)
     for asset in assets.iterdir():
         if asset.is_file():
@@ -272,6 +317,7 @@ def write_config(root: Path, assets: Path, base_config: Path, port: int,
         "video_scale": "1.000000",
         "video_window_save_positions": "false",
         "video_shader_enable": "false",
+        "screenshot_directory": root / "screenshots",
         "audio_driver": "null",
         "audio_enable": "false",
         "microphone_driver": "null",
@@ -393,6 +439,8 @@ def close_instance(process: subprocess.Popen[bytes], command_port: int) -> bool:
         process.wait(timeout=8.0)
         return False
     except (OSError, subprocess.TimeoutExpired):
+        if sys.platform != "darwin":
+            return terminate_instance(process)
         try:
             post_escape_to_pid(process.pid)
             time.sleep(1.0)
@@ -405,24 +453,33 @@ def close_instance(process: subprocess.Popen[bytes], command_port: int) -> bool:
 
 
 def validate_paths(
-    args: argparse.Namespace,
-) -> tuple[Path, Path, Path, Path, Path, Path | None]:
+    args: argparse.Namespace, instance_indices: list[int],
+) -> tuple[Path, Path, Path, Path, Path, Path | None, Path | None]:
     retroarch = args.retroarch.expanduser().resolve(strict=True)
     core = args.core.expanduser().resolve(strict=True)
     rom = args.rom.expanduser().resolve(strict=True)
     base_config = args.base_config.expanduser().resolve(strict=True)
     assets = args.system_assets.expanduser().resolve(strict=True)
     relay_rom = args.relay_rom.expanduser().resolve(strict=True) if args.relay_rom else None
+    input_replay = (
+        args.input_replay.expanduser().resolve(strict=True)
+        if args.input_replay else None
+    )
     if not assets.is_dir() or not (assets / "games.xml").is_file():
         raise RuntimeError(f"invalid SM2 system-assets directory: {assets}")
     if rom.stem != args.set_name:
         raise RuntimeError(f"ROM filename {rom.name!r} does not match --set-name {args.set_name!r}")
-    if args.set_name in VIRTUAL_ON_TWIN_SETS and args.cabinets == 3:
+    needs_local_von_relay = (
+        args.set_name in VIRTUAL_ON_TWIN_SETS
+        and args.cabinets == 3
+        and 2 in instance_indices
+    )
+    if needs_local_von_relay:
         if relay_rom is None or relay_rom.stem != "vonr":
             raise RuntimeError("three-instance Virtual On requires --relay-rom vonr.zip")
     elif relay_rom is not None:
         raise RuntimeError("--relay-rom is used only by three-instance Virtual On")
-    return retroarch, core, rom, base_config, assets, relay_rom
+    return retroarch, core, rom, base_config, assets, relay_rom, input_replay
 
 
 def main() -> int:
@@ -441,12 +498,15 @@ def main() -> int:
             )
         if args.cabinets < 3:
             raise RuntimeError("--include-relay requires at least three cabinets")
-    retroarch, core, rom, base_config, assets, relay_rom = validate_paths(args)
+    instance_indices = local_instance_indices(args.instance_indices, args.cabinets)
+    (
+        retroarch, core, rom, base_config, assets, relay_rom, input_replay,
+    ) = validate_paths(args, instance_indices)
     running = retroarch_processes(retroarch)
     if running:
         details = ", ".join(str(pid) for pid, _ in running)
         raise RuntimeError(f"RetroArch is already running (PID {details}); no test was started")
-    if not port_available(args.port):
+    if 0 in instance_indices and not port_available(args.port):
         raise RuntimeError(f"netplay port {args.port} is already in use")
 
     if args.output:
@@ -455,28 +515,34 @@ def main() -> int:
     else:
         output = Path(tempfile.mkdtemp(prefix=f"sm2-netpacket-{args.set_name}-"))
 
-    roles = ["host", *(f"client{index}" for index in range(1, args.cabinets))]
+    roles = ["host" if index == 0 else f"client{index}" for index in instance_indices]
     instance_sets = [args.set_name for _ in roles]
     instance_roms = [rom for _ in roles]
-    if relay_rom is not None:
-        instance_sets[-1] = "vonr"
-        instance_roms[-1] = relay_rom
+    if relay_rom is not None and 2 in instance_indices:
+        relay_position = instance_indices.index(2)
+        instance_sets[relay_position] = "vonr"
+        instance_roms[relay_position] = relay_rom
     command_ports = [free_udp_port() for _ in roles]
     if len(set(command_ports)) != len(command_ports) or args.port in command_ports:
         raise RuntimeError("could not allocate distinct RetroArch command ports")
     configs: list[Path] = []
+    input_replays: list[Path | None] = []
     window_positions = [
         window_position(index, args.window_layout, args.window_columns)
-        for index in range(args.cabinets)
+        for index in instance_indices
     ]
-    for index, role in enumerate(roles):
+    for local_index, (index, role) in enumerate(zip(instance_indices, roles)):
         root = output / role
-        window_x, window_y = window_positions[index]
+        window_x, window_y = window_positions[local_index]
         configs.append(write_config(root, assets, base_config, args.port,
-                                    command_ports[index], args.cabinets,
+                                    command_ports[local_index], args.cabinets,
                                     window_x, window_y))
+        local_replay = root / "input.replay" if input_replay else None
+        if input_replay and local_replay:
+            shutil.copy2(input_replay, local_replay)
+        input_replays.append(local_replay)
         write_options(
-            root, instance_sets[index], args.cabinets, index, args.include_relay
+            root, instance_sets[local_index], args.cabinets, index, args.include_relay
         )
 
     manifest = {
@@ -488,12 +554,16 @@ def main() -> int:
         "instance_sets": instance_sets,
         "instance_roms": [str(path) for path in instance_roms],
         "cabinets": args.cabinets,
+        "instance_indices": instance_indices,
+        "connect_host": args.connect_host,
         "include_relay": args.include_relay,
         "port": args.port,
         "command_ports": command_ports,
         "roles": roles,
         "window_layout": args.window_layout,
         "window_columns": args.window_columns,
+        "capture_screenshots": args.capture_screenshots,
+        "input_replay": str(input_replay) if input_replay else None,
         "window_positions": [
             {"role": role, "x": position[0], "y": position[1],
              "content_width": WINDOW_WIDTH, "content_height": WINDOW_HEIGHT,
@@ -516,14 +586,15 @@ def main() -> int:
     atexit.register(write_ignore_state, previous_ignore_state)
     write_ignore_state(True)
     try:
-        for index, role in enumerate(roles):
+        for local_index, (index, role) in enumerate(zip(instance_indices, roles)):
             log_path = output / f"{role}.log"
             log = log_path.open("wb")
             logs.append(log)
-            netplay = ["-H"] if index == 0 else ["-C", "127.0.0.1"]
+            netplay = ["-H"] if index == 0 else ["-C", args.connect_host]
+            replay = ["-P", str(input_replays[local_index])] if input_replay else []
             command = [
-                str(retroarch), "-v", *configs[index],
-                "-L", str(core), *netplay, str(instance_roms[index]),
+                str(retroarch), "-v", *configs[local_index],
+                "-L", str(core), *replay, *netplay, str(instance_roms[local_index]),
             ]
             process = subprocess.Popen(command, cwd=output, stdout=log,
                                        stderr=subprocess.STDOUT)
@@ -532,8 +603,9 @@ def main() -> int:
             (output / "pids.json").write_text(
                 json.dumps([asdict(item) for item in results], indent=2) + "\n"
             )
-            activate_process(process)
-            position_process_window(process, *window_positions[index])
+            if sys.platform == "darwin":
+                activate_process(process)
+                position_process_window(process, *window_positions[local_index])
             wait_while_alive(process, args.startup_wait)
 
         deadline = time.monotonic() + args.settle
@@ -543,6 +615,14 @@ def main() -> int:
             if exited:
                 raise RuntimeError(f"RetroArch exited during the linked-cabinet run: {exited}")
             time.sleep(0.20)
+        if args.capture_screenshots:
+            for local_index, (item, process) in enumerate(zip(results, processes)):
+                root = output / item.role
+                item.screenshot = str(
+                    take_screenshot(
+                        process, root, command_ports[local_index], item.role
+                    )
+                )
         completed_run = True
     finally:
         for index in reversed(range(len(processes))):
@@ -559,8 +639,9 @@ def main() -> int:
                 log_contains(Path(item.log), "Linked-cabinet roster ready: participant ")
                 and log_contains(Path(item.log), roster_marker)
             )
-        host_log = Path(results[0].log) if results else None
-        host_complete = bool(host_log) and all(
+        host_result = next((item for item in results if item.role == "host"), None)
+        host_log = Path(host_result.log) if host_result else None
+        host_complete = host_log is None or all(
             log_contains(host_log, f"Slave cabinet connected ({count}/{args.cabinets})")
             for count in range(2, args.cabinets + 1)
         )
@@ -573,7 +654,7 @@ def main() -> int:
                 "Failed to connect to host",
             )
         )
-        success = (completed_run and len(results) == args.cabinets
+        success = (completed_run and len(results) == len(instance_indices)
                    and all(item.roster_ready for item in results)
                    and host_complete and logs_clean)
 
