@@ -84,16 +84,26 @@ jobs:
         run: |
           ./build-ci/bin/sm2-libretro-input-checks
           ./build-ci/bin/sm2-libretro-save-ram-checks
+          ./build-ci/bin/sm2-libretro-netpacket-checks
+          ./build-ci/bin/sm2-libretro-rumble-checks
           python3 scripts/check-libretro-artifact.py "build-ci/libretro/${{ matrix.binary }}"
       - name: Package core and matching game database
         run: |
-          mkdir -p dist/system/sm2-emu
+          mkdir -p dist/system/sm2-emu dist/licenses
           cp "build-ci/libretro/${{ matrix.binary }}" dist/
           cp sm2_libretro.info LICENSE NOTICE dist/
           cp data/games.xml dist/system/sm2-emu/
           cp CI.md dist/README.md
+          cp 3rdparty/musashi/readme.txt dist/licenses/Musashi.txt
+          cp 3rdparty/VulkanMemoryAllocator/LICENSE.txt dist/licenses/VulkanMemoryAllocator.txt
+          cp 3rdparty/lzma-sdk/LICENSE dist/licenses/LZMA-SDK.txt
+          cp 3rdparty/miniz/LICENSE dist/licenses/miniz.txt
+          cp 3rdparty/pugixml/LICENSE.md dist/licenses/pugixml.txt
+          cp 3rdparty/ymfm/LICENSE dist/licenses/ymfm.txt
+          cp licenses/libretro-api.txt dist/licenses/libretro-api.txt
           git rev-parse HEAD > dist/SOURCE_COMMIT.txt
           python3 -c 'import hashlib,pathlib; p=pathlib.Path("dist"); (p/"SHA256SUMS").write_text("".join(hashlib.sha256(f.read_bytes()).hexdigest()+"  "+f.relative_to(p).as_posix()+"\n" for f in sorted(p.rglob("*")) if f.is_file() and f.name != "SHA256SUMS"))'
+          python3 scripts/check-libretro-package.py dist "${{ matrix.binary }}"
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}

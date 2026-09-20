@@ -86,6 +86,11 @@ Third-party dependencies
   Vulkan-Headers            — Apache-2.0 / MIT  — The Khronos Group
   miniz                     — MIT licence       — Rich Geldreich et al.
   pugixml                   — MIT licence       — Arseny Kapoulkine
+  ymfm                      — BSD-3-Clause      — Aaron Giles
+  LZMA SDK                  — public domain     — Igor Pavlov
+  Libretro API headers      — MIT licence       — The RetroArch team
+  Dear ImGui                — MIT licence       — Omar Cornut et al.
+  stb_image                 — MIT / public domain — Sean Barrett
 
 Sega, Model 2, Virtua Fighter, Virtua Cop and Daytona USA are trademarks of
 their respective owners. sm2-emu is an independent work and is not affiliated
