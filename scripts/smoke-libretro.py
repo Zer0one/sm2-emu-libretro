@@ -55,6 +55,8 @@ def main():
     parser.add_argument('--exercise', action='store_true')
     parser.add_argument('--save-state-test', action='store_true',
                         help='Verify deterministic Libretro save/load and corrupt-state rejection')
+    parser.add_argument('--save-state-stress-cycles', type=int, default=0,
+                        help='Repeat run-ahead and reverse-order rewind state patterns')
     parser.add_argument('--state-output', type=Path,
                         help='Write the final Libretro state image for a frontend integration test')
     parser.add_argument('--reject-state', type=Path,
@@ -75,6 +77,8 @@ def main():
                         help='Supply an additional Libretro core option')
     args = parser.parse_args()
     if args.frames <= 0: parser.error('--frames must be positive')
+    if args.save_state_stress_cycles < 0:
+        parser.error('--save-state-stress-cycles must be non-negative')
     out = args.output.resolve(); out.mkdir(parents=True, exist_ok=False)
     saves = out/'saves'; saves.mkdir()
     directories = {9: str(args.system.resolve()).encode(), 31: str(saves).encode()}
@@ -226,7 +230,39 @@ def main():
         assert lib.retro_unserialize(state_a_buffer, len(state_a))
         assert save_state() == state_a
         for _ in range(3): lib.retro_run()
-        assert save_state() == state_b
+        replayed_state = save_state()
+        if replayed_state != state_b:
+            differing_offsets = [
+                offset for offset, (expected, actual) in
+                enumerate(zip(state_b, replayed_state)) if expected != actual
+            ]
+            (out/'state-expected.bin').write_bytes(state_b)
+            (out/'state-replayed.bin').write_bytes(replayed_state)
+            preview = ', '.join(hex(offset) for offset in differing_offsets[:16])
+            raise AssertionError(
+                'Save-state replay diverged at '
+                f'{len(differing_offsets)} byte(s); first offsets: {preview}'
+            )
+
+        rewind_states = [state_a]
+        if args.save_state_stress_cycles:
+            for _ in range(args.save_state_stress_cycles):
+                state_a_buffer = C.create_string_buffer(state_a)
+                assert lib.retro_unserialize(state_a_buffer, len(state_a))
+                for _ in range(3): lib.retro_run()
+                assert save_state() == state_b
+
+            state_a_buffer = C.create_string_buffer(state_a)
+            assert lib.retro_unserialize(state_a_buffer, len(state_a))
+            for _ in range(args.save_state_stress_cycles):
+                lib.retro_run()
+                rewind_states.append(save_state())
+            for rewind_state in reversed(rewind_states):
+                rewind_buffer = C.create_string_buffer(rewind_state)
+                assert lib.retro_unserialize(rewind_buffer, len(rewind_state))
+                assert save_state() == rewind_state
+            state_b_buffer = C.create_string_buffer(state_b)
+            assert lib.retro_unserialize(state_b_buffer, len(state_b))
 
         truncated = C.create_string_buffer(state_a[:len(state_a)//2])
         assert not lib.retro_unserialize(truncated, len(truncated))
@@ -243,7 +279,10 @@ def main():
         pcm[:] = saved_pcm
         state_report = {'size': state_size, 'round_trip': True,
                         'deterministic_replay': True,
-                        'corrupt_state_rejected': True}
+                        'corrupt_state_rejected': True,
+                        'stress_cycles': args.save_state_stress_cycles,
+                        'run_ahead_pattern': args.save_state_stress_cycles > 0,
+                        'rewind_pattern': args.save_state_stress_cycles > 0}
     if args.state_output:
         state_size = lib.retro_serialize_size()
         state_data = C.create_string_buffer(state_size)

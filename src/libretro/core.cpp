@@ -55,6 +55,7 @@ enum class RendererApi { Software, Vulkan, OpenGL, OpenGLES };
 // "unsupported". All four board images fit below 8 MiB in the real-ROM matrix;
 // one extra MiB keeps bounded FIFO growth from changing the frontend contract.
 constexpr size_t libretro_state_size = 9 * 1024 * 1024;
+constexpr size_t frontend_state_size = 96;
 constexpr u64 ski_super_g_drive_board_test_frame = 900;
 
 struct Content {
@@ -108,6 +109,88 @@ struct Content {
 #endif
 };
 std::unique_ptr<Content> content;
+
+constexpr std::array<u8, 8> frontend_state_magic{'S', 'M', '2', 'L', 'R', 'T', 'R', '1'};
+
+template <typename T>
+void state_write(u8*& cursor, T value)
+{
+    std::memcpy(cursor, &value, sizeof(value));
+    cursor += sizeof(value);
+}
+
+template <typename T>
+T state_read(const u8*& cursor)
+{
+    T value{};
+    std::memcpy(&value, cursor, sizeof(value));
+    cursor += sizeof(value);
+    return value;
+}
+
+void save_frontend_state(u8* destination, const Content& c)
+{
+    std::memset(destination, 0, frontend_state_size);
+    u8* cursor = destination;
+    std::memcpy(cursor, frontend_state_magic.data(), frontend_state_magic.size());
+    cursor += frontend_state_magic.size();
+    state_write<u32>(cursor, 1);
+    state_write<u32>(cursor, c.input_runtime.gear);
+    u32 flags = c.input_runtime.gear_initialized ? 1u : 0u;
+    flags |= c.input_runtime.shift_up_held ? 1u << 1 : 0u;
+    flags |= c.input_runtime.shift_down_held ? 1u << 2 : 0u;
+    flags |= c.input_runtime.desert_shift ? 1u << 3 : 0u;
+    flags |= c.input_runtime.desert_shift_held ? 1u << 4 : 0u;
+    state_write<u32>(cursor, flags);
+    state_write<float>(cursor, c.input_runtime.desert_elevation);
+    for (int value : c.input_runtime.gun_cursor_x) state_write<s32>(cursor, value);
+    for (int value : c.input_runtime.gun_cursor_y) state_write<s32>(cursor, value);
+    for (s16 value : c.input_runtime.gun_lightgun_x) state_write<s16>(cursor, value);
+    for (s16 value : c.input_runtime.gun_lightgun_y) state_write<s16>(cursor, value);
+    flags = 0;
+    for (unsigned player = 0; player < 2; ++player) {
+        flags |= c.input_runtime.gun_lightgun_initialized[player] ? 1u << player : 0u;
+        flags |= c.input_runtime.gun_aim_active[player] ? 1u << (player + 2) : 0u;
+        flags |= c.input_runtime.gun_aim_offscreen[player] ? 1u << (player + 4) : 0u;
+    }
+    state_write<u32>(cursor, flags);
+    state_write<double>(cursor, c.cadence_accumulator);
+    state_write<u64>(cursor, c.audio_frame_remainder);
+    state_write<u64>(cursor, static_cast<u64>(c.audio_frames_due));
+}
+
+bool load_frontend_state(const u8* source, libretro::InputRuntime& input_runtime,
+                         double& cadence_accumulator, u64& audio_frame_remainder,
+                         size_t& audio_frames_due)
+{
+    if (std::memcmp(source, frontend_state_magic.data(), frontend_state_magic.size()) != 0)
+        return false;
+    const u8* cursor = source + frontend_state_magic.size();
+    if (state_read<u32>(cursor) != 1) return false;
+    input_runtime = {};
+    input_runtime.gear = state_read<u32>(cursor);
+    u32 flags = state_read<u32>(cursor);
+    input_runtime.gear_initialized = flags & 1u;
+    input_runtime.shift_up_held = flags & (1u << 1);
+    input_runtime.shift_down_held = flags & (1u << 2);
+    input_runtime.desert_shift = flags & (1u << 3);
+    input_runtime.desert_shift_held = flags & (1u << 4);
+    input_runtime.desert_elevation = state_read<float>(cursor);
+    for (int& value : input_runtime.gun_cursor_x) value = state_read<s32>(cursor);
+    for (int& value : input_runtime.gun_cursor_y) value = state_read<s32>(cursor);
+    for (s16& value : input_runtime.gun_lightgun_x) value = state_read<s16>(cursor);
+    for (s16& value : input_runtime.gun_lightgun_y) value = state_read<s16>(cursor);
+    flags = state_read<u32>(cursor);
+    for (unsigned player = 0; player < 2; ++player) {
+        input_runtime.gun_lightgun_initialized[player] = flags & (1u << player);
+        input_runtime.gun_aim_active[player] = flags & (1u << (player + 2));
+        input_runtime.gun_aim_offscreen[player] = flags & (1u << (player + 4));
+    }
+    cadence_accumulator = state_read<double>(cursor);
+    audio_frame_remainder = state_read<u64>(cursor);
+    audio_frames_due = static_cast<size_t>(state_read<u64>(cursor));
+    return true;
+}
 
 void message(enum retro_log_level level, const char* text);
 
@@ -177,10 +260,6 @@ void reset_frontend_after_state_load(Content& c)
     c.machine->sound_board().set_music_volume_percent(
         libretro::music_volume_percent());
     c.audio.clear();
-    c.input_runtime = {};
-    c.cadence_accumulator = 60.0 - c.native_fps;
-    c.audio_frame_remainder = 0;
-    c.audio_frames_due = 0;
     c.have_previous_run_start = false;
     c.hardware_frame_valid = false;
     reset_timing_measurements(c);
@@ -895,13 +974,15 @@ bool retro_serialize(void* data, size_t size)
     try {
         std::vector<u8> state;
         if (!content->machine->save_state(state)
-            || state.size() > libretro_state_size) {
+            || state.size() > libretro_state_size - frontend_state_size) {
             message(RETRO_LOG_ERROR, "Save-state buffer capacity exceeded");
             return false;
         }
         std::memcpy(data, state.data(), state.size());
         std::memset(static_cast<u8*>(data) + state.size(), 0,
                     libretro_state_size - state.size());
+        save_frontend_state(static_cast<u8*>(data) + libretro_state_size
+                            - frontend_state_size, *content);
         return true;
     } catch (const std::exception& error) {
         message(RETRO_LOG_ERROR, error.what());
@@ -921,9 +1002,23 @@ bool retro_unserialize(const void* data, size_t size)
     if (!content || !data || size == 0)
         return false;
     try {
+        libretro::InputRuntime input_runtime{};
+        double cadence_accumulator = 60.0 - content->native_fps;
+        u64 audio_frame_remainder = 0;
+        size_t audio_frames_due = 0;
+        if (size >= frontend_state_size) {
+            load_frontend_state(
+                static_cast<const u8*>(data) + size - frontend_state_size,
+                input_runtime, cadence_accumulator, audio_frame_remainder,
+                audio_frames_due);
+        }
         if (!content->machine->load_state(static_cast<const u8*>(data), size))
             return false;
         reset_frontend_after_state_load(*content);
+        content->input_runtime = input_runtime;
+        content->cadence_accumulator = cadence_accumulator;
+        content->audio_frame_remainder = audio_frame_remainder;
+        content->audio_frames_due = audio_frames_due;
         return true;
     } catch (const std::exception& error) {
         message(RETRO_LOG_ERROR, error.what());
