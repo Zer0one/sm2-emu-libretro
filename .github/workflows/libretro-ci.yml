@@ -3,6 +3,7 @@ name: Libretro Core CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
@@ -110,3 +111,51 @@ jobs:
           path: dist/
           if-no-files-found: error
           retention-days: 14
+
+  release:
+    name: Publish tagged release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: sm2-libretro-*
+          path: release/artifacts
+      - name: Verify version and create platform archives
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          info_version="$(sed -n 's/^display_version = "\([^"]*\)"/\1/p' sm2_libretro.info)"
+          test -n "$version"
+          test "$info_version" = "$version"
+          grep -Fq "\"$version\"" src/libretro/core.cpp
+          mkdir -p release/packages
+          for directory in release/artifacts/sm2-libretro-*; do
+            name="$(basename "$directory")"
+            case "$name" in
+              sm2-libretro-linux-*) binary=sm2_libretro.so ;;
+              sm2-libretro-macos-*) binary=sm2_libretro.dylib ;;
+              sm2-libretro-windows-*) binary=sm2_libretro.dll ;;
+              *) echo "Unexpected artifact: $name" >&2; exit 1 ;;
+            esac
+            python3 scripts/check-libretro-package.py "$directory" "$binary"
+            (cd "$directory" && zip -9 -r "../../packages/${name}-${version}.zip" .)
+          done
+          (cd release/packages && sha256sum ./*.zip > SHA256SUMS)
+      - name: Create or update GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" release/packages/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" release/packages/* \
+              --verify-tag \
+              --title "SM2-Emu Libretro ${GITHUB_REF_NAME#v}" \
+              --generate-notes
+          fi
