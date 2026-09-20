@@ -19,14 +19,8 @@ che adatta le convenzioni del progetto personale Supermodel a Model 2.
 
 ## Implementazioni ancora aperte
 
-Le funzioni già completate non compaiono in questa tabella. Le prove senza
-nuovo sviluppo sono raccolte esclusivamente nella sezione finale.
-
-| Priorità | Implementazione | Stato concreto |
-| --- | --- | --- |
-| Opzionale | Force feedback e recoil `evdev` | Backend specifici Linux per forza direzionale dei volanti e rinculo lightgun, separati dal rumble portabile. |
-| Opzionale | Volume musica DSB/MPEG | Aggiungere un controllo separato solo se il mixer espone realmente quel flusso distinto dagli altri canali. |
-| Opzionale | Miglioramenti video | Supersampling oltre le scale disponibili e adattamento colore CRT, soltanto dopo una necessità concreta e misurabile. |
+Nessuna. Le prove senza nuovo sviluppo sono raccolte esclusivamente nella
+sezione finale.
 
 ## 0. Baseline upstream — completata nei limiti indicati
 
@@ -424,14 +418,9 @@ weak del gamepad P1: i comandi della drive board producono colpi brevi e lo
 scostamento dello sterzo una vibrazione più leggera. Il default è Enabled al
 massimo della scala normalizzata; RetroArch applica il proprio `Input Rumble
 Gain` come unico controllo dell'intensità complessiva. I giochi senza controllo
-di guida restano silenziosi. Restano da
-introdurre o valutare separatamente:
-
-- force feedback direzionale per volanti, che non può essere rappresentato
-  integralmente dai due motori della normale interfaccia rumble Libretro;
-- recoil lightgun tramite `evdev`, da conservare in roadmap per un'eventuale
-  implementazione futura. Richiederà un percorso specifico della piattaforma,
-  separato dai binding e dalla vibrazione gamepad.
+di guida restano silenziosi. Force feedback direzionale per volanti e recoil
+lightgun non dispongono di un'API Libretro dedicata: eventuali backend `evdev`
+specifici Linux appartengono al frontend o a componenti esterni, non al core.
 
 Come in Supermodel, le quattro regolazioni di guida devono restare sempre
 visibili e non produrre effetti fuori dai profili Driving.
@@ -442,21 +431,18 @@ a tutti i set supportati; Disabled ripristina unity gain in tempo reale. Il fix
 INTENA di `overrevb`/`overrevba` resta sempre attivo perché corregge il timer
 audio della macchina e non appartiene al mastering opzionale.
 
+`Music Volume` segue la convenzione del core Supermodel: 0–200% a passi di 10,
+100% per default e applicazione immediata. Regola soltanto il contributo MPEG
+della scheda musicale separata, senza alterare SCSP, effetti o voci. È attiva
+sulle famiglie STCC (DSB Z80) e Top Skater (DSB2); sugli altri set resta inerte.
+
 `Aspect Ratio` è implementata con `Auto` come default globale e override `4:3`
 o `16:9`. In Auto legge la configurazione attiva dalla NVRAM: Indy 500 e STCC
 usano 16:9 nei rispettivi cabinati Deluxe e 4:3 in Twin; gli altri giochi usano
 4:3. Il framebuffer resta 496×384 e il frontend riceve soltanto la geometria.
 
-Backlog opzionale delle Core Options, da aprire soltanto dopo la verifica della
-condizione indicata:
-
-- `DSB/MPEG Music Volume`: volume separato, solo se il mixer conserva un flusso
-  musicale distinto dagli altri canali;
-- supersampling aggiuntivo oltre alle scale e ai filtri 2D già disponibili;
-- adattamento colore CRT specifico Model 2, solo con una necessità misurata.
-
-Queste voci sono una roadmap, non funzionalità dichiarate. Renderer Model 3,
-PowerPC/JIT e DSP specifici di Supermodel restano esclusi perché non applicabili.
+Renderer Model 3, PowerPC/JIT e DSP specifici di Supermodel restano esclusi
+perché non applicabili.
 
 ## 4. Compatibilità e build di distribuzione
 
@@ -692,7 +678,7 @@ mancanti restano nei rispettivi punti della roadmap.
 | Menu e opzioni | Cambio contenuto, profilo, remapping e visibilità delle opzioni per gioco in RetroArch. |
 | Regressione generale | Video, audio e input sulle quattro board con una matrice parent/clone, ZIP/7z e caricamenti falliti. |
 | GPU Windows | RetroArch su Windows 11 con GPU dedicata: Vulkan/OpenGL, scale 1×/4×, lifecycle, SRAM, log e screenshot. |
-| Piattaforme | Verificare la prima esecuzione del job Linux arm64 e provare il relativo artefatto in RetroArch/Batocera su hardware reale. |
+| Piattaforme | Il job Linux arm64 nativo e il relativo artefatto aarch64 sono verificati; provarlo in RetroArch/Batocera su hardware reale. |
 | Networking | Gare RetroArch Daytona e STCC a tre cabinet (entrambi i roster locali a tre sono verificati); gare sincronizzate Super GT 24h, Over Rev e Manx TT; uscita live monitor di Motor Raid e Virtual On; controller reali; due host fisici; variante Daytona MAXX. |
 | Save state | La prova manuale copre Indy 500 (Model 2B). Provare Daytona USA (Model 2), Virtua Fighter 2 (Model 2A) e STCC (Model 2C); successivamente qualificare rewind/run-ahead, cicli prolungati e piattaforme diverse. Save/load resta intenzionalmente rifiutato durante il networking. |
 | Prestazioni e distribuzione | Misure di memoria e velocità sugli hardware target e controllo finale degli avvisi/licenze prima di ampliare la distribuzione. |

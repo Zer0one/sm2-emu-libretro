@@ -21,7 +21,8 @@ Runner and Sega Ski Super G have formed two-cabinet rosters in isolated local
 RetroArch instances. Virtual On has formed both a two-Twin roster and a
 three-participant roster using the dedicated `vonr` Relay program.
 The core also provides Vulkan/OpenGL rendering, upstream 3D/2D enhancement
-filters, gamepad rumble and optional Enhanced Audio Balance. Changes from
+filters, gamepad rumble, optional Enhanced Audio Balance and separate DSB/MPEG
+music volume. Changes from
 upstream 0.9.9 relevant to Libretro are integrated selectively; standalone GUI,
 packaging and SDL-only changes remain in the adjacent upstream reference.
 

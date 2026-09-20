@@ -798,6 +798,19 @@ inoltre gli slot attivi come musica, effetti, annunciatore o voci. Disabled
 ripristina immediatamente unity gain per tutti gli slot e conserva l'output
 emulato senza il mastering aggiuntivo.
 
+`Music Volume` è un controllo globale separato, modellato sull'opzione del core
+Supermodel. Offre 0–200% a passi di 10 con default 100% e scala esclusivamente
+l'audio MPEG prodotto dalle schede DSB/DSB2 prima che venga sommato all'SCSP.
+Interessa le famiglie STCC e Top Skater; effetti, voci e giochi privi di una
+scheda musicale separata restano invariati. La variazione è immediata.
+
+Due replay isolati in RetroArch macOS hanno verificato entrambe le schede. Su
+STCC il picco PCM è passato da 21073 a 100% a 10087 a 0%; su Top Skater da
+32768 a 10243. In entrambi i casi l'audio SCSP è rimasto non silenzioso a 0%,
+confermando che il controllo agisce sul solo contributo MPEG. La saturazione
+osservata in Top Skater a 100% appartiene al mix preesistente e non è introdotta
+dal nuovo guadagno.
+
 Il fix hardware dello stesso aggiornamento upstream è indipendente dall'opzione:
 `overrevb` e `overrevba` completano la precedente scrittura INTENA differita
 prima del successivo acknowledge del timer audio, evitando che il suono si
