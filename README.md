@@ -5,7 +5,7 @@ Independent development repository for a Libretro adaptation of
 Development takes place on `main`; the original source history is retained
 for attribution, comparison and future upstream updates.
 
-**Status: SM2-Emu 0.9.9 Libretro core implemented and tested on macOS arm64.**
+**Status: SM2-Emu 0.9.9 / Libretro 0.9.9.1 core implemented and tested on macOS arm64.**
 The isolated adapter uses the upstream machine and software renderer, with
 native timing/audio by default, an optional speed-preserving 60 Hz cadence,
 a Libretro timing/FPS overlay, reviewed control profiles and frontend-managed save RAM.
