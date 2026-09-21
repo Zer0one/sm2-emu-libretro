@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 // Frontend-owned OpenGL 4.3 / OpenGL ES 3.1 renderer using upstream passes.
 #include "gpu.h"
+#include "timing_overlay.h"
 #include "hw/model2_machine_base.h"
 #include "hw/model2_video.h"
 #include "render/gl/gl_common.h"
@@ -9,6 +10,8 @@
 #include "render/gl/gl_tilemap_pass.h"
 
 #include <algorithm>
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
 #include <limits>
 #include <stdexcept>
 #include <string>
@@ -64,6 +67,12 @@ struct OpenGlRenderer::Impl {
     render::gl::TilemapPass tilemaps;
     render::gl::Poly3DPass polygons;
     render::gl::PresentPass present;
+    bool imgui_initialized = false;
+
+    ~Impl()
+    {
+        if (imgui_initialized) ImGui_ImplOpenGL3_Shutdown();
+    }
 
     void init(unsigned requested_scale, bool requested_es, retro_log_printf_t log)
     {
@@ -106,6 +115,9 @@ struct OpenGlRenderer::Impl {
         if (!tilemaps.init()) throw std::runtime_error("Cannot initialize upstream OpenGL 2D pass");
         if (!polygons.init(scale)) throw std::runtime_error("Cannot initialize upstream OpenGL 3D pass");
         if (!present.init(scale)) throw std::runtime_error("Cannot initialize OpenGL presentation pass");
+        if (!ImGui_ImplOpenGL3_Init(es ? "#version 310 es" : "#version 430 core"))
+            throw std::runtime_error("Cannot initialize Dear ImGui OpenGL renderer");
+        imgui_initialized = true;
         if (log) log(RETRO_LOG_INFO,
             "[SM2 GPU] Ready: %s %d.%d, %ux%u, upstream 2D compute + 3D\n",
             es ? "OpenGL ES" : "OpenGL core", major, minor, 496 * scale, 384 * scale);
@@ -119,7 +131,8 @@ struct OpenGlRenderer::Impl {
     }
 
     void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                const CrosshairState& crosshairs, unsigned texture_quality,
+                const CrosshairState& crosshairs, const TimingOverlayData& timing,
+                double frames_per_second, unsigned texture_quality,
                 unsigned upscale_2d)
     {
         auto& frame = machine.video();
@@ -166,6 +179,12 @@ struct OpenGlRenderer::Impl {
             }
             render::gl::Disable(GL_SCISSOR_TEST);
         }
+        if (timing.enabled && timing.valid) {
+            ImGui_ImplOpenGL3_NewFrame();
+            if (ImDrawData* overlay = build_timing_overlay(
+                    timing, 496 * scale, 384 * scale, frames_per_second))
+                ImGui_ImplOpenGL3_RenderDrawData(overlay);
+        }
         if (video) video(RETRO_HW_FRAME_BUFFER_VALID, 496 * scale, 384 * scale, 0);
     }
 };
@@ -178,9 +197,11 @@ void OpenGlRenderer::init(unsigned scale, bool es, retro_log_printf_t log)
 }
 void OpenGlRenderer::abandon_context() { impl->abandon_context(); }
 void OpenGlRenderer::render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                            const CrosshairState& crosshairs, unsigned texture_quality,
+                            const CrosshairState& crosshairs, const TimingOverlayData& timing,
+                            double frames_per_second, unsigned texture_quality,
                             unsigned upscale_2d)
 {
-    impl->render(machine, video, crosshairs, texture_quality, upscale_2d);
+    impl->render(machine, video, crosshairs, timing, frames_per_second,
+                 texture_quality, upscale_2d);
 }
 }

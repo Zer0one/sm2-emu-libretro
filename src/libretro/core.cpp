@@ -3,6 +3,7 @@
 #include "libretro.h"
 #include "core_options.h"
 #include "crosshair.h"
+#include "timing_overlay.h"
 #include "initial_nvram.h"
 #include "input.h"
 #include "netpacket.h"
@@ -87,7 +88,7 @@ struct Content {
     size_t audio_frames_due = 0;
     bool can_dupe = false;
     bool timing_overlay = false;
-    bool timing_overlay_visible = false;
+    libretro::TimingOverlayData timing_overlay_data{};
     bool external_link_active = false;
     float aspect_ratio = 4.0f / 3.0f;
     std::chrono::steady_clock::time_point previous_run_start{};
@@ -237,11 +238,7 @@ double elapsed_ms(std::chrono::steady_clock::time_point begin,
 
 void clear_timing_overlay(Content& c)
 {
-    if (!c.timing_overlay_visible || !environment) return;
-    const retro_message_ext clear{"", 1, 0, RETRO_LOG_INFO, RETRO_MESSAGE_TARGET_OSD,
-                                  RETRO_MESSAGE_TYPE_STATUS, -1};
-    environment(RETRO_ENVIRONMENT_SET_MESSAGE_EXT, const_cast<retro_message_ext*>(&clear));
-    c.timing_overlay_visible = false;
+    c.timing_overlay_data = {};
 }
 
 void reset_timing_measurements(Content& c)
@@ -278,26 +275,19 @@ void publish_timing_overlay(Content& c)
     const double actual_fps = c.timing_intervals && c.timing_interval_ms > 0
         ? 1000.0 * c.timing_intervals / c.timing_interval_ms : 0.0;
     const double engine_ms = machine_ms + video_ms;
-    char text[512];
-    std::snprintf(text, sizeof(text),
-        "SM2 timing (%s)\nMachine: %5.2f ms  Video: %5.2f ms\n"
-        "Audio/pacing: %5.2f ms  retro_run: %5.2f ms\n"
-        "Worst: %5.2f ms  Actual: %5.1f FPS\n"
-        "Engine cap: %5.1f FPS  Callback cap: %5.1f FPS",
-        c.timing == libretro::AVTimingMode::Native ? "Native 57.524160 Hz" : "60 Hz Compatibility",
-        machine_ms, video_ms, audio_ms, run_ms, c.timing_worst_ms, actual_fps,
-        engine_ms > 0 ? 1000.0 / engine_ms : 0.0,
-        run_ms > 0 ? 1000.0 / run_ms : 0.0);
-    const retro_message_ext status{text, 2000, 0, RETRO_LOG_INFO,
-                                   RETRO_MESSAGE_TARGET_OSD,
-                                   RETRO_MESSAGE_TYPE_STATUS, -1};
-    const bool shown = environment && environment(
-        RETRO_ENVIRONMENT_SET_MESSAGE_EXT, const_cast<retro_message_ext*>(&status));
-    if (!shown && environment) {
-        retro_message fallback{text, 120};
-        environment(RETRO_ENVIRONMENT_SET_MESSAGE, &fallback);
-    }
-    c.timing_overlay_visible = true;
+    c.timing_overlay_data = {
+        true,
+        true,
+        c.timing == libretro::AVTimingMode::Native,
+        static_cast<float>(machine_ms),
+        static_cast<float>(video_ms),
+        static_cast<float>(audio_ms),
+        static_cast<float>(run_ms),
+        static_cast<float>(c.timing_worst_ms),
+        static_cast<float>(actual_fps),
+        static_cast<float>(engine_ms > 0 ? 1000.0 / engine_ms : 0.0),
+        static_cast<float>(run_ms > 0 ? 1000.0 / run_ms : 0.0),
+    };
     if (log_cb) log_cb(RETRO_LOG_INFO,
         "[SM2 Timing] %u callbacks, %u machine frames | machine %.2f ms, video %.2f ms, "
         "audio/pacing %.2f ms, retro_run %.2f ms, worst %.2f ms, actual %.1f FPS, "
@@ -566,6 +556,7 @@ void unload()
         catch (const std::exception& error) { message(RETRO_LOG_ERROR, error.what()); }
         content.reset();
     }
+    libretro::timing_overlay_shutdown();
     libretro::set_option_game({});
     if (environment) {
         static const retro_input_descriptor empty[] = {{}};
@@ -745,6 +736,7 @@ bool retro_load_game(const retro_game_info* game)
         next->audio.reserve(static_cast<size_t>(next->rate) * 2);
         const bool rumble_ready = next->rumble.init(environment);
         content = std::move(next);
+        libretro::timing_overlay_initialize();
         if (libretro::aspect_ratio_mode() == libretro::AspectRatioMode::SixteenNine)
             content->aspect_ratio = 16.0f / 9.0f;
         libretro::set_option_game(content->nvram_game, content->game.name);
@@ -779,6 +771,7 @@ bool retro_load_game(const retro_game_info* game)
     } catch (const std::exception& error) { message(RETRO_LOG_ERROR, error.what()); }
     catch (...) { message(RETRO_LOG_ERROR, "Unexpected error while loading content"); }
     content.reset();
+    libretro::timing_overlay_shutdown();
     libretro::set_option_game({});
     return false;
 }
@@ -826,6 +819,7 @@ void retro_run()
             if (!overlay) clear_timing_overlay(*content);
             if (overlay && !content->timing_overlay) reset_timing_measurements(*content);
             content->timing_overlay = overlay;
+            content->timing_overlay_data.enabled = overlay;
             if (!libretro::gamepad_rumble_enabled()) content->rumble.stop();
             content->machine->sound_board().set_audio_balance_enabled(
                 libretro::audio_balance_enabled());
@@ -893,6 +887,7 @@ void retro_run()
                         libretro::crosshair_state(content->game, content->input_runtime,
                                                   libretro::crosshair_mask(content->game),
                                                   libretro::crosshair_style()),
+                        content->timing_overlay_data, content->fps,
                         libretro::texture_filter_quality(), libretro::upscale_2d_mode());
 #else
                     throw std::runtime_error("This core was built without Vulkan support");
@@ -904,6 +899,7 @@ void retro_run()
                         libretro::crosshair_state(content->game, content->input_runtime,
                                                   libretro::crosshair_mask(content->game),
                                                   libretro::crosshair_style()),
+                        content->timing_overlay_data, content->fps,
                         libretro::texture_filter_quality(), libretro::upscale_2d_mode());
 #else
                     throw std::runtime_error("This core was built without OpenGL support");
@@ -925,6 +921,9 @@ void retro_run()
                     libretro::crosshair_state(content->game, content->input_runtime,
                                               libretro::crosshair_mask(content->game),
                                               libretro::crosshair_style()));
+                libretro::draw_timing_overlay_software(
+                    content->frame, width, height, content->timing_overlay_data,
+                    content->fps);
             }
             if (video_cb) {
                 if (!advance_machine && content->can_dupe) video_cb(nullptr, width, height, 0);

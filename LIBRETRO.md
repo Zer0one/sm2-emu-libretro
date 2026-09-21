@@ -808,12 +808,13 @@ resta al sample rate effettivo della scheda e viene distribuito su pacchetti da
 60 Hz; eventuali campioni non accettati o non ancora disponibili restano in
 coda e vengono recuperati nelle callback successive.
 
-`Timing / FPS Overlay` segue il diagnostico del core Supermodel adattandolo alle
-fasi disponibili in SM2. Ogni 61 callback pubblica tramite lo status OSD
-Libretro tempi medi di macchina, video e audio/pacing, durata media e peggiore
-di `retro_run`, FPS effettivi e capacità stimate di engine e callback. Funziona
-con output software, Vulkan e OpenGL senza introdurre ImGui o un secondo overlay nel
-renderer. L'opzione si aggiorna immediatamente; il cambio di timing richiede il
+`Timing / FPS Overlay` riutilizza il pannello Dear ImGui del core Supermodel,
+adattato alle fasi disponibili in SM2. Ogni 61 callback aggiorna una finestra
+compatta disegnata direttamente nel frame con tempi medi di macchina, video e
+audio/pacing, durata media e peggiore di `retro_run`, FPS effettivi e capacità
+stimate di engine e callback. La stessa draw list viene composta nei percorsi
+Software, Vulkan e OpenGL; il frontend non crea un proprio messaggio OSD.
+L'opzione si aggiorna immediatamente; il cambio di timing richiede il
 riavvio del contenuto perché modifica le informazioni A/V dichiarate al frontend.
 
 ## Enhancement dei renderer GPU

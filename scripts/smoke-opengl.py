@@ -31,7 +31,7 @@ def main():
     p.add_argument('--reference',type=Path)
     p.add_argument('--exercise',action='store_true')
     a=p.parse_args();assert a.frames>0 and not(a.context_cycle and a.context_loss_cycle)
-    out=a.output.resolve();out.mkdir(parents=True,exist_ok=False)
+    out=a.output.resolve();out.mkdir(parents=True,exist_ok=False);(out/'saves').mkdir()
     host=C.CDLL(str(a.host.resolve()));core=C.CDLL(str(a.core.resolve()))
     host.sm2_gl_set_es.argtypes=[C.c_bool];host.sm2_gl_set_es(a.api=='gles')
     host.sm2_gl_environment.argtypes=[C.c_uint,C.c_void_p];host.sm2_gl_environment.restype=C.c_bool
@@ -112,7 +112,7 @@ def main():
         assert abs(len(pcm)//4-a.frames*av.timing.rate/60)<av.timing.rate/native_fps+2
     else:assert duplicates==0
     overlays=[entry for entry in statuses if entry]
-    if a.timing_overlay=='enabled':assert overlays and 'Engine cap:' in overlays[-1]
+    if a.timing_overlay=='enabled':assert not overlays
     if a.context_cycle or a.context_loss_cycle:assert cycle_hardware_frame is True
     (out/'native_frame.ppm').write_bytes(last)
     with wave.open(str(out/'audio.wav'),'wb') as wav:

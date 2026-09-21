@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 #include "gpu.h"
 #include "libretro_vulkan.h"
+#include "timing_overlay.h"
 #include "render/vk/pass_context.h"
 #include "render/vk/tilemap_pass.h"
 #include "render/vk/poly3d_pass.h"
@@ -8,9 +9,12 @@
 #include "hw/model2_video.h"
 #include "vk_dispatch.h"
 #include <vk_mem_alloc.h>
+#include <imgui.h>
+#include <imgui_impl_vulkan.h>
 #include <array>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 namespace sm2::libretro {
 bool validate_vulkan_device(VkDevice device);
@@ -25,6 +29,37 @@ struct QueueLock {
     explicit QueueLock(const retro_hw_render_interface_vulkan& v) : vk(v) { vk.lock_queue(vk.handle); }
     ~QueueLock() { vk.unlock_queue(vk.handle); }
 };
+struct ImGuiVkLoader {
+    const retro_hw_render_interface_vulkan& interface;
+    retro_log_printf_t log;
+};
+const char* missing_imgui_vk_function = nullptr;
+void VKAPI_PTR unused_imgui_wsi_function() {}
+PFN_vkVoidFunction imgui_vk_proc(const char* name, void* user_data)
+{
+    const auto& loader = *static_cast<const ImGuiVkLoader*>(user_data);
+    if (auto function = loader.interface.get_device_proc_addr(loader.interface.device, name))
+        return function;
+    const auto function = loader.interface.get_instance_proc_addr(
+        loader.interface.instance, name);
+    // ImGui's Vulkan translation unit also contains optional swapchain helper
+    // utilities. Its loader asks for their surface entry points even though
+    // the Libretro renderer uses dynamic rendering and never calls those
+    // helpers or owns a surface. A headless frontend therefore legitimately
+    // lacks them; satisfy the unused slots without requiring a WSI extension.
+    const std::string_view function_name(name);
+    if (!function && (function_name == "vkDestroySurfaceKHR"
+        || function_name == "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"
+        || function_name == "vkGetPhysicalDeviceSurfaceFormatsKHR"
+        || function_name == "vkGetPhysicalDeviceSurfacePresentModesKHR"))
+        return reinterpret_cast<PFN_vkVoidFunction>(unused_imgui_wsi_function);
+    if (!function) {
+        missing_imgui_vk_function = name;
+        if (loader.log)
+            loader.log(RETRO_LOG_ERROR, "[SM2 GPU] Missing Dear ImGui Vulkan function: %s\n", name);
+    }
+    return function;
+}
 }
 struct VulkanRenderer::Impl final : render::vk::PassContext {
     const retro_hw_render_interface_vulkan* vk = nullptr;
@@ -37,6 +72,7 @@ struct VulkanRenderer::Impl final : render::vk::PassContext {
     VkFormat stencil = VK_FORMAT_UNDEFINED;
     render::vk::TilemapPass tilemaps;
     render::vk::Poly3DPass polygons;
+    bool imgui_initialized = false;
     struct Output {
         VkImage image = VK_NULL_HANDLE;
         VmaAllocation allocation = nullptr;
@@ -65,6 +101,7 @@ struct VulkanRenderer::Impl final : render::vk::PassContext {
         // The frontend still owns a live device in context_destroy/unload.
         // On device loss, continue releasing our resources without throwing.
         { QueueLock lock(*vk); (void)vkDeviceWaitIdle(device()); }
+        if (imgui_initialized) ImGui_ImplVulkan_Shutdown();
         polygons.shutdown(); tilemaps.shutdown();
         destroy_outputs();
         for (auto fence : fences) if (fence) vkDestroyFence(device(), fence, nullptr);
@@ -125,6 +162,32 @@ struct VulkanRenderer::Impl final : render::vk::PassContext {
         for (auto& fence : fences) check(vkCreateFence(device(), &fi, nullptr, &fence), "Create frame fence");
         if (!tilemaps.init(*this, scale) || !polygons.init(*this, scale))
             throw std::runtime_error("Cannot initialize upstream Vulkan passes");
+        ImGuiVkLoader imgui_loader{*vk, log};
+        missing_imgui_vk_function = nullptr;
+        if (!ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_3, imgui_vk_proc,
+                                            &imgui_loader))
+            throw std::runtime_error(std::string("Cannot load Dear ImGui Vulkan function: ")
+                + (missing_imgui_vk_function ? missing_imgui_vk_function : "unknown"));
+        ImGui_ImplVulkan_InitInfo imgui{};
+        imgui.ApiVersion = VK_API_VERSION_1_3;
+        imgui.Instance = vk->instance;
+        imgui.PhysicalDevice = vk->gpu;
+        imgui.Device = device();
+        imgui.QueueFamily = vk->queue_index;
+        imgui.Queue = vk->queue;
+        imgui.DescriptorPoolSize = 8;
+        imgui.MinImageCount = 2;
+        imgui.ImageCount = kFramesInFlight;
+        imgui.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        imgui.UseDynamicRendering = true;
+        imgui.PipelineRenderingCreateInfo.sType =
+            VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+        imgui.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
+        const VkFormat overlay_format = render::vk::kNativeColourFormat;
+        imgui.PipelineRenderingCreateInfo.pColorAttachmentFormats = &overlay_format;
+        if (!ImGui_ImplVulkan_Init(&imgui))
+            throw std::runtime_error("Cannot initialize Dear ImGui Vulkan renderer");
+        imgui_initialized = true;
         if (log) log(RETRO_LOG_INFO, "[SM2 GPU] Ready: %s, Vulkan %u.%u.%u, %ux%u, upstream 2D compute + 3D\n",
             props.deviceName, VK_VERSION_MAJOR(props.apiVersion), VK_VERSION_MINOR(props.apiVersion),
             VK_VERSION_PATCH(props.apiVersion), 496 * scale, 384 * scale);
@@ -154,7 +217,8 @@ struct VulkanRenderer::Impl final : render::vk::PassContext {
         return out;
     }
     void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                const CrosshairState& crosshairs, unsigned texture_quality,
+                const CrosshairState& crosshairs, const TimingOverlayData& timing,
+                double frames_per_second, unsigned texture_quality,
                 unsigned upscale_2d) {
         const uint32_t mask = vk->get_sync_index_mask(vk->handle);
         const unsigned index = vk->get_sync_index(vk->handle);
@@ -192,7 +256,13 @@ struct VulkanRenderer::Impl final : render::vk::PassContext {
         tilemaps.record_above();
         const CrosshairGeometry geometry = crosshair_geometry(
             crosshairs, 496 * scale, 384 * scale);
-        if (geometry.count) {
+        ImDrawData* overlay = nullptr;
+        if (timing.enabled && timing.valid) {
+            ImGui_ImplVulkan_NewFrame();
+            overlay = build_timing_overlay(timing, 496 * scale, 384 * scale,
+                                           frames_per_second);
+        }
+        if (geometry.count || overlay) {
             VkRenderingAttachmentInfo colour{};
             colour.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
             colour.imageView = out.frontend.image_view;
@@ -225,6 +295,7 @@ struct VulkanRenderer::Impl final : render::vk::PassContext {
                 clear.layerCount = 1;
                 vkCmdClearAttachments(cmd(), 1, &crosshair_attachment, 1, &clear);
             }
+            if (overlay) ImGui_ImplVulkan_RenderDrawData(overlay, cmd());
             vkCmdEndRendering(cmd());
         }
         render::vk::record_image_barrier(cmd(), out.image, VK_IMAGE_ASPECT_COLOR_BIT,
@@ -246,9 +317,11 @@ VulkanRenderer::VulkanRenderer() : impl(std::make_unique<Impl>()) {}
 VulkanRenderer::~VulkanRenderer() = default;
 void VulkanRenderer::init(retro_environment_t env, unsigned scale, retro_log_printf_t log) { impl->init(env, scale, log); }
 void VulkanRenderer::render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                            const CrosshairState& crosshairs, unsigned texture_quality,
+                            const CrosshairState& crosshairs, const TimingOverlayData& timing,
+                            double frames_per_second, unsigned texture_quality,
                             unsigned upscale_2d)
 {
-    impl->render(machine, video, crosshairs, texture_quality, upscale_2d);
+    impl->render(machine, video, crosshairs, timing, frames_per_second,
+                 texture_quality, upscale_2d);
 }
 }

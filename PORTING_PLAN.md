@@ -393,9 +393,10 @@ Criterio: categorie, visibilità, default e indicazioni di riavvio coerenti con
 Stato: `A/V Timing` e `Timing / FPS Overlay` sono implementate. Il timing nativo
 57,524160 Hz resta il default; la modalità di compatibilità presenta a 60 Hz senza
 accelerare la macchina, distribuendo i frame duplicati e l'audio sulla cadenza
-del frontend. L'overlay usa lo status OSD Libretro e riporta medie su 61 callback
-per macchina, video, audio, `retro_run`, frame peggiore, cadenza effettiva e
-capacità stimata. `Frame Skip` è stato escluso per scelta progettuale.
+del frontend. L'overlay riutilizza il pannello Dear ImGui di Supermodel,
+composto dal core nel frame Software, Vulkan o OpenGL, e riporta medie su 61
+callback per macchina, video, audio, `retro_run`, frame peggiore, cadenza
+effettiva e capacità stimata. `Frame Skip` è stato escluso per scelta progettuale.
 
 Il cambio a quattro marce `H-Gate Mode`/`Standard`, derivato da Supermodel, è
 già implementato con H-Gate come default.

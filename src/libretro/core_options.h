@@ -313,7 +313,7 @@ inline void build_option_definitions()
     retro_core_option_v2_definition overlay{};
     overlay.key = "sm2_timing_overlay";
     overlay.desc = "Timing / FPS Overlay";
-    overlay.info = "Show 61-frame averages for machine, video and audio work, total retro_run time, worst frame, actual frontend cadence and estimated processing capacity. The frontend renders the status overlay. Takes effect immediately.";
+    overlay.info = "Show a compact in-game panel with 61-frame averages for machine, video and audio work, total retro_run time, worst frame, actual frontend cadence and estimated processing capacity. The core draws the panel directly into the game frame. Takes effect immediately.";
     overlay.category_key = "video";
     overlay.values[0] = {"disabled", "Disabled"};
     overlay.values[1] = {"enabled", "Enabled"};

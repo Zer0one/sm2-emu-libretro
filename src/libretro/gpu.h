@@ -2,6 +2,7 @@
 #pragma once
 #include "libretro.h"
 #include "crosshair.h"
+#include "timing_overlay.h"
 #include <memory>
 namespace sm2::hw { class Model2MachineBase; }
 namespace sm2::libretro {
@@ -14,7 +15,8 @@ public:
     ~VulkanRenderer();
     void init(retro_environment_t env, unsigned scale, retro_log_printf_t log);
     void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                const CrosshairState& crosshairs, unsigned texture_quality,
+                const CrosshairState& crosshairs, const TimingOverlayData& timing,
+                double frames_per_second, unsigned texture_quality,
                 unsigned upscale_2d);
 private:
     struct Impl;
@@ -31,7 +33,8 @@ public:
     void init(unsigned scale, bool es, retro_log_printf_t log);
     void abandon_context();
     void render(hw::Model2MachineBase& machine, retro_video_refresh_t video,
-                const CrosshairState& crosshairs, unsigned texture_quality,
+                const CrosshairState& crosshairs, const TimingOverlayData& timing,
+                double frames_per_second, unsigned texture_quality,
                 unsigned upscale_2d);
 private:
     struct Impl;

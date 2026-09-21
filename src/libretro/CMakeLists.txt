@@ -1,8 +1,21 @@
 # SPDX-License-Identifier: BSD-3-Clause
+add_library(sm2_libretro_imgui STATIC
+    "${PROJECT_SOURCE_DIR}/3rdparty/imgui/imgui.cpp"
+    "${PROJECT_SOURCE_DIR}/3rdparty/imgui/imgui_draw.cpp"
+    "${PROJECT_SOURCE_DIR}/3rdparty/imgui/imgui_tables.cpp"
+    "${PROJECT_SOURCE_DIR}/3rdparty/imgui/imgui_widgets.cpp")
+target_include_directories(sm2_libretro_imgui SYSTEM PUBLIC
+    "${PROJECT_SOURCE_DIR}/3rdparty/imgui")
+if(NOT MSVC)
+    target_compile_options(sm2_libretro_imgui PRIVATE -w)
+endif()
+
 add_library(sm2_libretro SHARED core.cpp crosshair.cpp input.cpp initial_nvram.cpp
-    netpacket.cpp nvram_settings.cpp rumble.cpp save_ram.cpp ../osd/drive_command.cpp)
+    netpacket.cpp nvram_settings.cpp rumble.cpp save_ram.cpp timing_overlay.cpp
+    ../osd/drive_command.cpp)
 target_include_directories(sm2_libretro PRIVATE include)
-target_link_libraries(sm2_libretro PRIVATE sm2_hw sm2_render sm2_warnings)
+target_link_libraries(sm2_libretro PRIVATE sm2_hw sm2_render sm2_warnings
+    sm2_libretro_imgui)
 set_target_properties(sm2_libretro PROPERTIES PREFIX "" OUTPUT_NAME "sm2_libretro"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/libretro"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/libretro")
@@ -22,6 +35,12 @@ configure_file("${CMAKE_SOURCE_DIR}/data/games.xml"
 
 option(SM2_LIBRETRO_CHECKS "Build ROM-free Libretro input checks" OFF)
 if(SM2_LIBRETRO_CHECKS)
+    add_executable(sm2-libretro-timing-overlay-checks
+        checks/timing_overlay.cpp timing_overlay.cpp)
+    target_include_directories(sm2-libretro-timing-overlay-checks PRIVATE
+        . "${PROJECT_SOURCE_DIR}/src")
+    target_link_libraries(sm2-libretro-timing-overlay-checks PRIVATE
+        sm2_libretro_imgui sm2_warnings)
     add_executable(sm2-libretro-input-checks checks/input.cpp crosshair.cpp input.cpp)
     target_include_directories(sm2-libretro-input-checks PRIVATE
         . include "${PROJECT_SOURCE_DIR}/src")
@@ -51,13 +70,28 @@ if(SM2_LIBRETRO_CHECKS)
 endif()
 
 if(SM2_LIBRETRO_VULKAN)
+    add_library(sm2_libretro_imgui_vk STATIC
+        "${PROJECT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_vulkan.cpp")
+    target_include_directories(sm2_libretro_imgui_vk PRIVATE
+        "${SM2_VULKAN_INCLUDE_DIR}"
+        "${PROJECT_SOURCE_DIR}/3rdparty/imgui"
+        "${PROJECT_SOURCE_DIR}/3rdparty/imgui/backends")
+    target_compile_definitions(sm2_libretro_imgui_vk PRIVATE
+        VK_NO_PROTOTYPES IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
+    target_link_libraries(sm2_libretro_imgui_vk PRIVATE sm2_libretro_imgui)
+    if(NOT MSVC)
+        target_compile_options(sm2_libretro_imgui_vk PRIVATE -w)
+    endif()
+
     # Recompile the shared passes with frontend-resolved entry points. No SDL,
     # window/swapchain backend, ImGui, or second Vulkan loader is linked.
     add_library(sm2_libretro_gpu STATIC
         vulkan_renderer.cpp vulkan_negotiation.cpp
         ../render/vk/poly3d_pass.cpp ../render/vk/tilemap_pass.cpp
         ../render/vk/vk_common.cpp ../render/vk/vma_impl.cpp)
-    target_include_directories(sm2_libretro_gpu PRIVATE . include "${SM2_VULKAN_INCLUDE_DIR}")
+    target_include_directories(sm2_libretro_gpu PRIVATE . include "${SM2_VULKAN_INCLUDE_DIR}"
+        "${PROJECT_SOURCE_DIR}/3rdparty/imgui"
+        "${PROJECT_SOURCE_DIR}/3rdparty/imgui/backends")
     target_compile_definitions(sm2_libretro_gpu PRIVATE VK_NO_PROTOTYPES)
     if(MSVC)
         target_compile_options(sm2_libretro_gpu PRIVATE "/FI${CMAKE_CURRENT_SOURCE_DIR}/vk_dispatch.h")
@@ -65,7 +99,8 @@ if(SM2_LIBRETRO_VULKAN)
         target_compile_options(sm2_libretro_gpu PRIVATE -include "${CMAKE_CURRENT_SOURCE_DIR}/vk_dispatch.h")
     endif()
     target_link_libraries(sm2_libretro_gpu PRIVATE sm2_hw sm2_render sm2_shaders
-        sm2_warnings GPUOpen::VulkanMemoryAllocator)
+        sm2_warnings sm2_libretro_imgui sm2_libretro_imgui_vk
+        GPUOpen::VulkanMemoryAllocator)
     target_compile_definitions(sm2_libretro PRIVATE SM2_LIBRETRO_VULKAN=1)
     target_link_libraries(sm2_libretro PRIVATE sm2_libretro_gpu)
 endif()
@@ -76,15 +111,17 @@ if(SM2_LIBRETRO_OPENGL)
     # SDL window, platform backend, ImGui renderer, or GL library is linked.
     add_library(sm2_libretro_gl STATIC
         opengl_renderer.cpp
+        "${PROJECT_SOURCE_DIR}/3rdparty/imgui/backends/imgui_impl_opengl3.cpp"
         ../render/gl/gl_common.cpp
         ../render/gl/gl_poly3d_pass.cpp
         ../render/gl/gl_present_pass.cpp
         ../render/gl/gl_tilemap_pass.cpp)
     target_include_directories(sm2_libretro_gl SYSTEM PRIVATE
-        "${PROJECT_SOURCE_DIR}/3rdparty/SDL/include")
+        "${PROJECT_SOURCE_DIR}/3rdparty/SDL/include"
+        "${PROJECT_SOURCE_DIR}/3rdparty/imgui/backends")
     target_include_directories(sm2_libretro_gl PRIVATE . include "${PROJECT_SOURCE_DIR}/src")
     target_link_libraries(sm2_libretro_gl PRIVATE sm2_hw sm2_render sm2_shaders
-        sm2_warnings)
+        sm2_warnings sm2_libretro_imgui)
     target_compile_definitions(sm2_libretro PRIVATE SM2_LIBRETRO_OPENGL=1)
     target_link_libraries(sm2_libretro PRIVATE sm2_libretro_gl)
 endif()

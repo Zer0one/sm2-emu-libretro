@@ -312,7 +312,7 @@ def main():
     else: assert duplicates==0
     overlays=[entry for entry in statuses if entry]
     if args.timing_overlay=='enabled':
-        assert overlays and 'Engine cap:' in overlays[-1] and 'Actual:' in overlays[-1]
+        assert not overlays
     # XRGB8888 little-endian B,G,R,X -> PPM top-to-bottom R,G,B.
     rgb = bytearray(len(pixels)//4*3)
     rgb[0::3] = pixels[2::4]; rgb[1::3] = pixels[1::4]; rgb[2::3] = pixels[0::4]
