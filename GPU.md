@@ -177,7 +177,7 @@ python3 scripts/smoke-vulkan.py \
 
 Usare `--context-cycle 950 --reference /percorso/risultato-precedente` per
 verificare la continuità dopo la ricreazione del dispositivo. Le opzioni
-`--av-timing 60hz --timing-overlay enabled --context-cycle 1` verificano anche
+`--av-timing 60hz --timing-overlay 13 --context-cycle 1` verificano anche
 che una ricreazione coincidente con una duplicazione presenti prima una nuova
 immagine del dispositivo. Il frontend di prova serializza il lavoro GPU per le
 acquisizioni deterministiche: la presentazione asincrona viene verificata

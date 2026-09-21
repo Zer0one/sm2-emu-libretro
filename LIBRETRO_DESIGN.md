@@ -33,6 +33,11 @@ questo inventario aggiornato quando cambia la superficie modificata del motore.
 La milestone 2 aggiunge `src/libretro/` e due agganci CMake (opzione e
 subdirectory). La persistenza frontend aggiunge alla macchina soltanto viste
 neutrali su backup RAM ed EEPROM; formato, import e opzioni restano nell'adattatore.
+L'opzione diagnostica Libretro per il controllo CRC aggiunge al loader neutrale
+un solo parametro `verify_crc`, abilitato per default: lo standalone e il
+runner headless conservano quindi invariato il confronto CRC, mentre il core
+può richiedere esplicitamente il fallback per nome senza introdurre header o
+callback Libretro nel loader.
 La GPU aggiunge `render/vk/pass_context.h`, implementato dal contesto standalone
 e dall'adattatore. I passaggi tilemap/poly3D dipendono da questa interfaccia
 anziché dal contesto con finestra; shader e algoritmi restano condivisi.

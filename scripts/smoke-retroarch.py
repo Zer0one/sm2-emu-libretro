@@ -89,7 +89,7 @@ def main():
     p.add_argument('--texture-filter',choices=['faithful','2','4','8','16'],default='faithful')
     p.add_argument('--upscale-2d',choices=['faithful','xbr','scalefx'],default='faithful')
     p.add_argument('--av-timing',choices=['native','60hz'],default='native')
-    p.add_argument('--timing-overlay',choices=['disabled','enabled'],default='disabled')
+    p.add_argument('--timing-overlay',choices=['disabled','auto','11','12','13','14'],default='disabled')
     p.add_argument('--audio-balance',choices=['enabled','disabled'],default='enabled')
     p.add_argument('--music-volume',choices=[str(value) for value in range(0,201,10)],default='100')
     p.add_argument('--aspect-ratio',choices=['auto','4_3','16_9'],default='auto')
@@ -264,7 +264,7 @@ def main():
     run_log=(out/'run.log').read_text()
     assert '[Replay] Invalid' not in run_log and 'ran out of' not in run_log
     assert 'Failed to initialize audio driver' not in run_log
-    if a.timing_overlay=='enabled': assert '[SM2 Timing]' in run_log
+    if a.timing_overlay!='disabled': assert '[SM2 Timing]' in run_log
     if a.renderer=='vulkan':
         assert '[SM2 GPU] Negotiated Vulkan 1.3:' in run_log
         assert '[SM2 GPU] Ready:' in run_log and 'upstream 2D compute + 3D' in run_log

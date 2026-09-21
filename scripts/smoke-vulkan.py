@@ -29,7 +29,7 @@ def main():
     p.add_argument('--upscale-2d',choices=['faithful','xbr','scalefx'],default='faithful')
     p.add_argument('--context-cycle',type=int,default=0,help='Destroy/recreate the real device before this frame')
     p.add_argument('--av-timing',choices=['native','60hz'],default='native')
-    p.add_argument('--timing-overlay',choices=['disabled','enabled'],default='disabled')
+    p.add_argument('--timing-overlay',choices=['disabled','auto','11','12','13','14'],default='disabled')
     p.add_argument('--reference',type=Path,help='Another run of this script; require exact final image and PCM')
     p.add_argument('--exercise',action='store_true',help='Additional reset/load/unload cycles')
     a=p.parse_args();assert a.frames>0
@@ -122,7 +122,7 @@ def main():
         assert abs(len(pcm)//4-a.frames*av.timing.rate/60)<av.timing.rate/native_fps+2
     else:assert duplicates==0
     overlays=[entry for entry in statuses if entry]
-    if a.timing_overlay=='enabled':assert not overlays
+    if a.timing_overlay!='disabled':assert not overlays
     if a.context_cycle:assert context_cycle_hardware_frame is True
     (out/'native_frame.ppm').write_bytes(last)
     with wave.open(str(out/'audio.wav'),'wb') as w:

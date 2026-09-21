@@ -14,6 +14,7 @@ int main()
     std::vector<std::uint32_t> frame(width * height, background);
     sm2::libretro::TimingOverlayData data{};
     data.enabled = data.valid = data.native_timing = true;
+    data.font_pixels = 13;
     data.machine_ms = 5.7f;
     data.video_ms = 5.5f;
     data.audio_ms = 0.2f;
@@ -30,6 +31,8 @@ int main()
     constexpr unsigned scaled_height = height * 4;
     std::vector<std::uint32_t> scaled_frame(
         static_cast<std::size_t>(scaled_width) * scaled_height, background);
+    sm2::libretro::draw_timing_overlay_software(
+        scaled_frame, scaled_width, scaled_height, data, 57.524160);
     sm2::libretro::draw_timing_overlay_software(
         scaled_frame, scaled_width, scaled_height, data, 57.524160);
     sm2::libretro::timing_overlay_shutdown();
@@ -57,7 +60,8 @@ int main()
         return 3;
     }
 
-    // Renderer scaling must not change the auto-fitted panel dimensions.
+    // The complete layout scales with internal resolution so the frontend
+    // presents the same readable panel size after scaling the game frame.
     unsigned scaled_max_x = 0;
     unsigned scaled_min_x = scaled_width;
     for (unsigned y = 0; y < scaled_height; ++y) {
@@ -69,8 +73,15 @@ int main()
             }
         }
     }
-    if (scaled_min_x != min_x || scaled_max_x != max_x) {
-        std::fprintf(stderr, "overlay dimensions change with renderer: %u-%u vs %u-%u\n",
+    constexpr unsigned scale = 4;
+    const auto close_to_scaled = [](unsigned base, unsigned scaled) {
+        const int difference = static_cast<int>(scaled)
+                             - static_cast<int>(base * scale);
+        return difference >= -5 && difference <= 5;
+    };
+    if (!close_to_scaled(min_x, scaled_min_x)
+        || !close_to_scaled(max_x, scaled_max_x)) {
+        std::fprintf(stderr, "overlay does not scale with renderer: %u-%u vs %u-%u\n",
                      min_x, max_x, scaled_min_x, scaled_max_x);
         return 5;
     }

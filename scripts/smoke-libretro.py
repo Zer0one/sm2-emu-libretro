@@ -66,7 +66,7 @@ def main():
     parser.add_argument('--switch-rom', type=Path, help='Exercise a second board/rate in the same library instance')
     parser.add_argument('--press', action='store_true', help='Coin then Start then action buttons (not an idle comparison)')
     parser.add_argument('--av-timing', choices=['native','60hz'], default='native')
-    parser.add_argument('--timing-overlay', choices=['disabled','enabled'], default='disabled')
+    parser.add_argument('--timing-overlay', choices=['disabled','auto','11','12','13','14'], default='disabled')
     parser.add_argument('--audio-balance', choices=['enabled','disabled'], default='enabled')
     parser.add_argument('--aspect-ratio', choices=['auto','4_3','16_9'], default='auto')
     parser.add_argument('--expect-aspect', choices=['4:3','16:9'], default='4:3')
@@ -311,7 +311,7 @@ def main():
         assert abs(len(pcm)//4-args.frames*av.timing.rate/60)<av.timing.rate/native_fps+2
     else: assert duplicates==0
     overlays=[entry for entry in statuses if entry]
-    if args.timing_overlay=='enabled':
+    if args.timing_overlay!='disabled':
         assert not overlays
     # XRGB8888 little-endian B,G,R,X -> PPM top-to-bottom R,G,B.
     rgb = bytearray(len(pixels)//4*3)

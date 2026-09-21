@@ -11,8 +11,8 @@ namespace sm2::libretro {
 namespace {
 
 bool initialized = false;
+constexpr float kBaseHeight = 384.0f;
 constexpr float kPanelMargin = 8.0f;
-constexpr float kFontScale = 0.65f;
 
 void coloured_value(const char* label, float value, float warning, float critical,
                     const char* suffix)
@@ -124,14 +124,23 @@ ImDrawData* build_timing_overlay(const TimingOverlayData& data,
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = ImVec2(static_cast<float>(width), static_cast<float>(height));
     io.DeltaTime = static_cast<float>(1.0 / std::max(1.0, frames_per_second));
-    // Keep diagnostics compact at every internal resolution. Scaling the font
-    // and panel with the renderer made the overlay occupy half the screen at
-    // 2x/4x even though the text itself does not change.
-    io.FontGlobalScale = kFontScale;
+    // The overlay is composited into the internal framebuffer and is scaled by
+    // the frontend together with the game. Scale its complete layout with the
+    // internal height so it retains the same readable screen size at 1x-4x.
+    const float layout_scale = std::max(1.0f, static_cast<float>(height) / kBaseHeight);
+    io.FontGlobalScale = 1.0f;
 
     ImGui::NewFrame();
-    ImGui::SetNextWindowPos(ImVec2(kPanelMargin, kPanelMargin), ImGuiCond_Always);
+    const float font_pixels = static_cast<float>(std::clamp(data.font_pixels, 11u, 14u));
+    ImGui::PushFont(nullptr, font_pixels * layout_scale);
+    ImGui::SetNextWindowPos(
+        ImVec2(kPanelMargin * layout_scale, kPanelMargin * layout_scale),
+        ImGuiCond_Always);
     ImGui::SetNextWindowBgAlpha(0.55f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,
+                        ImVec2(8.0f * layout_scale, 8.0f * layout_scale));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
+                        ImVec2(8.0f * layout_scale, 4.0f * layout_scale));
     ImGui::Begin("##timings", nullptr,
         ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs |
         ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove |
@@ -150,6 +159,8 @@ ImDrawData* build_timing_overlay(const TimingOverlayData& data,
     ImGui::Text("Engine cap  : %5.1f FPS", static_cast<double>(data.engine_cap_fps));
     ImGui::Text("Callback cap: %5.1f FPS", static_cast<double>(data.callback_cap_fps));
     ImGui::End();
+    ImGui::PopStyleVar(2);
+    ImGui::PopFont();
     ImGui::Render();
     return ImGui::GetDrawData();
 }
@@ -163,9 +174,13 @@ void draw_timing_overlay_software(std::span<std::uint32_t> frame,
         || frame.size() < static_cast<std::size_t>(width) * height) return;
     unsigned char* pixels = nullptr;
     int texture_width = 0, texture_height = 0;
+    // The software path uses ImGui's legacy atlas API. Build the default font
+    // before NewFrame(), then refresh the pixels after the selected size has
+    // been baked while constructing the overlay.
     ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&pixels, &texture_width, &texture_height);
     ImGui::GetIO().Fonts->SetTexID(static_cast<ImTextureID>(1));
     ImDrawData* draw_data = build_timing_overlay(data, width, height, frames_per_second);
+    ImGui::GetIO().Fonts->GetTexDataAsRGBA32(&pixels, &texture_width, &texture_height);
     if (!draw_data || !pixels || texture_width <= 0 || texture_height <= 0) return;
 
     for (int list_index = 0; list_index < draw_data->CmdListsCount; ++list_index) {

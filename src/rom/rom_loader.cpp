@@ -189,12 +189,11 @@ public:
         return false;
     }
 
-    /// Find an entry, by CRC when the database declares one and by name
-    /// otherwise. Matching on CRC *is* the verification: a corrupted chip
-    /// simply is not found.
-    [[nodiscard]] const ZipEntry* find(const FileSpec& file) const
+    /// Find an entry by its expected CRC, or by name when verification is
+    /// explicitly disabled or the database has no CRC for this file.
+    [[nodiscard]] const ZipEntry* find(const FileSpec& file, bool verify_crc) const
     {
-        if (file.has_crc) {
+        if (verify_crc && file.has_crc) {
             const auto entry = m_by_crc.find(file.crc32);
             if (entry != m_by_crc.end()) {
                 return &entry->second;
@@ -401,12 +400,13 @@ struct MatchScore {
     [[nodiscard]] bool complete() const { return missing == 0 && found > 0; }
 };
 
-[[nodiscard]] MatchScore score_game(const ArchiveSet& archives, const GameSpec& game)
+[[nodiscard]] MatchScore score_game(const ArchiveSet& archives, const GameSpec& game,
+                                    bool verify_crc)
 {
     MatchScore score;
     for (const RegionSpec& region : game.regions) {
         for (const FileSpec& file : region.files) {
-            if (archives.find(file) != nullptr) {
+            if (archives.find(file, verify_crc) != nullptr) {
                 ++score.found;
             } else if (region.required) {
                 ++score.missing;
@@ -583,7 +583,8 @@ std::optional<std::vector<u8>> RomLoader::assemble_region(
 
 std::optional<LoadResult> RomLoader::load(const GameDatabase& database,
                                           const std::string&  archive_path,
-                                          const std::string&  preferred_game)
+                                          const std::string&  preferred_game,
+                                          bool verify_crc)
 {
     std::error_code error;
     if (!std::filesystem::exists(archive_path, error)) {
@@ -594,6 +595,9 @@ std::optional<LoadResult> RomLoader::load(const GameDatabase& database,
     ArchiveSet archives;
     if (!archives.open(archive_path)) {
         return std::nullopt;
+    }
+    if (!verify_crc) {
+        SM2_WARN("ROM CRC verification is disabled; matching chips by filename only");
     }
 
     // -- pick a game -------------------------------------------------------
@@ -610,7 +614,7 @@ std::optional<LoadResult> RomLoader::load(const GameDatabase& database,
         MatchScore      best_score;
 
         for (const GameSpec& candidate : database.games()) {
-            const MatchScore score = score_game(archives, candidate);
+            const MatchScore score = score_game(archives, candidate, verify_crc);
             if (score.found == 0) {
                 continue;
             }
@@ -632,8 +636,11 @@ std::optional<LoadResult> RomLoader::load(const GameDatabase& database,
         if (best == nullptr) {
             SM2_ERROR("'%s' does not contain any game sm2-emu recognises",
                       archive_path.c_str());
-            SM2_ERROR("Identification is by CRC32, so this means none of the "
-                      "expected chips were found, not that the name is wrong.");
+            SM2_ERROR(verify_crc
+                ? "Identification is by CRC32, so this means none of the expected chips "
+                  "were found, not that the name is wrong."
+                : "CRC verification is disabled, so identification is by chip filename; "
+                  "none of the expected names were found.");
             return std::nullopt;
         }
         if (!best_score.complete()) {
@@ -661,7 +668,7 @@ std::optional<LoadResult> RomLoader::load(const GameDatabase& database,
 
     // -- open the parent archive if needed ---------------------------------
     if (!chosen->parent.empty()) {
-        const MatchScore score = score_game(archives, *chosen);
+        const MatchScore score = score_game(archives, *chosen, verify_crc);
         if (!score.complete()) {
             if (const auto parent_path = find_sibling_archive(chosen->parent)) {
                 SM2_INFO("'%s' is a clone; also reading %s", chosen->name.c_str(),
@@ -723,12 +730,17 @@ std::optional<LoadResult> RomLoader::load(const GameDatabase& database,
 
         for (usize index = 0; index < region.files.size(); ++index) {
             const FileSpec& file  = region.files[index];
-            const ZipEntry* entry = archives.find(file);
+            const ZipEntry* entry = archives.find(file, verify_crc);
 
             if (entry == nullptr) {
                 if (region.required) {
-                    SM2_ERROR("missing required ROM: '%s' (CRC32 0x%08x), region '%s'",
-                              file.name.c_str(), file.crc32, region.name.c_str());
+                    if (verify_crc && file.has_crc) {
+                        SM2_ERROR("missing required ROM: '%s' (CRC32 0x%08x), region '%s'",
+                                  file.name.c_str(), file.crc32, region.name.c_str());
+                    } else {
+                        SM2_ERROR("missing required ROM: '%s', region '%s'",
+                                  file.name.c_str(), region.name.c_str());
+                    }
                     ++required_missing;
                 } else {
                     ++optional_missing;
@@ -762,9 +774,10 @@ std::optional<LoadResult> RomLoader::load(const GameDatabase& database,
     }
 
     if (required_missing != 0) {
-        SM2_ERROR("'%s' cannot be loaded: %u required ROM file(s) missing from %s "
-                  "(matched by CRC32; a listed chip is either absent or corrupt)",
-                  chosen->name.c_str(), required_missing, archive_path.c_str());
+        SM2_ERROR("'%s' cannot be loaded: %u required ROM file(s) missing from %s (%s)",
+                  chosen->name.c_str(), required_missing, archive_path.c_str(),
+                  verify_crc ? "matched by CRC32; a listed chip is either absent or corrupt"
+                             : "matched by filename; a listed chip is absent");
         return std::nullopt;
     }
 

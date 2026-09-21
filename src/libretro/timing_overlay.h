@@ -12,6 +12,7 @@ struct TimingOverlayData {
     bool enabled = false;
     bool valid = false;
     bool native_timing = true;
+    unsigned font_pixels = 13;
     float machine_ms = 0.0f;
     float video_ms = 0.0f;
     float audio_ms = 0.0f;

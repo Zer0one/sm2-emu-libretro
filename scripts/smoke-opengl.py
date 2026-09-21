@@ -27,7 +27,7 @@ def main():
     p.add_argument('--context-cycle',type=int,default=0)
     p.add_argument('--context-loss-cycle',type=int,default=0)
     p.add_argument('--av-timing',choices=['native','60hz'],default='native')
-    p.add_argument('--timing-overlay',choices=['disabled','enabled'],default='disabled')
+    p.add_argument('--timing-overlay',choices=['disabled','auto','11','12','13','14'],default='disabled')
     p.add_argument('--reference',type=Path)
     p.add_argument('--exercise',action='store_true')
     a=p.parse_args();assert a.frames>0 and not(a.context_cycle and a.context_loss_cycle)
@@ -112,7 +112,7 @@ def main():
         assert abs(len(pcm)//4-a.frames*av.timing.rate/60)<av.timing.rate/native_fps+2
     else:assert duplicates==0
     overlays=[entry for entry in statuses if entry]
-    if a.timing_overlay=='enabled':assert not overlays
+    if a.timing_overlay!='disabled':assert not overlays
     if a.context_cycle or a.context_loss_cycle:assert cycle_hardware_frame is True
     (out/'native_frame.ppm').write_bytes(last)
     with wave.open(str(out/'audio.wav'),'wb') as wav:

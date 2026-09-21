@@ -157,7 +157,17 @@ inline void build_option_definitions()
 {
     if (!registered_definitions.empty()) return;
     const auto all = nvram::all_options();
-    registered_definitions.reserve(all.size() + 29);
+    registered_definitions.reserve(all.size() + 30);
+
+    retro_core_option_v2_definition rom_crc{};
+    rom_crc.key = "sm2_rom_crc_verification";
+    rom_crc.desc = "ROM CRC Verification (Restart Required)";
+    rom_crc.info = "Verify every ROM chip against the CRC32 declared in games.xml. WARNING: Disabling verification matches chips by filename only and may load incorrect, modified or incompatible ROMs, causing emulation errors, crashes or corrupted save data. Use only for troubleshooting and reload content after changing this option.";
+    rom_crc.category_key = "system";
+    rom_crc.values[0] = {"enabled", "Enabled"};
+    rom_crc.values[1] = {"disabled", "Disabled"};
+    rom_crc.default_value = "enabled";
+    registered_definitions.push_back(rom_crc);
 
     retro_core_option_v2_definition initial_nvram{};
     initial_nvram.key = "sm2_initial_nvram_setup";
@@ -313,10 +323,14 @@ inline void build_option_definitions()
     retro_core_option_v2_definition overlay{};
     overlay.key = "sm2_timing_overlay";
     overlay.desc = "Timing / FPS Overlay";
-    overlay.info = "Show a compact in-game panel with 61-frame averages for machine, video and audio work, total retro_run time, worst frame, actual frontend cadence and estimated processing capacity. The core draws the panel directly into the game frame. Takes effect immediately.";
+    overlay.info = "Show a compact in-game panel with 61-frame averages for machine, video and audio work, total retro_run time, worst frame, actual frontend cadence and estimated processing capacity. Auto selects a 13 px native base font. Explicit sizes apply at 1x internal resolution; higher internal resolutions preserve the same visual proportions. The core draws the panel directly into the game frame. Takes effect immediately.";
     overlay.category_key = "video";
-    overlay.values[0] = {"disabled", "Disabled"};
-    overlay.values[1] = {"enabled", "Enabled"};
+    overlay.values[0] = {"disabled", "Off"};
+    overlay.values[1] = {"auto", "Auto"};
+    overlay.values[2] = {"11", "On (11 px)"};
+    overlay.values[3] = {"12", "On (12 px)"};
+    overlay.values[4] = {"13", "On (13 px)"};
+    overlay.values[5] = {"14", "On (14 px)"};
     overlay.default_value = "disabled";
     registered_definitions.push_back(overlay);
 
@@ -554,6 +568,14 @@ inline AVTimingMode av_timing_mode()
                : AVTimingMode::Native;
 }
 
+inline bool rom_crc_verification_enabled()
+{
+    retro_variable option{"sm2_rom_crc_verification", nullptr};
+    return !(option_environment
+             && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+             && option.value && std::strcmp(option.value, "disabled") == 0);
+}
+
 inline AspectRatioMode aspect_ratio_mode()
 {
     retro_variable option{"sm2_aspect_ratio", nullptr};
@@ -565,11 +587,18 @@ inline AspectRatioMode aspect_ratio_mode()
     return AspectRatioMode::Automatic;
 }
 
-inline bool timing_overlay_enabled()
+inline unsigned timing_overlay_font_pixels()
 {
     retro_variable option{"sm2_timing_overlay", nullptr};
-    return option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option) &&
-           option.value && std::strcmp(option.value, "enabled") == 0;
+    if (!(option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option))
+        || !option.value)
+        return 0;
+    if (std::strcmp(option.value, "auto") == 0) return 13;
+    if (std::strcmp(option.value, "11") == 0) return 11;
+    if (std::strcmp(option.value, "12") == 0) return 12;
+    if (std::strcmp(option.value, "13") == 0) return 13;
+    if (std::strcmp(option.value, "14") == 0) return 14;
+    return 0;
 }
 
 inline unsigned crosshair_mask(const rom::GameSpec& game)

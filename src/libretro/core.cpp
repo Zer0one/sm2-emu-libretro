@@ -88,6 +88,7 @@ struct Content {
     size_t audio_frames_due = 0;
     bool can_dupe = false;
     bool timing_overlay = false;
+    unsigned timing_overlay_font_pixels = 0;
     libretro::TimingOverlayData timing_overlay_data{};
     bool external_link_active = false;
     float aspect_ratio = 4.0f / 3.0f;
@@ -279,6 +280,7 @@ void publish_timing_overlay(Content& c)
         true,
         true,
         c.timing == libretro::AVTimingMode::Native,
+        c.timing_overlay_font_pixels,
         static_cast<float>(machine_ms),
         static_cast<float>(video_ms),
         static_cast<float>(audio_ms),
@@ -642,7 +644,7 @@ void retro_deinit()
 }
 void retro_get_system_info(retro_system_info* info)
 {
-    if (info) *info = {"SM2-Emu", "0.9.9.1", "zip|7z", true, true};
+    if (info) *info = {"SM2-Emu", "0.9.9.2", "zip|7z", true, true};
 }
 void retro_get_system_av_info(retro_system_av_info* info)
 {
@@ -677,7 +679,8 @@ bool retro_load_game(const retro_game_info* game)
         rom::GameDatabase database;
         if (!database.load(db_path.string()))
             throw std::runtime_error("Cannot load system/sm2-emu/games.xml");
-        auto loaded = rom::RomLoader::load(database, game->path);
+        auto loaded = rom::RomLoader::load(
+            database, game->path, {}, libretro::rom_crc_verification_enabled());
         if (!loaded) throw std::runtime_error("ROM loading failed; see missing-file/CRC details in log");
         // The database name becomes a native-save filename and save-container ID,
         // never an arbitrary path.
@@ -729,7 +732,8 @@ bool retro_load_game(const retro_game_info* game)
         next->fps = next->timing == libretro::AVTimingMode::Compatibility60Hz
             ? 60.0 : next->native_fps;
         next->cadence_accumulator = 60.0 - next->native_fps;
-        next->timing_overlay = libretro::timing_overlay_enabled();
+        next->timing_overlay_font_pixels = libretro::timing_overlay_font_pixels();
+        next->timing_overlay = next->timing_overlay_font_pixels != 0;
         environment(RETRO_ENVIRONMENT_GET_CAN_DUPE, &next->can_dupe);
         next->nvram_values = libretro::selected_nvram_values(next->nvram_game);
         next->option_pending = !next->nvram_values.empty() && libretro::nvram_settings_enabled();
@@ -815,11 +819,14 @@ void retro_run()
         bool variables_updated = false;
         if (environment && environment(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &variables_updated)
             && variables_updated) {
-            const bool overlay = libretro::timing_overlay_enabled();
+            const unsigned overlay_font_pixels = libretro::timing_overlay_font_pixels();
+            const bool overlay = overlay_font_pixels != 0;
             if (!overlay) clear_timing_overlay(*content);
             if (overlay && !content->timing_overlay) reset_timing_measurements(*content);
             content->timing_overlay = overlay;
+            content->timing_overlay_font_pixels = overlay_font_pixels;
             content->timing_overlay_data.enabled = overlay;
+            content->timing_overlay_data.font_pixels = overlay_font_pixels;
             if (!libretro::gamepad_rumble_enabled()) content->rumble.stop();
             content->machine->sound_board().set_audio_balance_enabled(
                 libretro::audio_balance_enabled());

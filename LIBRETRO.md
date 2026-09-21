@@ -37,6 +37,14 @@ directory save. Le ROM restano esterne: il core accetta i percorsi ZIP/7z e
 chiede al frontend di non estrarre gli archivi. Se il loader richiede parent
 o firmware separati, valgono le regole del database upstream.
 
+La Core Option System `ROM CRC Verification (Restart Required)` è abilitata
+per default e confronta ogni chip con il CRC32 dichiarato in `games.xml`.
+Disabilitandola, il loader cerca i chip soltanto per nome; l'integrità interna
+ZIP/7z resta comunque verificata durante l'estrazione. Questa modalità è
+destinata esclusivamente alla diagnostica: ROM errate, modificate o
+incompatibili possono produrre errori di emulazione, crash o dati di
+salvataggio corrotti.
+
 Nell'installazione macOS di sviluppo usata per questo progetto, la copia
 autorevole del database è:
 
@@ -808,7 +816,11 @@ resta al sample rate effettivo della scheda e viene distribuito su pacchetti da
 60 Hz; eventuali campioni non accettati o non ancora disponibili restano in
 coda e vengono recuperati nelle callback successive.
 
-`Timing / FPS Overlay` riutilizza il pannello Dear ImGui del core Supermodel,
+`Timing / FPS Overlay` riutilizza il pannello Dear ImGui del core Supermodel.
+`Auto`, collocato subito dopo `Off`, seleziona il font base da 13 pixel; seguono
+le dimensioni native da 11, 12, 13 o 14 pixel in ordine crescente.
+La dimensione selezionata viene usata direttamente a 1× e adattata alle
+risoluzioni interne superiori mantenendo le stesse proporzioni visive. Il pannello è
 adattato alle fasi disponibili in SM2. Ogni 61 callback aggiorna una finestra
 compatta disegnata direttamente nel frame con tempi medi di macchina, video e
 audio/pacing, durata media e peggiore di `retro_run`, FPS effettivi e capacità

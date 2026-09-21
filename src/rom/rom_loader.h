@@ -34,11 +34,11 @@ struct LoadResult {
 /// Reads a zip archive and assembles the ROM regions for whichever game it
 /// holds.
 ///
-/// Games are identified by the CRC32 of their contents rather than by the
-/// archive's filename. That makes merged sets work: an archive holding several
-/// revisions resolves to whichever one it can satisfy completely, and a set
-/// renamed by the user still loads. A file that fails to match is a precise
-/// error naming the chip and the CRC that was expected.
+/// By default games are identified by the CRC32 of their contents rather than
+/// by the archive's filename. That makes merged sets work: an archive holding
+/// several revisions resolves to whichever one it can satisfy completely, and
+/// a set renamed by the user still loads. Diagnostic callers may explicitly
+/// disable CRC verification and match chip filenames instead.
 class RomLoader {
 public:
     /// Assemble the ROMs in `archive_path`.
@@ -49,9 +49,12 @@ public:
     ///
     /// Parent ROMs missing from a clone's archive are looked for in
     /// `<parent>.zip` beside it, matching the usual split-set layout.
+    /// `verify_crc=false` is a diagnostic fallback; ordinary callers retain
+    /// the verified default.
     [[nodiscard]] static std::optional<LoadResult> load(const GameDatabase& database,
                                                         const std::string&  archive_path,
-                                                        const std::string&  preferred_game = {});
+                                                        const std::string&  preferred_game = {},
+                                                        bool verify_crc = true);
 
     /// Assemble one region from already-extracted file contents.
     ///
