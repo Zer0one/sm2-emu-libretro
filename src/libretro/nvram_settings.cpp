@@ -275,7 +275,7 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
         return std::equal(eeprom.begin() + 0x08, eeprom.begin() + 0x44,
                           eeprom.begin() + 0x44) &&
                load_u16(eeprom, 0x08) == sega_crc_or(eeprom.subspan(0x0a, 58), false);
-    if (game == "manxtt")
+    if (game == "manxtt" || game == "manxttdx")
         return eeprom[2] == 0x38 && eeprom[3] == 0 &&
                load_u16(eeprom, 0) == crc16_ccitt_inverted(eeprom.subspan(2, 0x36));
     if (game == "rchase2" || game == "srallycdxa")
@@ -369,7 +369,7 @@ void sync_integrity(std::string_view game, std::span<u8> backup,
     } else if (game == "lastbrnx") {
         store_u16(eeprom, 0x08, sega_crc_or(eeprom.subspan(0x0a, 58), false));
         std::copy_n(eeprom.begin() + 0x08, 60, eeprom.begin() + 0x44);
-    } else if (game == "manxtt") {
+    } else if (game == "manxtt" || game == "manxttdx") {
         store_u16(eeprom, 0, crc16_ccitt_inverted(eeprom.subspan(2, 0x36)));
     } else if (game == "rchase2" || game == "srallycdxa") {
         store_u16(eeprom, 0, crc16_ccitt_inverted(eeprom.subspan(2, 0x2a)));

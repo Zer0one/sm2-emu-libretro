@@ -476,7 +476,7 @@ int main()
     {
         const auto options = libretro::nvram::all_options();
         std::set<std::string> keys;
-        expect(options.size() == 293, "reviewed NVRAM option catalog has 293 entries");
+        expect(options.size() == 299, "reviewed NVRAM option catalog has 299 entries");
         for (const auto& option : options) {
             const std::string key = std::string(option.game) + ":" + option.suffix;
             expect(keys.insert(key).second, "NVRAM option keys are unique");
@@ -512,6 +512,18 @@ int main()
         expect(libretro::nvram::options_for_game("dyndeka2").size() == 3
                    && libretro::nvram::options_for_game("dyndeka2b").size() == 3,
                "Dynamite Deka 2 revisions expose the three reviewed editable settings");
+        const auto manxttdx_options = libretro::nvram::options_for_game("manxttdx");
+        static constexpr std::string_view manxttdx_order[] = {
+            "advertise_sound", "country", "bike_color", "race_mode",
+            "laxey_game_difficulty", "tt_game_difficulty",
+        };
+        expect(manxttdx_options.size() == std::size(manxttdx_order)
+                   && std::equal(manxttdx_options.begin(), manxttdx_options.end(),
+                                 std::begin(manxttdx_order), std::end(manxttdx_order),
+                                 [](const auto& option, const auto suffix) {
+                                     return std::string_view(option.suffix) == suffix;
+                                 }),
+               "Manx TT DX exposes only its reviewed editable Game Assignments");
         const auto motoraiddx_options = libretro::nvram::options_for_game("motoraiddx");
         expect(motoraiddx_options.size() == 8,
                "Motor Raid Deluxe omits read-only Engine Volume and adds Cabinet Type");
@@ -534,7 +546,7 @@ int main()
 
         std::set<std::string> games;
         for (const auto& option : options) games.insert(option.game);
-        expect(games.size() == 50, "initial NVRAM catalog covers 50 reviewed sets");
+        expect(games.size() == 51, "initial NVRAM catalog covers 51 reviewed sets");
         const std::set<std::pair<std::string, std::string>> offline = {
             {"daytona", "link_id"}, {"daytonas", "link_id"},
             {"manxtt", "link_type"}, {"motoraiddx", "network_type"}, {"indy500d", "network_type"},
@@ -642,10 +654,10 @@ int main()
             {"doaa", "doa"},
             {"doaab", "doa"}, {"doaae", "doa"}, {"doab", "doa"},
             {"dynamcopb", "dynamcop"}, {"dynamcopc", "dynamcop"},
-            {"manxttdx", "manxtt"}, {"vf2b", "vf2"},
+            {"vf2b", "vf2"},
         };
-        expect(std::size(parent_catalog_clones) == 33,
-               "33 clone Service Menus reuse the reviewed parent catalog");
+        expect(std::size(parent_catalog_clones) == 32,
+               "32 clone Service Menus reuse the reviewed parent catalog");
         for (const auto& [clone, parent] : parent_catalog_clones) {
             expect_game(libretro::nvram::options_for_game(clone).empty(), clone,
                         "parent-compatible clone does not shadow the parent catalog");
@@ -655,11 +667,11 @@ int main()
 
         static constexpr std::string_view clone_specific_catalogs[] = {
             "daytona93", "daytonas", "dyndeka2", "dyndeka2b", "hotdp",
-            "indy500d", "motoraiddx", "srallycdx", "srallycdxa", "stcca", "stccb",
+            "indy500d", "manxttdx", "motoraiddx", "srallycdx", "srallycdxa", "stcca", "stccb",
             "stcco", "vf2a", "vf2o", "vstrikero",
         };
-        expect(std::size(clone_specific_catalogs) == 15,
-               "15 clone Service Menus use a reviewed clone-specific catalog");
+        expect(std::size(clone_specific_catalogs) == 16,
+               "16 clone Service Menus use a reviewed clone-specific catalog");
         for (const auto clone : clone_specific_catalogs)
             expect_game(!libretro::nvram::options_for_game(clone).empty(), clone,
                         "clone-specific catalog is available");
@@ -671,7 +683,7 @@ int main()
             {"doaa", "doa"}, {"doaab", "doa"}, {"doaae", "doa"}, {"doab", "doa"},
             {"dynamcopb", "dynamcop"}, {"dynamcopc", "dynamcop"},
             {"dyndeka2", "dyndeka2"}, {"dyndeka2b", "dyndeka2b"},
-            {"manxttdx", "manxtt"}, {"motoraiddx", "motoraiddx"},
+            {"manxttdx", "manxttdx"}, {"motoraiddx", "motoraiddx"},
             {"stcca", "stcca"}, {"stcco", "stcco"}, {"vf2b", "vf2"},
             {"daytona93", "daytona93"}, {"daytonas", "daytonas"},
             {"stccb", "stccb"}, {"vf2a", "vf2a"}, {"vf2o", "vf2o"},
