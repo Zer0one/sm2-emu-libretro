@@ -644,7 +644,7 @@ void retro_deinit()
 }
 void retro_get_system_info(retro_system_info* info)
 {
-    if (info) *info = {"SM2-Emu", "0.9.9.3", "zip|7z", true, true};
+    if (info) *info = {"SM2-Emu", "0.9.9.4", "zip|7z", true, true};
 }
 void retro_get_system_av_info(retro_system_av_info* info)
 {
