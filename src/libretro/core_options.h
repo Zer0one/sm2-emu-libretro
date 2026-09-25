@@ -309,6 +309,16 @@ inline void build_option_definitions()
     registered_definitions.push_back(upscale_2d);
 #endif
 
+    retro_core_option_v2_definition software_threading{};
+    software_threading.key = "sm2_software_renderer_threading";
+    software_threading.desc = "Software Renderer Threading (Restart Required)";
+    software_threading.info = "Asynchronous follows SM2-Emu 0.9.11 and draws each Software-rendered frame on a separate thread while the machine advances, improving throughput at the cost of one frame of latency. Synchronous draws the current frame before returning it. Applies only to the Software renderer; reload content after changing this option.";
+    software_threading.category_key = "video";
+    software_threading.values[0] = {"asynchronous", "Asynchronous"};
+    software_threading.values[1] = {"synchronous", "Synchronous"};
+    software_threading.default_value = "asynchronous";
+    registered_definitions.push_back(software_threading);
+
     retro_core_option_v2_definition aspect_ratio{};
     aspect_ratio.key = "sm2_aspect_ratio";
     aspect_ratio.desc = "Aspect Ratio";
@@ -576,6 +586,14 @@ inline AVTimingMode av_timing_mode()
                    option.value && std::strcmp(option.value, "60hz") == 0
                ? AVTimingMode::Compatibility60Hz
                : AVTimingMode::Native;
+}
+
+inline bool software_renderer_async_enabled()
+{
+    retro_variable option{"sm2_software_renderer_threading", nullptr};
+    return !(option_environment
+             && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+             && option.value && std::strcmp(option.value, "synchronous") == 0);
 }
 
 inline bool rom_crc_verification_enabled()

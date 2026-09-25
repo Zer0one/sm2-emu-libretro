@@ -4,11 +4,10 @@ Il progetto indipendente `Zer0one/sm2-emu-libretro` sviluppa su `main` e usa
 `dmanlfc/sm2-emu` come remote `upstream`. La base iniziale è SM2-Emu 0.9.4,
 commit `8b3a468c5b51387093811cb16b076e6fd9289d66`. Il clone mainstream rimane
 separato, per build e confronti con il codice originale. Il remote è stato
-ricontrollato il 19 settembre 2026: `upstream/main` è
-`af0be801980e40eb1f7eeff7f72ecc2f8ffe1024`, release 0.9.9. Le modifiche
-applicabili al core e approvate fino a questa revisione sono state integrate
-selettivamente; il core dichiara ora la versione 0.9.9. Le esclusioni e gli
-adattamenti Libretro sono riepilogati nel punto 7.
+ricontrollato il 25 settembre 2026: `upstream/main` è
+`5ddf84ae7970a9bce1d0a17b3900d26065de1996`, release 0.9.13. Le modifiche
+applicabili al core sono integrate localmente e il core dichiara la versione
+0.9.13.0. Le esclusioni e gli adattamenti Libretro sono riepilogati nel punto 7.
 
 Obiettivo: un core per RetroArch e Batocera, preservando emulazione, timing,
 audio e controlli. Ogni traguardo richiede una prova eseguibile; una build
@@ -633,11 +632,12 @@ nuovamente un binario serializzabile con
 `savestate = "false"`. Venti cicli per ciascuna board verificano inoltre i
 pattern run-ahead e rewind; Daytona supera la prova anche a 60 Hz.
 
-## 7. Integrazioni derivate dall'upstream 0.9.8/0.9.9
+## 7. Integrazioni derivate dall'upstream 0.9.8–0.9.13
 
 L'analisi è allineata al commit upstream
-`af0be801980e40eb1f7eeff7f72ecc2f8ffe1024` del 19 settembre 2026. Il core
-dichiara 0.9.9 e conserva la provenienza della base iniziale 0.9.4.
+`5ddf84ae7970a9bce1d0a17b3900d26065de1996`, tag 0.9.13 del 26 settembre
+2026 nel fuso dell'autore. Il core dichiara 0.9.13.0 e conserva la
+provenienza della base iniziale 0.9.4.
 
 | Integrazione applicabile | Stato nel core |
 | --- | --- |
@@ -649,10 +649,26 @@ dichiara 0.9.9 e conserva la provenienza della base iniziale 0.9.4.
 | Metadata `games.xml` | Integrati `start_gear`, `drive_protocol`, correzioni `drive_board`, clone Daytona MAXX e aggiornamenti approvati. |
 | Bilanciamento audio e timer INTENA | Integrati tramite `Enhanced Audio Balance` e fix macchina permanente. |
 | Filtri xBR/ScaleFX | Integrati come filtri dei livelli 2D prima della composizione 3D. |
+| Presentazione Software 0.9.10 | Esclusa: corregge la scelta OpenGL/Vulkan nel ciclo SDL; in Libretro la presentazione appartiene al frontend. |
+| Fast path ROM/Work RAM 0.9.11 | Integrato sulle quattro board preservando la protezione locale Daytona MAXX. |
+| Renderer Software asincrono 0.9.11 | Integrato come percorso predefinito del renderer Software, con opzione sincrona, doppio buffer e sincronizzazione per reset e Save State. La selezione automatica dei core efficienti resta interna e opera soltanto sui sistemi Linux big.LITTLE riconosciuti. |
+| Logging atomico inline 0.9.12 | Integrato senza adattamenti funzionali. |
+| `std::bit_cast` e definizioni Windows 0.9.13 | Integrati senza adattamenti funzionali: sostituisce quattro reinterpretazioni basate su `__builtin_memcpy` e neutralizza le macro Windows `min`/`max`; non cambia l'emulazione. |
+| Link Winsock 0.9.13 | Escluso: serve a `core/net.cpp` dello standalone. Il core usa Libretro Netpacket e non apre socket di sistema. |
+| SDL statico, icona/risorsa `.exe` e installazione Windows 0.9.13 | Esclusi: appartengono all'eseguibile standalone; RetroArch possiede finestra, icona, SDL e distribuzione del core. |
+| GUI Lightgun Windows 0.9.13 | Esclusa: descrive Mouse e pulsanti nella UI ImGui dello standalone. Il core espone Lightgun, Mouse e RetroPad tramite le API e le Core Options Libretro già implementate. |
+| CI e documentazione standalone Windows 0.9.13 | Escluse: il progetto possiede già una matrice Libretro separata con Windows x86_64 e packaging del core. |
 
-Tutte le integrazioni applicabili già individuate nelle release upstream
-analizzate sono ora recepite o escluse esplicitamente. L'allineamento upstream
-non è una voce generica della roadmap: quando `upstream/main` avanzerà, ogni modifica
+Correzione locale completata e mantenuta opzionale: la Core Option
+`i960 Round-to-Nearest-Even Fix (Restart Required)`, disabilitata per default,
+può applicare a `roundr`, `roundrl`, `cvtri` e `cvtril` il comportamento
+ties-to-even documentato da Intel. `Disabled` conserva esattamente il percorso
+upstream; il flag resta frontend-neutral nel core i960 e viene impostato
+dall'adattatore soltanto al caricamento del contenuto.
+
+Tutte le integrazioni applicabili fino alla 0.9.13 sono recepite o escluse
+esplicitamente. L'allineamento upstream non è una voce generica della roadmap:
+quando `upstream/main` avanzerà, ogni modifica
 applicabile diventerà una specifica voce di implementazione; le modifiche già
 integrate resteranno nella cronologia e quelle non applicabili saranno indicate
 esplicitamente come escluse.

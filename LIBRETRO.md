@@ -849,6 +849,22 @@ poligoni 3D. Sono quindi distinti dagli shader RetroArch, che ricevono e
 filtrano il frame finale già composto. Faithful conserva il comportamento
 precedente ed è il valore iniziale di entrambe le opzioni.
 
+## Software Renderer Threading
+
+Il renderer Software segue SM2-Emu 0.9.11 e usa per default `Asynchronous`:
+il rasterizzatore lavora su un thread separato mentre la macchina prepara il
+frame successivo. Questo sovrappone il lavoro CPU al costo dichiarato di un
+frame di latenza. Su Linux big.LITTLE il rilevamento upstream assegna
+automaticamente il rasterizzatore ai core efficienti quando ne trova almeno
+due, lasciando i core più veloci all'emulazione.
+
+La Core Option `Software Renderer Threading (Restart Required)` permette di
+selezionare `Synchronous`, che restituisce il frame corrente senza la latenza
+aggiuntiva. Il percorso Libretro usa buffer distinti per il frame in
+elaborazione e quello consegnato al frontend; reset, caricamento degli stati e
+unload attendono sempre il thread prima di modificare o distruggere la macchina.
+Vulkan e OpenGL non sono interessati dall'opzione.
+
 ## Enhanced Audio Balance
 
 La categoria Audio espone un unico interruttore globale `Enhanced Audio

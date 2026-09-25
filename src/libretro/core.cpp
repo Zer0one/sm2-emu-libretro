@@ -19,6 +19,7 @@
 #include "hw/model2b.h"
 #include "hw/model2c.h"
 #include "hw/model2_softrender.h"
+#include "hw/model2_softrender_async.h"
 #include "hw/sound_board.h"
 #include "rom/game_db.h"
 #include "rom/rom_loader.h"
@@ -65,7 +66,9 @@ struct Content {
     libretro::InputRuntime input_runtime;
     std::unique_ptr<hw::Model2MachineBase> machine;
     hw::SoftRenderer renderer;
+    std::unique_ptr<hw::AsyncSoftRenderer> async_renderer;
     std::vector<u32> frame = std::vector<u32>(width * height);
+    std::vector<u32> async_frame = std::vector<u32>(width * height);
     std::vector<s16> audio;
     std::vector<retro_input_descriptor> input_descriptors;
     libretro::GamepadRumble rumble;
@@ -75,6 +78,10 @@ struct Content {
     bool failed = false;
     RendererApi renderer_api = RendererApi::Software;
     bool hardware_frame_valid = false;
+    bool async_frame_ready = false;
+    libretro::CrosshairState async_crosshairs{};
+    libretro::TimingOverlayData async_timing_overlay_data{};
+    double async_fps = 0;
     unsigned scale = 1;
     bool save_ram_initialized = false;
     bool native_nvram_available = false;
@@ -262,6 +269,24 @@ void reset_frontend_after_state_load(Content& c)
     c.hardware_frame_valid = false;
     reset_timing_measurements(c);
     update_aspect_ratio(c);
+}
+
+void finish_software_frame(Content& c, const libretro::CrosshairState& crosshairs,
+                           const libretro::TimingOverlayData& timing, double fps)
+{
+    // Upstream packs R in bits 0..7. Libretro XRGB8888 packs R in 16..23.
+    for (auto& pixel : c.frame)
+        pixel = ((pixel & 0xffu) << 16) | (pixel & 0xff00u) | ((pixel >> 16) & 0xffu);
+    libretro::draw_crosshairs(c.frame, width, height, crosshairs);
+    libretro::draw_timing_overlay_software(c.frame, width, height, timing, fps);
+}
+
+void reset_async_software_renderer(Content& c)
+{
+    if (c.async_renderer) c.async_renderer->forget_machine();
+    c.async_frame_ready = false;
+    std::fill(c.frame.begin(), c.frame.end(), 0);
+    std::fill(c.async_frame.begin(), c.async_frame.end(), 0);
 }
 
 void publish_timing_overlay(Content& c)
@@ -644,7 +669,7 @@ void retro_deinit()
 }
 void retro_get_system_info(retro_system_info* info)
 {
-    if (info) *info = {"SM2-Emu", "0.9.9.4", "zip|7z", true, true};
+    if (info) *info = {"SM2-Emu", "0.9.13.0", "zip|7z", true, true};
 }
 void retro_get_system_av_info(retro_system_av_info* info)
 {
@@ -749,6 +774,11 @@ bool retro_load_game(const retro_game_info* game)
 #if defined(SM2_LIBRETRO_VULKAN) || defined(SM2_LIBRETRO_OPENGL)
         select_renderer(*content);
 #endif
+        if (content->renderer_api == RendererApi::Software
+            && libretro::software_renderer_async_enabled()) {
+            content->async_renderer =
+                std::make_unique<hw::AsyncSoftRenderer>(content->renderer);
+        }
         devices.fill(RETRO_DEVICE_JOYPAD);
         publish_controls();
         if (content->game.has_steering() && !rumble_ready)
@@ -765,7 +795,9 @@ bool retro_load_game(const retro_game_info* game)
         std::snprintf(report, sizeof(report), "Loaded %s: %ux%u, %.9f Hz, %u Hz stereo",
                       content->game.name.c_str(), width, height, content->fps, content->rate);
         message(RETRO_LOG_INFO, report);
-        const char* renderer = "Renderer: Software";
+        const char* renderer = content->async_renderer
+            ? "Renderer: Software (asynchronous, one frame behind)"
+            : "Renderer: Software (synchronous)";
         if (content->renderer_api == RendererApi::Vulkan)
             renderer = "Renderer: Vulkan (awaiting frontend context)";
         else if (content->renderer_api == RendererApi::OpenGL)
@@ -786,6 +818,7 @@ void retro_reset()
 {
     if (!content) return;
     try {
+        reset_async_software_renderer(*content);
         content->rumble.stop();
         content->machine->reset();
         content->machine->sound_board().clear_pending_samples();
@@ -922,17 +955,34 @@ void retro_run()
         {
             if (advance_machine) {
                 content->machine->compose_video();
-                content->renderer.render(*content->machine, content->machine->render_list(), content->frame);
-                // Upstream packs R in bits 0..7. Libretro XRGB8888 packs R in 16..23.
-                for (auto& pixel : content->frame)
-                    pixel = ((pixel & 0xffu) << 16) | (pixel & 0xff00u) | ((pixel >> 16) & 0xffu);
-                libretro::draw_crosshairs(content->frame, width, height,
-                    libretro::crosshair_state(content->game, content->input_runtime,
-                                              libretro::crosshair_mask(content->game),
-                                              libretro::crosshair_style()));
-                libretro::draw_timing_overlay_software(
-                    content->frame, width, height, content->timing_overlay_data,
-                    content->fps);
+                const auto crosshairs = libretro::crosshair_state(
+                    content->game, content->input_runtime,
+                    libretro::crosshair_mask(content->game),
+                    libretro::crosshair_style());
+                if (content->async_renderer && !content->machine->render_test_mode()) {
+                    content->async_renderer->wait();
+                    if (content->async_frame_ready) {
+                        content->frame.swap(content->async_frame);
+                        finish_software_frame(*content, content->async_crosshairs,
+                                              content->async_timing_overlay_data,
+                                              content->async_fps);
+                    }
+                    content->async_crosshairs = crosshairs;
+                    content->async_timing_overlay_data = content->timing_overlay_data;
+                    content->async_fps = content->fps;
+                    content->async_renderer->begin(*content->machine, content->async_frame);
+                    content->async_frame_ready = true;
+                } else {
+                    // Render-test mode must display the current framebuffer bank,
+                    // so it temporarily uses the synchronous path.
+                    if (content->async_renderer) content->async_renderer->wait();
+                    content->async_frame_ready = false;
+                    content->renderer.render(*content->machine,
+                                             content->machine->render_list(),
+                                             content->frame);
+                    finish_software_frame(*content, crosshairs,
+                                          content->timing_overlay_data, content->fps);
+                }
             }
             if (video_cb) {
                 if (!advance_machine && content->can_dupe) video_cb(nullptr, width, height, 0);
@@ -980,6 +1030,7 @@ bool retro_serialize(void* data, size_t size)
         return false;
     }
     try {
+        if (content->async_renderer) content->async_renderer->wait();
         std::vector<u8> state;
         if (!content->machine->save_state(state)
             || state.size() > libretro_state_size - frontend_state_size) {
@@ -1010,6 +1061,7 @@ bool retro_unserialize(const void* data, size_t size)
     if (!content || !data || size == 0)
         return false;
     try {
+        reset_async_software_renderer(*content);
         libretro::InputRuntime input_runtime{};
         double cadence_accumulator = 60.0 - content->native_fps;
         u64 audio_frame_remainder = 0;

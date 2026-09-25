@@ -20,6 +20,7 @@
 add_library(sm2_core STATIC
     core/archive.cpp
     core/config.cpp
+    core/cpu_topology.cpp
     core/log.cpp
 )
 target_include_directories(sm2_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -235,6 +236,7 @@ add_library(sm2_hw STATIC
     hw/save_state_io.cpp
     hw/model2_sound.cpp
     hw/model2_softrender.cpp
+    hw/model2_softrender_async.cpp
     hw/model2_video.cpp
     hw/msm6253.cpp
     hw/sega_315_5338a.cpp

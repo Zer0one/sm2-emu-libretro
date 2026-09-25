@@ -61,7 +61,7 @@ The source is maintained at
 [`Zer0one/sm2-emu-libretro`](https://github.com/Zer0one/sm2-emu-libretro).
 It is an independent Libretro adaptation of
 [`dmanlfc/sm2-emu`](https://github.com/dmanlfc/sm2-emu), currently aligned with
-standalone version 0.9.9. The standalone source history is retained for
+standalone version 0.9.13. The standalone source history is retained for
 attribution and future updates, while the Libretro adapter remains isolated
 under `src/libretro/`.
 
@@ -142,7 +142,7 @@ separately by the maintainers.
   used as the integration baseline;
 - keeps upstream-facing changes small and documented, with the Libretro ABI and
   frontend behavior isolated from machine and CPU code;
-- selectively integrates standalone 0.9.8/0.9.9 changes relevant to the core
+- selectively integrates standalone changes through 0.9.13 that are relevant to the core
   while leaving SDL UI, desktop configuration and packaging changes outside the
   Libretro target;
 - retains `dmanlfc/sm2-emu` as the upstream source reference without claiming a
