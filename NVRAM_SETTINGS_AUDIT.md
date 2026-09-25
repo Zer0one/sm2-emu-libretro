@@ -29,10 +29,10 @@ The implemented catalog is complete after the corrections recorded below:
 | Check | Result |
 | --- | ---: |
 | Selected parent options matching the acquired labels, order and values | 197 / 197 |
-| Clone-specific options matching their acquired menus | 96 / 96 |
-| Total implemented NVRAM Settings accounted for | 293 / 293 |
-| Clones with a dedicated option catalog | 15 / 15 |
-| Clones intentionally using the compatible parent catalog | 33 / 33 |
+| Clone-specific options matching their acquired menus | 102 / 102 |
+| Total implemented NVRAM Settings accounted for | 299 / 299 |
+| Clones with a dedicated option catalog | 16 / 16 |
+| Clones intentionally using the compatible parent catalog | 32 / 32 |
 | Total clone option routing covered | 48 / 48 |
 | Validated dedicated clone templates | 27 |
 | Byte-compatible clones inheriting a parent template | 21 |
@@ -42,14 +42,17 @@ unreviewed Game Setting is exposed.
 
 ## Corrections from the authoritative catalog comparison
 
-The final comparison against `GAME_SETTINGS_CATALOG.md` corrected two Libretro
+The final comparison against `GAME_SETTINGS_CATALOG.md` corrected three Libretro
 integration inconsistencies:
 
 - Motor Raid Deluxe now presents `NETWORK TYPE`, `CABINET ID` and then
   `CABINET TYPE`, matching the acquired Service Menu order;
 - Sega Rally Championship - DX is counted and tested as the dedicated
   four-option catalog it already implements, instead of being routed through
-  the six-option parent catalog.
+  the six-option parent catalog;
+- Manx TT Superbike - DX now uses its dedicated six-option Core Options subset;
+  Cabinet Type, Link Type and the two Revise Mode rows absent from its acquired
+  Service Menu are no longer inherited from the parent catalog.
 
 The same pass corrected three transcription issues in the reference generator:
 
@@ -59,7 +62,7 @@ The same pass corrected three transcription issues in the reference generator:
 - similarly prefixed rows such as `BARRIER` and `BARRIER RESET` are now matched
   by their complete acquisition suffix.
 
-After these corrections, all 293 exposed settings match the authoritative
+After these corrections, all 299 exposed settings match the authoritative
 catalog in label, relative order and accepted values. Remaining default
 differences are limited to the reviewed policies below.
 

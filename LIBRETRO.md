@@ -223,17 +223,17 @@ del circuito in RetroArch macOS con audio e Save RAM validi.
 I tre set Manx TT espongono `Driving: Sequential (Manx TT Superbike)`. `Bank`
 usa lo stick sinistro X con la polarità invertita dichiarata dal gioco; Brake e
 Accelerator usano esclusivamente i trigger analogici L2/R2 e il cambio usa
-L1/R1. Start conserva l'azione combinata `Start / VR`; il D-Pad non espone
-azioni. `Cabinet Type` usa `Twin` come default sia nelle Core Options sia nel
+L1/R1. L'azione combinata `Start / VR` è associata a Start e, come binding
+secondario coerente con VR1, a D-Pad Down. `Cabinet Type` usa `Twin` come default sia nelle Core Options sia nel
 setup NVRAM del primo avvio. Le varianti con e senza Test/Service sono
 disponibili. La ROM parent ha
 raggiunto il controllo iniziale del motion slider con audio e Save RAM validi.
 
 I due set Motor Raid espongono `Driving: Sequential (Motor Raid)`. Mantengono
-Bank, pedali, cambio e `Start / VR` nelle stesse posizioni del foglio e
-aggiungono `Kick` su South e `Punch` su East. Punch/Shift Up e Kick/Shift Down
-raggiungono rispettivamente gli stessi due ingressi arcade, come previsto dal
-cablaggio Motor Raid. La ROM parent ha raggiunto una gara in RetroArch macOS;
+Bank, pedali e `Start / VR` nelle posizioni del foglio. Motor Raid non ha un
+cambio: `Kick` usa South con L1 come binding secondario, mentre `Punch` usa East
+con R1 come binding secondario. Ogni coppia raggiunge lo stesso ingresso arcade.
+La ROM parent ha raggiunto una gara in RetroArch macOS;
 audio e Save RAM sono validi.
 
 Le quattro regolazioni analogiche riprese da Supermodel sono sempre visibili e
@@ -335,14 +335,14 @@ Lightgun e Mouse restano da provare manualmente.
   salvataggi esistenti; le normali scritture del gioco continuano a persistere.
   Eliminando i dati di salvataggio del gioco si rigenera il setup.
   Ventuno cloni con campioni byte-identici possono usare il template parent e
-  altri 27 usano un template dedicato. Tredici di questi applicano le opzioni
+  altri 27 usano un template dedicato. Dodici di questi applicano le opzioni
   del parent; `daytona93`, `daytonas`, `dyndeka2`, `dyndeka2b`,
-  `motoraiddx`, `stcca`, `stccb`, `stcco`, `vf2a`, `vf2o`, `indy500d`,
+  `manxttdx`, `motoraiddx`, `stcca`, `stccb`, `stcco`, `vf2a`, `vf2o`, `indy500d`,
   `vstrikero`, `srallycdx`, `srallycdxa` e `hotdp` hanno cataloghi specifici verificati dal
   rispettivo Service Menu. Tutti i 48 cloni dispongono quindi di un template
   dedicato o di un'eredità parent verificata.
 - Core Option v2 generale `NVRAM Settings`, Disabled per default come nel core
-  Supermodel. Quando è Enabled mostra soltanto le opzioni del parent caricato e
+  Supermodel. Quando è Enabled mostra soltanto le opzioni del gioco caricato e
   applica tutti i valori scelti all'avvio. Non usa `Keep Current`: disabilitando
   l'opzione generale il core lascia invariati i campi NVRAM.
 - Core Option `Gun Input Mode` con gli stessi cinque percorsi di Supermodel:
@@ -357,15 +357,16 @@ Lightgun e Mouse restano da provare manualmente.
   gun e selezione esplicita di P1, P2 o entrambi anche per i giochi posizionali;
   `Crosshair Style` seleziona SM2-Emu (default) o Supermodel, con composizione
   coerente nei percorsi Software, Vulkan e OpenGL.
-- 289 impostazioni operatore verificate per 35 parent e quattordici cloni con menu
+- 299 impostazioni operatore verificate per 35 parent e sedici cloni con menu
   specifico. `daytona93` espone il proprio menu ridotto di quattro voci;
   `daytonas` aggiunge Cabinet=Special e Promote Saturn; i tre cloni STCC usano
   la propria codifica Country. `dyndeka2` e `dyndeka2b` omettono la riga
   informativa HP Password; `motoraiddx` omette Engine Volume=Out of Use e
-  aggiunge Cabinet Type=Deluxe/Twin; `indy500d` omette Engine Volume e Default
+  aggiunge Cabinet Type=Deluxe/Twin; `manxttdx` omette Cabinet Type, Link Type e
+  i due Revise Mode; `indy500d` omette Engine Volume e Default
   View; `vstrikero` omette One Match Mode; `srallycdxa` omette Cabinet Type e
   Link Type; `hotdp` usa il proprio formato a banche da 24 byte ed espone
-  Difficulty, Blood Color, Advertise Sound e Country. Oltre ai quattordici cloni,
+  Difficulty, Blood Color, Advertise Sound e Country. Oltre ai sedici cloni,
   sono coperti `airwlkrs`, `bel`, `dynabb`, `dynabb97`, `dynamcop`, `hotd`, `hpyagu98`, `indy500`,
   `gunblade`, `lastbrnx`, `manxtt`, `motoraid`, `overrev`, `rchase2`, `segawski`,
   `pltkids`, `sgt24h`, `skisuprg`, `skytargt`, `srallyc`, `stcc`, `topskatr`, `von`, `waverunr`,

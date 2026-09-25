@@ -154,15 +154,14 @@ selezione del circuito in RetroArch macOS.
 Il quarto gruppo aggiunge i tre set Manx TT come `Driving: Sequential (Manx TT
 Superbike)`. Il profilo usa Bank sullo stick sinistro X, Brake/Accelerator sui
 trigger analogici, Shift Down/Up su L1/R1 e l'azione combinata `Start / VR` su
-Start; non espone comandi sul D-Pad. La polarità Bank segue il metadato
+Start con binding secondario su D-Pad Down. La polarità Bank segue il metadato
 invertito. La ROM parent ha raggiunto il controllo iniziale del motion slider
 in RetroArch macOS.
 
 Il quinto gruppo aggiunge `motoraid` e `motoraiddx` come `Driving: Sequential
-(Motor Raid)`. Rispetto a Manx TT aggiunge Kick su South e Punch su East;
-queste azioni raggiungono gli stessi due ingressi arcade usati rispettivamente
-da Shift Up e Shift Down, secondo il cablaggio del gioco e le posizioni
-approvate nel foglio. La ROM parent ha raggiunto una gara in RetroArch macOS;
+(Motor Raid)`. Il gioco non ha un cambio: Kick usa South/L1 e Punch usa East/R1,
+con i dorsali come binding secondari sugli stessi due ingressi arcade. Le
+posizioni corrispondono al foglio approvato. La ROM parent ha raggiunto una gara in RetroArch macOS;
 audio e Save RAM sono validi.
 
 ### 3.4 Puntamento e joystick analogico
@@ -679,9 +678,15 @@ secondo il caso e le istruzioni correnti. Il mainstream si aggiorna separatament
 ## Verifiche ancora aperte
 
 Questa sezione raccoglie soltanto attività di verifica. Le implementazioni
-mancanti restano nei rispettivi punti della roadmap. Non rimangono verifiche
-tecniche locali elencate in questa sezione; prove su hardware e periferiche
-diverse estendono la matrice ma non bloccano le qualifiche già concluse.
+mancanti restano nei rispettivi punti della roadmap.
+
+- Ripetere un controllo incrociato completo tra il documento autoritativo
+  `GAME_SETTINGS_CATALOG.md` e l'implementazione delle NVRAM Settings per ogni
+  parent e clone. Confrontare insieme delle opzioni, ordine, descrizioni, valori,
+  default e routing parent/clone; verificare esplicitamente anche che le voci
+  assenti dal Service Menu non vengano ereditate o rese visibili. Il controllo
+  deve includere la selezione del catalogo eseguita dal core, non soltanto la
+  compatibilità del layout o delle scritture NVRAM.
 
 Completate il 20 settembre 2026: la verifica strutturale di menu e opzioni cambia
 set, parent/clone e profilo senza rilevare voci per gioco residue; la regressione
