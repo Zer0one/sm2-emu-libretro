@@ -733,6 +733,8 @@ int main()
     check(has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
                          RETRO_DEVICE_ID_JOYPAD_START, "Start / VR")
               && has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
+                                RETRO_DEVICE_ID_JOYPAD_DOWN, "Start / VR")
+              && has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
                                 RETRO_DEVICE_ID_JOYPAD_L, "Shift Down")
               && has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
                                 RETRO_DEVICE_ID_JOYPAD_R, "Shift Up")
@@ -745,10 +747,8 @@ int main()
                                 RETRO_DEVICE_ID_ANALOG_X, "Bank"),
           "Manx TT descriptions match the approved workbook");
     check(!has_descriptor_id(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
-                             RETRO_DEVICE_ID_JOYPAD_UP)
-              && !has_descriptor_id(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
-                                    RETRO_DEVICE_ID_JOYPAD_DOWN),
-          "Manx TT does not expose unapproved D-Pad commands");
+                             RETRO_DEVICE_ID_JOYPAD_UP),
+          "Manx TT exposes only the approved D-Pad Down Start/VR alias");
     pressed = {(1u << RETRO_DEVICE_ID_JOYPAD_START)
                    | (1u << RETRO_DEVICE_ID_JOYPAD_L)
                    | (1u << RETRO_DEVICE_ID_JOYPAD_R), 0};
@@ -763,6 +763,12 @@ int main()
     check(inputs.analog[0] == 0xff && inputs.analog[1] == 0x80
               && inputs.analog[2] == 0x00,
           "Manx TT preserves throttle, brake and reversed Bank calibration");
+    pressed = {1u << RETRO_DEVICE_ID_JOYPAD_DOWN, 0};
+    axes = {};
+    analog_buttons = {};
+    libretro::poll_input(inputs, *manxtt, devices, runtime, true, state);
+    check(inputs.in0 == 0xbf,
+          "Manx TT D-Pad Down reaches the shared Start/VR hardware input");
     pressed = {1u << RETRO_DEVICE_ID_JOYPAD_R2, 0};
     axes = {};
     analog_buttons = {};
@@ -798,9 +804,9 @@ int main()
               && has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
                                 RETRO_DEVICE_ID_JOYPAD_A, "Punch")
               && has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
-                                RETRO_DEVICE_ID_JOYPAD_L, "Shift Down")
+                                RETRO_DEVICE_ID_JOYPAD_L, "Kick")
               && has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
-                                RETRO_DEVICE_ID_JOYPAD_R, "Shift Up")
+                                RETRO_DEVICE_ID_JOYPAD_R, "Punch")
               && has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
                                 RETRO_DEVICE_ID_JOYPAD_L2, "Brake")
               && has_descriptor(driving_desc, 0, RETRO_DEVICE_JOYPAD, 0,
@@ -821,7 +827,7 @@ int main()
                    | (1u << RETRO_DEVICE_ID_JOYPAD_L), 0};
     libretro::poll_input(inputs, *motoraid, devices, runtime, true, state);
     check(inputs.in1 == 0xcf,
-          "Motor Raid Shift Down/Up reach the same approved arcade commands");
+          "Motor Raid L1/R1 are secondary bindings for Kick/Punch");
     pressed = {1u << RETRO_DEVICE_ID_JOYPAD_R2, 0};
     libretro::poll_input(inputs, *motoraid, devices, runtime, true, state);
     check(inputs.analog[0] == 0x00,

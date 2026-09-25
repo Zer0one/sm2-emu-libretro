@@ -118,8 +118,8 @@ separatamente l'eventuale integrazione dei metadati upstream.
 | Driving: 4-Speed + VR1 + Handbrake | steer/accel/brake + gearbox, famiglia srallyc; Handbrake analogico su IN2 | Sega Rally | 5 |
 | Driving: Sequential + VR2 | steer/accel/brake + shift_buttons; due View | Indy 500, Over Rev, Sega Touring Car | 10 |
 | Driving: Sequential + VR1 | steer/accel/brake + shift_buttons; un View | Super GT 24h | 1 |
-| Driving: Sequential (Manx TT Superbike) | bank/throttle/brake + shift_buttons; Start condiviso con VR | Manx TT | 3 |
-| Driving: Sequential (Motor Raid) | bank/throttle/brake + shift_buttons; azioni specifiche Motor Raid | Motor Raid | 2 |
+| Driving: Sequential (Manx TT Superbike) | bank/throttle/brake + shift_buttons; Start condiviso con VR su Start e D-Pad Down | Manx TT | 3 |
+| Driving: Sequential (Motor Raid) | bank/throttle/brake; Kick su South/L1 e Punch su East/R1 | Motor Raid | 2 |
 | Gun — seriale lightgun | Interfaccia seriale lightgun, coordinate a 10 bit | Virtua Cop 1/2, The House of the Dead | 6 |
 | Gun — posizionale, Shot | Assi gun1/gun2 sul mux analogico; pulsanti secondo il gioco | Gunblade NY, Rail Chase 2 | 3 |
 | Gun — posizionale, Shot + Missile | Stessi assi, gun_missile abilitato | Behind Enemy Lines | 1 |

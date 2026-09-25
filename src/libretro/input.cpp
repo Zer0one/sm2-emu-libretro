@@ -795,6 +795,10 @@ std::vector<retro_input_descriptor> descriptors(
             add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Accelerator");
             continue;
         }
+        if (profile == InputProfile::DrivingSequentialManxTT) {
+            add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN,
+                "Start / VR");
+        }
         if (profile == InputProfile::DrivingSequentialManxTT
             || profile == InputProfile::DrivingSequentialMotorRaid) {
             add(RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
@@ -802,9 +806,12 @@ std::vector<retro_input_descriptor> descriptors(
             if (profile == InputProfile::DrivingSequentialMotorRaid) {
                 add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Kick");
                 add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Punch");
+                add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "Kick");
+                add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "Punch");
+            } else {
+                add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "Shift Down");
+                add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "Shift Up");
             }
-            add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "Shift Down");
-            add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "Shift Up");
             add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Brake");
             add(RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Accelerator");
             continue;
@@ -845,7 +852,11 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
             static constexpr u8 coin_bits[] = {0x01, 0x02, 0x40, 0x80};
             clear(inputs.in0, coin_bits[p]);
         }
-        if (pressed(RETRO_DEVICE_ID_JOYPAD_START)) {
+        const bool start_pressed = pressed(RETRO_DEVICE_ID_JOYPAD_START)
+            || (p == 0
+                && profile == InputProfile::DrivingSequentialManxTT
+                && pressed(RETRO_DEVICE_ID_JOYPAD_DOWN));
+        if (start_pressed) {
             if (profile == InputProfile::BasketballAirWalkers) {
                 clear(inputs.player_starts, static_cast<u8>(1u << p));
             } else {
