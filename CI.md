@@ -28,9 +28,29 @@ intatte entrambe le dichiarazioni finché upstream non ne chiarisce la relazione
 Entrambe le architetture Linux usano runner nativi Ubuntu 24.04 (glibc 2.39) e
 incorporano i runtime GCC/C++: la compatibilità con distribuzioni precedenti
 non è garantita. Il job arm64 verifica inoltre `uname -m = aarch64` prima della
-build. Windows usa MinGW64 con runtime statici. macOS richiede almeno macOS 13.
+build. Linux x86_64 abilita inoltre LTO: la prova nativa descritta sotto ha
+mostrato che è necessario per ottimizzare il percorso emulativo attraverso le
+librerie statiche del progetto. Windows usa MinGW64 con runtime statici. macOS
+richiede almeno macOS 13.
 La GPU richiede Vulkan 1.3 con le feature verificate dal core; su macOS vedere
 `GPU.md` nel repository per la selezione di una versione compatibile di MoltenVK.
+
+## Verifica prestazioni Batocera del 25 settembre 2026
+
+Su Batocera 43.1 e Ryzen 5 3400G, due build Linux x86_64 dello stesso sorgente
+0.9.9.0, entrambe GCC 15.2 e con configurazione identica salvo LTO, hanno
+eseguito la stessa sequenza deterministica di Indy 500 in Vulkan 1x. Dopo il
+warm-up, la build senza LTO ha richiesto 15,21 ms mediani per `machine` e ha
+offerto 62,6 FPS mediani di capacità emulativa. Con LTO i valori sono passati a
+10,44 ms e 90,6 FPS: 31,4% in meno nel percorso emulativo, con correlazione
+temporale 0,99 tra i campioni. Entrambe le esecuzioni hanno mantenuto circa 60
+FPS reali e sono terminate con codice 0.
+
+Una prova precedente GCC 13 contro GCC 15, entrambe senza LTO, aveva mostrato
+un costo normalizzato per clock sostanzialmente invariato; l'aggiornamento del
+solo compilatore non risolve il limite. La build LTO porta il tempo `machine`
+Linux vicino al campione Windows equivalente e costituisce quindi la
+configurazione predefinita del solo artifact Linux x86_64.
 
 I profili completi dei controlli e i Save State Libretro sono implementati.
 Le build CI verificano compilazione e ABI; la matrice Save State con ROM reali è

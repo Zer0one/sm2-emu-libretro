@@ -23,11 +23,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {name: Linux x86_64, os: ubuntu-24.04, shell: bash, artifact: sm2-libretro-linux-x86_64, binary: sm2_libretro.so}
-          - {name: Linux arm64, os: ubuntu-24.04-arm, shell: bash, artifact: sm2-libretro-linux-arm64, binary: sm2_libretro.so}
-          - {name: macOS Apple Silicon, os: macos-15, shell: bash, artifact: sm2-libretro-macos-arm64, binary: sm2_libretro.dylib}
-          - {name: macOS Intel, os: macos-15-intel, shell: bash, artifact: sm2-libretro-macos-x86_64, binary: sm2_libretro.dylib}
-          - {name: Windows x86_64, os: windows-2022, shell: 'msys2 {0}', artifact: sm2-libretro-windows-x86_64, binary: sm2_libretro.dll}
+          - {name: Linux x86_64, os: ubuntu-24.04, shell: bash, artifact: sm2-libretro-linux-x86_64, binary: sm2_libretro.so, lto: ON}
+          - {name: Linux arm64, os: ubuntu-24.04-arm, shell: bash, artifact: sm2-libretro-linux-arm64, binary: sm2_libretro.so, lto: OFF}
+          - {name: macOS Apple Silicon, os: macos-15, shell: bash, artifact: sm2-libretro-macos-arm64, binary: sm2_libretro.dylib, lto: OFF}
+          - {name: macOS Intel, os: macos-15-intel, shell: bash, artifact: sm2-libretro-macos-x86_64, binary: sm2_libretro.dylib, lto: OFF}
+          - {name: Windows x86_64, os: windows-2022, shell: 'msys2 {0}', artifact: sm2-libretro-windows-x86_64, binary: sm2_libretro.dll, lto: OFF}
     defaults:
       run:
         shell: ${{ matrix.shell }}
@@ -72,6 +72,7 @@ jobs:
           fi
           cmake -S . -B build-ci -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
+            -DSM2_LTO=${{ matrix.lto }} \
             -DSM2_BUILD_STANDALONE=OFF -DSM2_BUILD_TESTS=OFF \
             -DSM2_BUILD_LIBRETRO=ON -DSM2_LIBRETRO_VULKAN=ON -DSM2_LIBRETRO_OPENGL=ON \
             -DSM2_BUILD_OPENGL_DESKTOP=OFF \
