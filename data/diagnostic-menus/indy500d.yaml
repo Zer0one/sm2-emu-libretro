@@ -20,12 +20,12 @@ menus:
       - {key: race_mode, label: RACE MODE, position: 2, native_default: NORMAL, documented_values_from: indy500.yaml, offset: 0x18, mirror_offset: 0x44, coding_reference: indy500.yaml}
       - {key: handicap, label: HANDICAP, position: 3, native_default: "ON", documented_values_from: indy500.yaml, selected_for_core: false}
       - {key: advertise_sound, label: ADVERTISE SOUND, position: 4, native_default: "OFF", documented_values_from: indy500.yaml, offset: 0x27, mirror_offset: 0x53, coding_reference: indy500.yaml}
-      - {key: country, label: COUNTRY, position: 5, native_default: JAPAN, core_default: USA, documented_values_from: indy500.yaml, offset: 0x16, mirror_offset: 0x42, coding_reference: indy500.yaml}
+      - {key: country, label: COUNTRY, position: 5, native_default: JAPAN, core_default: EXP, documented_values_from: indy500.yaml, offset: 0x16, mirror_offset: 0x42, coding_reference: indy500.yaml}
       - {key: cabinet_type, label: CABINET TYPE, position: 6, native_default: DELUXE, documented_values_from: indy500.yaml, offset: 0x17, mirror_offset: 0x43, coding_reference: indy500.yaml}
       - {key: network_type, label: NETWORK TYPE, position: 7, native_default: STAND ALONE, documented_values_from: indy500.yaml, offset: 0x28, mirror_offset: 0x54, coding_reference: indy500.yaml}
       - {key: cabinet_id, label: CABINET ID, position: 8, native_default: "1", documented_values_from: indy500.yaml, offset: 0x29, mirror_offset: 0x55, coding_reference: indy500.yaml}
 core_options:
   selected_count: 7
   initial_template: dedicated_native_clone_baseline
-  initial_overrides: {country: usa, network_type: stand_alone}
+  initial_overrides: {country: exp, network_type: stand_alone}
   unknown_internal_fields: preserved_by_core_option_writes

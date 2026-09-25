@@ -32,7 +32,7 @@ menus:
       - {key: damage, label: DAMAGE, position: 11, native_default: NORMAL, coding_reference: schamp.yaml}
       - {key: advertise_sound, label: ADVERTISE SOUND, position: 12, native_default: "ON", coding_reference: schamp.yaml}
       - {key: continue, label: CONTINUE, position: 13, native_default: "ON", coding_reference: schamp.yaml}
-      - {key: country, label: COUNTRY, position: 14, native_default: JAPAN, core_default: USA, coding_reference: schamp.yaml}
+      - {key: country, label: COUNTRY, position: 14, native_default: JAPAN, core_default: EXPORT, coding_reference: schamp.yaml}
       - {key: display_type, label: DISPLAY TYPE, position: 15, native_default: C.R.T., coding_reference: schamp.yaml}
       - {key: vs_finish, label: VS FINISH, position: 16, native_default: "OFF", selected_for_core: false}
     commands: [{label: EXIT, position: 0}]

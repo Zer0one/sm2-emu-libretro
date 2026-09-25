@@ -109,7 +109,7 @@ directly from the base screenshot.
 
 These defaults intentionally differ from a game's native factory value:
 
-- Country/Nation uses USA where available, with Export as fallback;
+- Country/Nation uses Export where available, with USA as fallback;
 - network-related fields use their safe offline or stand-alone value;
 - Daytona USA uses Deluxe cabinet mode;
 - Manx TT uses Twin cabinet mode;

@@ -239,7 +239,7 @@ caricamento o persistenza.
 `vf2a` e `vf2o` riutilizzano le otto opzioni VF2 con cataloghi e campioni
 iniziali dedicati. Il blocco dei parametri a 0x3340 (29 byte), la codifica e il
 CRC-16/CCITT a 0x3302 sono identici al parent; i default nativi dei parametri
-coincidono, salvo Country=USA applicato secondo la regola concordata.
+coincidono, salvo Country=Export applicato secondo la regola concordata.
 Gli header conservano rispettivamente 0x13 e 0x12 a 0x3306. Il campo a 0x3318,
 pur diverso nel campione base, varia durante la partita e non è una firma
 fissa. I controlli automatici coprono ogni valore, CRC, conservazione dei byte
@@ -270,7 +270,7 @@ baseline e sette campioni con una variazione ciascuno. I byte interni estranei
 alle opzioni non vengono sovrascritti usando la mappa parent.
 
 Il template conserva Cabinet Type=Deluxe e gli altri default nativi; il setup
-iniziale applica Country=USA e Network Type=Stand Alone. I test automatici
+iniziale applica Country=Export e Network Type=Stand Alone. I test automatici
 verificano tutti i valori delle sette opzioni, l'integrità e il rifiuto della
 banca parent da 36 byte. Copertura aggiornata: **45/48 cloni**, con 24 template
 dedicati e 21 ereditati. `hotdp` resta escluso perché prototipo; restano da
@@ -296,7 +296,7 @@ Le codifiche e gli offset coincidono con il parent, eccetto Advertise Sound,
 che usa 0x17/0x97 anziché 0x19/0x99. Il formato conserva due banche identiche da
 128 byte; 0x08-0x09 resta il marcatore fisso `0a 00` e non è un CRC variabile.
 Il setup mantiene i default nativi del clone, applicando soltanto la regola
-concordata Country=USA. La precedente lettura di `ONE MATCH MODE: On` ottenuta
+concordata Country=Export. La precedente lettura di `ONE MATCH MODE: On` ottenuta
 applicando la mappa parent era quindi un falso positivo, risolto osservando il
 menu del clone.
 
@@ -314,7 +314,7 @@ gli stessi offset e codici del parent: 0x08, 0x09, 0x0c e 0x0d.
 Il formato del clone è però specifico: EEPROM dichiarata da 0x2c byte e
 CRC-16/CCITT con iniziale 0xffff e risultato invertito sui 0x2a byte da 0x02.
 La backup RAM differisce sostanzialmente dal parent e viene quindi conservata in
-un template dedicato. Il setup applica Country=USA e mantiene i default nativi
+un template dedicato. Il setup applica Country=Export e mantiene i default nativi
 restanti; i byte 0x0a e 0x0b delle voci assenti non vengono modificati.
 
 Due avvii RetroArch reali hanno verificato setup, avvio in gara e persistenza di
@@ -335,7 +335,7 @@ Sono esposte le quattro voci concordate: Game Difficulty, Blood Color,
 Advertise Sound e Country. Life Setting, Gun Blowback e Cabinet Type sono
 documentate ma non diventano Core Options. Il template conserva i default
 nativi del prototipo e il setup automatico applica soltanto la regola generale
-Country=USA. Due avvii RetroArch hanno verificato un set completo di valori e
+Country=Export. Due avvii RetroArch hanno verificato un set completo di valori e
 la successiva persistenza byte-identica con Initial NVRAM Setup e NVRAM Settings
 disabilitati. La copertura della campagna è quindi **48/48 cloni**, con 27
 template dedicati e 21 ereditati.

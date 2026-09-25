@@ -16,5 +16,5 @@ nvram_layout:
 core_options:
   mapping_reference: vf2.yaml
   selected: [difficulty, advertise_sound, continue, drink, country, display_type, ranking_mode, version]
-  defaults: native_clone_defaults_except_country_usa
+  defaults: native_clone_defaults_except_country_export
   initial_template: dedicated_native_clone_baseline

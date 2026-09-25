@@ -266,7 +266,8 @@ Netpacket esterno non fa parte dello stato emulato.
 
 `Automatic Initial NVRAM Setup` è Enabled per default. In assenza sia del `.srm`
 sia di NVRAM native valide, i parent supportati ricevono un campione completo
-validato prima del primo frame; il core vi applica Country/Nation USA o Export e
+validato prima del primo frame; il core vi applica Country/Nation Export, con
+USA come fallback quando Export non è disponibile, e
 i valori offline necessari; il core imposta inoltre Daytona su Cabinet=Deluxe e
 Super GT 24h su I/O Type=C, senza attribuire questo valore al default originale
 del gioco. Il campione

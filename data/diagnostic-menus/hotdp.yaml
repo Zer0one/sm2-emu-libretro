@@ -48,12 +48,12 @@ menus:
       - {key: blood_color, label: BLOOD COLOR, position: 3, values: [RED, GREEN], default: RED, core_option: true, nvram: {offset: 0x1e, mirror_offset: 0x36, values: [0, 1]}}
       - {key: gun_blowback, label: GUN BLOWBACK, position: 4, values: ["ON", "OFF"], default: "ON", core_option: false, nvram: {offset: 0x1f, mirror_offset: 0x37, values: [1, 0]}}
       - {key: advertise_sound, label: ADVERTISE SOUND, position: 5, values: ["ON", "OFF"], default: "ON", core_option: true, nvram: {offset: 0x1c, mirror_offset: 0x34, values: [1, 0]}}
-      - {key: country, label: COUNTRY, position: 6, values: [JAPAN, USA, EXPORT], default: JAPAN, core_default: USA, core_option: true, nvram: {offset: 0x19, mirror_offset: 0x31, values: [0, 1, 2]}}
+      - {key: country, label: COUNTRY, position: 6, values: [JAPAN, USA, EXPORT], default: JAPAN, core_default: EXPORT, core_option: true, nvram: {offset: 0x19, mirror_offset: 0x31, values: [0, 1, 2]}}
       - {key: cabinet_type, label: CABINET TYPE, position: 7, values: [STANDARD, DELUXE], default: STANDARD, core_option: false, nvram: {offset: 0x1a, mirror_offset: 0x32, values: [0, 1]}}
     commands: [{label: EXIT, position: 0}]
 
 notes:
-  - The prototype keeps its native defaults; only the established core Country rule changes JAPAN to USA during automatic setup.
+  - The prototype keeps its native defaults; only the established core Country rule changes JAPAN to EXPORT during automatic setup.
   - BLOOD COLOR alternates between RED and GREEN. Two additional captures confirmed that further changes wrap to those same values.
   - LIFE SETTING, GUN BLOWBACK and CABINET TYPE are documented but intentionally not exposed as Core Options.
   - Byte 0x0c and its mirror are updated by the title during startup and are not operator settings.

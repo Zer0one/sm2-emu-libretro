@@ -38,12 +38,12 @@ menus:
     parent_differences: [CABINET TYPE is absent, LINK TYPE is absent]
     options:
       - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, values: ["ON", "OFF"], default: "ON", core_option: true, nvram: {offset: 0x08, values: [1, 0]}}
-      - {key: country, label: COUNTRY, position: 2, values: [JPN, USA, EXPORT], default: JPN, core_default: USA, core_option: true, nvram: {offset: 0x09, values: [0, 1, 2]}}
+      - {key: country, label: COUNTRY, position: 2, values: [JPN, USA, EXPORT], default: JPN, core_default: EXPORT, core_option: true, nvram: {offset: 0x09, values: [0, 1, 2]}}
       - {key: game_difficulty, label: GAME DIFFICULTY, position: 3, values: [NORMAL, EASY, HARD, HARDEST], default: NORMAL, core_option: true, nvram: {offset: 0x0c, values: [0, 1, 2, 3]}}
       - {key: game_mode, label: GAME MODE, position: 4, values: [NORMAL, SHORT, LONG, LONGEST], default: NORMAL, core_option: true, nvram: {offset: 0x0d, values: [0, 1, 2, 3]}}
     commands: [{label: EXIT, position: 0}]
 
 notes:
-  - The clone keeps its native defaults; only the established core Country rule changes JPN to USA during automatic setup.
+  - The clone keeps its native defaults; only the established core Country rule changes JPN to EXPORT during automatic setup.
   - Native bytes 0x0a and 0x0b are preserved because the corresponding Cabinet Type and Link Type rows are absent.
   - Backup RAM differs substantially from the parent and is retained through a dedicated initial template.

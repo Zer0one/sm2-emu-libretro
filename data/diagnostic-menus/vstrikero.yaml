@@ -44,7 +44,7 @@ menus:
     parent_difference: ONE MATCH MODE is absent
     options:
       - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, values: ["ON", "OFF"], default: "ON", core_option: true, nvram: {offset: 0x17, mirror_offset: 0x97, values: [0, 1]}}
-      - {key: country, label: COUNTRY, position: 2, values: [JPN, EXP, USA], default: JPN, core_default: USA, core_option: true, nvram: {offset: 0x1b, mirror_offset: 0x9b, values: [1, 2, 0]}}
+      - {key: country, label: COUNTRY, position: 2, values: [JPN, EXP, USA], default: JPN, core_default: EXP, core_option: true, nvram: {offset: 0x1b, mirror_offset: 0x9b, values: [1, 2, 0]}}
       - {key: monitor, label: MONITOR, position: 3, values: [CRT, PROJECTER], default: CRT, core_option: true, nvram: {offset: 0x1a, mirror_offset: 0x9a, values: [1, 0]}}
       - {key: difficulty, label: DIFFICULTY, position: 4, values: [NORMAL, HARD, HARDEST, EASY], default: NORMAL, core_option: true, nvram: {offset: 0x20, mirror_offset: 0xa0, values: [1, 2, 3, 0]}}
       - {key: time_set, label: TIME SET, position: 5, default: "2:00", core_option: false, nvram: {offset: 0x21, native_value: 2}}
@@ -56,6 +56,6 @@ menus:
     commands: [{label: EXIT, position: 0}]
 
 notes:
-  - The clone keeps its native defaults; only the established core Country rule changes JPN to USA during automatic setup.
+  - The clone keeps its native defaults; only the established core Country rule changes JPN to EXP during automatic setup.
   - TIME SET remains native and is intentionally not exposed as a Core Option.
   - Bytes changed by the service menu outside the selected fields are runtime bookkeeping and are not patched by the core.

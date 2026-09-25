@@ -140,8 +140,8 @@ def expected_default(game: str, option: dict[str, object], native: str) -> str:
         return overrides[(game, suffix)]
     if suffix in {"country", "nation"}:
         return (
-            next((label for label in labels if normalized(label) == "USA"), None)
-            or next((label for label in labels if normalized(label) == "EXPORT"), native)
+            next((label for label in labels if normalized(label) == "EXPORT"), None)
+            or next((label for label in labels if normalized(label) == "USA"), native)
         )
     if "link" in suffix or "network" in suffix:
         offline = {"SINGLE", "NOT LINK", "NOTLINK", "STAND ALONE"}

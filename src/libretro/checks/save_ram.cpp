@@ -487,6 +487,21 @@ int main()
                 [&](const auto& value) { return std::string_view(value.key) == option.default_value; });
             expect(default_value != option.values + option.value_count,
                    "every NVRAM option default belongs to its value list");
+            const std::string_view suffix = option.suffix;
+            if (suffix == "country" || suffix == "nation") {
+                const auto export_value = std::find_if(
+                    option.values, option.values + option.value_count,
+                    [](const auto& value) {
+                        const std::string_view key = value.key;
+                        return key == "export" || key == "exp";
+                    });
+                const std::string_view expected = export_value != option.values + option.value_count
+                    ? std::string_view(export_value->key)
+                    : std::string_view("usa");
+                expect(std::string_view(option.default_value) == expected
+                           || (expected == "usa" && std::string_view(option.default_value) == "u_s_a"),
+                       "Country/Nation prefers Export and falls back to USA");
+            }
         }
         expect(libretro::nvram::options_for_game("airwlkrs").size() == 4,
                "Air Walkers exposes the reviewed option set");
@@ -907,7 +922,7 @@ int main()
     expect(vf2_selections.size() == 8, "VF2 exposes the reviewed option set");
     expect(libretro::nvram::apply("vf2", backup, eeprom, vf2_selections) ==
            libretro::nvram::ApplyResult::Changed, "VF2 reviewed values apply to a valid layout");
-    expect((backup[0x3350] & 0x03) == 1, "VF2 defaults to USA");
+    expect((backup[0x3350] & 0x03) == 1, "VF2 applies the selected USA value");
     expect((backup[0x3351] & 0x08) == 0, "VF2 Country and Drink remain independent");
     expect((backup[0x3342] & 0x03) == 3 && (backup[0x334f] & 0x1f) == 13 &&
            (backup[0x3352] & 0x30) == 0 && (backup[0x3354] & 0x7c) == 0x20,
@@ -949,7 +964,7 @@ int main()
                libretro::nvram::ApplyResult::Changed, "Daytona defaults apply to a valid layout");
         expect(settings_backup[0x0b] == 0, "Daytona defaults to SINGLE for offline boot");
         expect(settings_backup[0x1a] == 0, "Daytona defaults to DELUXE cabinet");
-        expect(settings_backup[0x1b] == 0, "Daytona defaults to USA");
+        expect(settings_backup[0x1b] == 2, "Daytona defaults to Export");
         expect(std::equal(settings_backup.begin(), settings_backup.begin() + 0x80,
                           settings_backup.begin() + 0x80), "Daytona settings mirror is synchronized");
         expect(static_cast<u16>(settings_backup[8] | (settings_backup[9] << 8)) ==
@@ -969,7 +984,7 @@ int main()
             selections.emplace_back(option.default_value);
         expect(libretro::nvram::apply("doa", settings_backup, settings_eeprom, selections) ==
                libretro::nvram::ApplyResult::Changed, "DOA defaults apply to a valid EEPROM layout");
-        expect(settings_eeprom[0x1e] == 1, "DOA Nation defaults to USA");
+        expect(settings_eeprom[0x1e] == 2, "DOA Nation defaults to Export");
         expect(settings_eeprom[0x08] == static_cast<u8>(std::accumulate(
                    settings_eeprom.begin() + 0x09, settings_eeprom.begin() + 0x2c, 0u)),
                "DOA additive checksum is regenerated");
@@ -1093,15 +1108,15 @@ int main()
         expect(libretro::nvram::apply("gunblade", settings_backup, settings_eeprom,
                                      selections) == libretro::nvram::ApplyResult::Changed,
                "Gunblade NY defaults apply to a valid native layout");
-        expect(settings_eeprom[0x14] == 1 && settings_eeprom[0x15] == 1 &&
+        expect(settings_eeprom[0x14] == 1 && settings_eeprom[0x15] == 2 &&
                settings_eeprom[0x19] == 3 && settings_eeprom[0x17] == 3 &&
                settings_eeprom[0x1e] == 0,
                "Gunblade NY approved defaults are stored");
         expect(static_cast<u16>(settings_eeprom[0x08] |
-                                (settings_eeprom[0x09] << 8)) == 0xef58,
+                                (settings_eeprom[0x09] << 8)) == 0x4f73,
                "Gunblade NY known EEPROM integrity word is regenerated");
         expect(gunblade_checksum(std::span<const u8>(settings_eeprom).subspan(
-                   0x10, 0x4a)) == 0xef58,
+                   0x10, 0x4a)) == 0x4f73,
                "Gunblade NY regenerated integrity word validates independently");
         expect(libretro::nvram::apply("gunblade", settings_backup, settings_eeprom,
                                      selections) == libretro::nvram::ApplyResult::Unchanged,
@@ -1135,7 +1150,7 @@ int main()
         expect(libretro::nvram::apply("bel", settings_backup, settings_eeprom,
                                      selections) == libretro::nvram::ApplyResult::Changed,
                "Behind Enemy Lines defaults apply to a valid native layout");
-        expect(settings_eeprom[0x15] == 1 && settings_eeprom[0x13] == 1 &&
+        expect(settings_eeprom[0x15] == 2 && settings_eeprom[0x13] == 1 &&
                settings_eeprom[0x22] == 5,
                "Behind Enemy Lines approved defaults are stored");
         expect(std::equal(settings_eeprom.begin(), settings_eeprom.begin() + 0x40,

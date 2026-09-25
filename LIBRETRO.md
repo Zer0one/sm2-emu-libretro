@@ -373,8 +373,8 @@ Lightgun e Mouse restano da provare manualmente.
   `zerogun` e `zeroguna`. I valori e le patch specifiche restano in una
   tabella separata dal motore generico, così gli aggiornamenti upstream non
   richiedono modifiche alle macchine emulate.
-- Country/Nation usa USA come default quando disponibile e prevede Export come
-  fallback per i giochi futuri che non espongono USA. Daytona usa inoltre
+- Country/Nation usa Export come default quando disponibile e prevede USA come
+  fallback per i giochi che non espongono Export. Daytona usa inoltre
   `SINGLE` come Link ID predefinito, evitando l'attesa di un cabinet collegato.
   In VF2 Country e Drink sono indipendenti, anche se il Service Menu originale
   modifica Drink durante alcune selezioni di Country.

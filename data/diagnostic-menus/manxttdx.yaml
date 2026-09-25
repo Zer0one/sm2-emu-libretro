@@ -20,7 +20,7 @@ menus:
     note: The acquired Service Menu omits Cabinet Type, Link Type and both Revise Mode rows.
     options:
       - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, native_default: "ON", coding_reference: manxtt.yaml}
-      - {key: country, label: COUNTRY, position: 2, native_default: JAPAN, core_default: USA, coding_reference: manxtt.yaml}
+      - {key: country, label: COUNTRY, position: 2, native_default: JAPAN, core_default: EXPORT, coding_reference: manxtt.yaml}
       - {key: bike_color, label: BIKE COLOR (No.), position: 3, native_default: RED (No.1), coding_reference: manxtt.yaml}
       - {key: race_mode, label: RACE MODE, position: 4, native_default: RACE, coding_reference: manxtt.yaml}
       - {key: laxey_number_of_lap, label: LAXEY NUMBER OF LAP, position: 5, native_default: 2, selected_for_core: false}
