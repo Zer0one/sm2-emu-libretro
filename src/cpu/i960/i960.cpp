@@ -472,7 +472,11 @@ double I960::round_to_int(double val)
 	// apply rounding mode
 	switch ((m_AC >> 30) & 3)
 	{
-	case 0: return round(val);
+	case 0:
+		// The i960 defines mode 00 as round to nearest with ties to even.
+		// std::round() instead resolves exact halves away from zero and is
+		// retained as the upstream-compatible default.
+		return m_round_nearest_even ? val - std::remainder(val, 1.0) : std::round(val);
 	case 1: return floor(val);
 	case 2: return ceil(val);
 	default: return trunc(val);

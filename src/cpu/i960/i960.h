@@ -115,6 +115,10 @@ public:
     void set_halted(bool halted) { m_halted = halted; }
     [[nodiscard]] bool halted() const { return m_halted; }
 
+    /// Select Intel's documented ties-to-even result for rounding mode 00.
+    /// Disabled preserves the current upstream SM2-Emu/MAME behaviour.
+    void set_round_nearest_even(bool enabled) { m_round_nearest_even = enabled; }
+
     /// True once a Fault has been caught. The core will not execute further.
     [[nodiscard]] bool faulted() const { return m_faulted; }
     [[nodiscard]] const std::string& fault_message() const { return m_fault_message; }
@@ -170,6 +174,7 @@ private:
     bool        m_stalled = false;
     bool        m_halted  = false;
     bool        m_faulted = false;
+    bool        m_round_nearest_even = false;
     std::string m_fault_message;
 
     Bus* m_bus = nullptr;

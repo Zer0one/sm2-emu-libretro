@@ -45,6 +45,12 @@ destinata esclusivamente alla diagnostica: ROM errate, modificate o
 incompatibili possono produrre errori di emulazione, crash o dati di
 salvataggio corrotti.
 
+La Core Option System `i960 Round-to-Nearest-Even Fix (Restart Required)` è
+disabilitata per default e conserva quindi il comportamento upstream. Quando
+abilitata applica alle istruzioni `roundr`, `roundrl`, `cvtri` e `cvtril` il
+round-to-nearest con exact half verso il vicino pari documentato da Intel.
+L'opzione viene letta al caricamento del contenuto.
+
 Nell'installazione macOS di sviluppo usata per questo progetto, la copia
 autorevole del database è:
 

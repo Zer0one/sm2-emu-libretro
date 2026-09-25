@@ -157,7 +157,7 @@ inline void build_option_definitions()
 {
     if (!registered_definitions.empty()) return;
     const auto all = nvram::all_options();
-    registered_definitions.reserve(all.size() + 30);
+    registered_definitions.reserve(all.size() + 31);
 
     retro_core_option_v2_definition rom_crc{};
     rom_crc.key = "sm2_rom_crc_verification";
@@ -168,6 +168,16 @@ inline void build_option_definitions()
     rom_crc.values[1] = {"disabled", "Disabled"};
     rom_crc.default_value = "enabled";
     registered_definitions.push_back(rom_crc);
+
+    retro_core_option_v2_definition i960_rounding{};
+    i960_rounding.key = "sm2_i960_round_nearest_even";
+    i960_rounding.desc = "i960 Round-to-Nearest-Even Fix (Restart Required)";
+    i960_rounding.info = "Use the Intel-documented round-to-nearest-even behaviour for i960 roundr, roundrl, cvtri and cvtril in rounding mode 00. Enabled corrects exact half values; Disabled preserves the current upstream SM2-Emu/MAME behaviour, which rounds exact halves away from zero. Reload content after changing this option.";
+    i960_rounding.category_key = "system";
+    i960_rounding.values[0] = {"disabled", "Disabled"};
+    i960_rounding.values[1] = {"enabled", "Enabled"};
+    i960_rounding.default_value = "disabled";
+    registered_definitions.push_back(i960_rounding);
 
     retro_core_option_v2_definition initial_nvram{};
     initial_nvram.key = "sm2_initial_nvram_setup";
@@ -574,6 +584,13 @@ inline bool rom_crc_verification_enabled()
     return !(option_environment
              && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
              && option.value && std::strcmp(option.value, "disabled") == 0);
+}
+
+inline bool i960_round_nearest_even_enabled()
+{
+    retro_variable option{"sm2_i960_round_nearest_even", nullptr};
+    return option_environment && option_environment(RETRO_ENVIRONMENT_GET_VARIABLE, &option)
+           && option.value && std::strcmp(option.value, "enabled") == 0;
 }
 
 inline AspectRatioMode aspect_ratio_mode()

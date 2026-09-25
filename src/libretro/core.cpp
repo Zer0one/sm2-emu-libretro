@@ -691,6 +691,8 @@ bool retro_load_game(const retro_game_info* game)
         next->game = loaded->game;
         next->machine = hw::create_machine(next->game, std::move(loaded->roms));
         if (!next->machine) throw std::runtime_error("Machine initialization failed");
+        next->machine->set_i960_round_nearest_even(
+            libretro::i960_round_nearest_even_enabled());
         next->machine->sound_board().set_audio_balance_enabled(
             libretro::audio_balance_enabled());
         next->machine->sound_board().set_music_volume_percent(

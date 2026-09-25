@@ -134,6 +134,7 @@ int main()
     const auto* gamepad_rumble = find_definition("sm2_gamepad_rumble");
     const auto* audio_balance = find_definition("sm2_audio_balance");
     const auto* music_volume = find_definition("sm2_music_volume");
+    const auto* i960_rounding = find_definition("sm2_i960_round_nearest_even");
     expect(sfight_automatic && std::string_view(sfight_automatic->default_value) == "off",
            "Sonic the Fighters preserves its native Automatic Off default");
     const auto* crosshairs = find_definition("sm2_crosshairs");
@@ -188,6 +189,23 @@ int main()
                && std::string_view(gamepad_rumble->desc) == "Gamepad Rumble"
                && std::string_view(gamepad_rumble->default_value) == "enabled",
            "Gamepad rumble is enabled by default");
+    expect(i960_rounding
+               && std::string_view(i960_rounding->desc)
+                    == "i960 Round-to-Nearest-Even Fix (Restart Required)"
+               && std::string_view(i960_rounding->default_value) == "disabled"
+               && std::string_view(i960_rounding->values[0].label) == "Disabled"
+               && std::string_view(i960_rounding->values[1].label) == "Enabled"
+               && std::string_view(i960_rounding->category_key) == "system",
+           "i960 rounding fix is optional and disabled by default");
+    expect(!libretro::i960_round_nearest_even_enabled(),
+           "i960 rounding fix defaults to disabled when no value is supplied");
+    option_values["sm2_i960_round_nearest_even"] = "enabled";
+    expect(libretro::i960_round_nearest_even_enabled(),
+           "i960 rounding fix reads the enabled value");
+    option_values["sm2_i960_round_nearest_even"] = "disabled";
+    expect(!libretro::i960_round_nearest_even_enabled(),
+           "i960 rounding fix reads the disabled value");
+    option_values.erase("sm2_i960_round_nearest_even");
     const auto* automatic_start_gear = find_definition("sm2_automatic_start_gear");
     expect(automatic_start_gear
                && std::string_view(automatic_start_gear->desc)

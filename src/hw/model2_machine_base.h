@@ -289,6 +289,7 @@ public:
 
     // -- main CPU status, for the boot-test report ------------------------
 
+    virtual void set_i960_round_nearest_even(bool enabled) = 0;
     [[nodiscard]] virtual CpuStatus main_cpu_status() const = 0;
 
     // -- video, for the renderer and the debug dumps ------------------------

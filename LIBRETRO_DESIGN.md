@@ -81,6 +81,15 @@ neutrale `SoundBoard::set_audio_balance_enabled()` consente all'adattatore di
 ripristinare unity gain senza introdurre dipendenze Libretro nell'hardware.
 L'opzione globale non duplica la tabella e si applica a tutte le schede SCSP.
 
+Il core i960 può correggere il rounding mode `00` secondo il manuale Intel:
+`roundr`, `roundrl`, `cvtri` e `cvtril` arrotondano al più vicino con gli exact
+half verso il vicino pari. La `round()` ereditata da MAME arrotonda invece gli
+exact half lontano da zero. La Core Option globale è disabilitata per default,
+così standalone, headless e Libretro conservano il comportamento upstream finché
+il frontend non abilita esplicitamente il fix al caricamento. La scelta resta
+isolata in `I960::round_to_int()` e va sostituita con l'eventuale soluzione
+upstream quando MAME o SM2-Emu la integreranno.
+
 I metadata di guida sono allineati alle aggiunte upstream fino alla 0.9.9:
 `start_gear=4` consegna Daytona e i suoi cloni alla partenza lanciata in quarta
 quando la Core Option globale `Automatic Start Gear` è abilitata; disabilitandola

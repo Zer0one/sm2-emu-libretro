@@ -112,6 +112,11 @@ public:
     [[nodiscard]] cpu::i960::I960& cpu() { return m_cpu; }
     [[nodiscard]] const cpu::i960::I960& cpu() const { return m_cpu; }
 
+    void set_i960_round_nearest_even(bool enabled) override
+    {
+        m_cpu.set_round_nearest_even(enabled);
+    }
+
     /// A type-erased snapshot of the i960's state, for hw::Model2MachineBase.
     /// The concrete accessor above stays available for code (the boot-test
     /// report, the debug dumps) that already depends on the i960 specifically.

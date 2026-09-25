@@ -191,6 +191,11 @@ public:
     [[nodiscard]] Inputs& inputs() override { return m_inputs; }
     [[nodiscard]] const Inputs& inputs() const override { return m_inputs; }
 
+    void set_i960_round_nearest_even(bool enabled) override
+    {
+        m_cpu.set_round_nearest_even(enabled);
+    }
+
     [[nodiscard]] CpuStatus main_cpu_status() const override
     {
         CpuStatus status;
