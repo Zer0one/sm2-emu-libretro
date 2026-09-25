@@ -29,16 +29,17 @@ The implemented catalog is complete after the corrections recorded below:
 | Check | Result |
 | --- | ---: |
 | Selected parent options matching the acquired labels, order and values | 197 / 197 |
-| Clone-specific options matching their acquired menus | 102 / 102 |
-| Total implemented NVRAM Settings accounted for | 299 / 299 |
-| Clones with a dedicated option catalog | 16 / 16 |
-| Clones intentionally using the compatible parent catalog | 32 / 32 |
+| Clone-specific options matching their acquired menus | 114 / 114 |
+| Total implemented NVRAM Settings accounted for | 311 / 311 |
+| Clones with a dedicated option catalog | 17 / 17 |
+| Clones intentionally using the compatible parent catalog | 31 / 31 |
 | Total clone option routing covered | 48 / 48 |
 | Validated dedicated clone templates | 27 |
 | Byte-compatible clones inheriting a parent template | 21 |
 
 No acquired Game Setting selected for RetroArch is missing, and no extra
-unreviewed Game Setting is exposed.
+unreviewed Game Setting is exposed. The repeatable audit covers all 84 sets in
+`games.xml`, including the catalog that the core resolves for every clone.
 
 ## Corrections from the authoritative catalog comparison
 
@@ -53,6 +54,14 @@ integration inconsistencies:
 - Manx TT Superbike - DX now uses its dedicated six-option Core Options subset;
   Cabinet Type, Link Type and the two Revise Mode rows absent from its acquired
   Service Menu are no longer inherited from the parent catalog.
+- Sonic the Fighters now uses a dedicated option catalog. Its native
+  `Automatic = Off` default is therefore preserved instead of inheriting Sonic
+  Championship's `On` default.
+
+Super GT 24h's visible `Link Max = Not Link` is not a selectable field value:
+the row becomes editable only when Link Type is `Car No1 Master`, where its
+selectable range is 2, 3 or 4. The Core Option therefore correctly defaults to
+2 while `Link Type = Not Link` keeps networking disabled.
 
 The same pass corrected three transcription issues in the reference generator:
 
@@ -62,7 +71,7 @@ The same pass corrected three transcription issues in the reference generator:
 - similarly prefixed rows such as `BARRIER` and `BARRIER RESET` are now matched
   by their complete acquisition suffix.
 
-After these corrections, all 299 exposed settings match the authoritative
+After these corrections, all 311 exposed settings match the authoritative
 catalog in label, relative order and accepted values. Remaining default
 differences are limited to the reviewed policies below.
 
@@ -111,15 +120,15 @@ defaults.
 
 ## Verification
 
-`sm2-libretro-save-ram-checks` now verifies:
+`sm2-libretro-save-ram-checks` and `scripts/audit-nvram-core-catalog.py` now verify:
 
-- all 293 catalog entries and their unique keys;
+- all 311 catalog entries and their unique keys;
 - ordinary Core Option defaults against each native NVRAM template;
 - the deliberate policy exceptions listed above;
-- all 15 clone-specific catalogs;
-- all 33 clone-to-parent catalog mappings;
+- all 17 clone-specific catalogs;
+- all 31 clone-to-parent catalog mappings;
 - all 27 dedicated clone templates and all supported values;
-- all 51 diagnostic YAML files against the screenshot-derived visible rows,
+- all 53 diagnostic YAML files against the screenshot-derived visible rows,
   order, declared defaults and acquired values;
 - integrity and persistence through the Libretro save container.
 

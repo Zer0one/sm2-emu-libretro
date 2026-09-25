@@ -124,6 +124,7 @@ int main()
     const auto* difficulty = find_definition("sm2_nvram_daytona_difficulty");
     const auto* cabinet = find_definition("sm2_nvram_daytona_cabinet");
     const auto* manxtt_cabinet = find_definition("sm2_nvram_manxtt_cabinet_type");
+    const auto* sfight_automatic = find_definition("sm2_nvram_sfight_automatic");
     const auto* stcc_cabinet = find_definition("sm2_nvram_stcc_cabinet_type");
     const auto* sgt24h_io_type = find_definition("sm2_nvram_sgt24h_io_type");
     const auto* steering_response = find_definition("sm2_steering_response");
@@ -133,6 +134,8 @@ int main()
     const auto* gamepad_rumble = find_definition("sm2_gamepad_rumble");
     const auto* audio_balance = find_definition("sm2_audio_balance");
     const auto* music_volume = find_definition("sm2_music_volume");
+    expect(sfight_automatic && std::string_view(sfight_automatic->default_value) == "off",
+           "Sonic the Fighters preserves its native Automatic Off default");
     const auto* crosshairs = find_definition("sm2_crosshairs");
     const auto* mouse_edge_reload =
         find_definition("sm2_mouse_edge_offscreen_reload");
@@ -476,7 +479,7 @@ int main()
     {
         const auto options = libretro::nvram::all_options();
         std::set<std::string> keys;
-        expect(options.size() == 299, "reviewed NVRAM option catalog has 299 entries");
+        expect(options.size() == 311, "reviewed NVRAM option catalog has 311 entries");
         for (const auto& option : options) {
             const std::string key = std::string(option.game) + ":" + option.suffix;
             expect(keys.insert(key).second, "NVRAM option keys are unique");
@@ -499,6 +502,8 @@ int main()
                "Hanguk Pro Yagu 98 exposes the reviewed option set");
         expect(libretro::nvram::options_for_game("pltkids").size() == 3,
                "Pilot Kids exposes the reviewed option set");
+        expect(libretro::nvram::options_for_game("sfight").size() == 12,
+               "Sonic the Fighters exposes its dedicated reviewed option set");
         expect(libretro::nvram::options_for_game("daytona93").size() == 4,
                "Daytona USA '93 exposes its reduced Game System menu");
         expect(libretro::nvram::options_for_game("daytonas").size() == 9,
@@ -546,7 +551,7 @@ int main()
 
         std::set<std::string> games;
         for (const auto& option : options) games.insert(option.game);
-        expect(games.size() == 51, "initial NVRAM catalog covers 51 reviewed sets");
+        expect(games.size() == 52, "initial NVRAM catalog covers 52 reviewed sets");
         const std::set<std::pair<std::string, std::string>> offline = {
             {"daytona", "link_id"}, {"daytonas", "link_id"},
             {"manxtt", "link_type"}, {"motoraiddx", "network_type"}, {"indy500d", "network_type"},
@@ -650,35 +655,43 @@ int main()
             {"vonj", "von"}, {"vonr", "von"}, {"vonu", "von"},
             {"zerogunaj", "zeroguna"}, {"zerogunj", "zerogun"},
             {"daytonase", "daytona"}, {"indy500to", "indy500"},
-            {"manxttc", "manxtt"}, {"sfight", "schamp"},
+            {"manxttc", "manxtt"},
             {"doaa", "doa"},
             {"doaab", "doa"}, {"doaae", "doa"}, {"doab", "doa"},
             {"dynamcopb", "dynamcop"}, {"dynamcopc", "dynamcop"},
             {"vf2b", "vf2"},
         };
-        expect(std::size(parent_catalog_clones) == 32,
-               "32 clone Service Menus reuse the reviewed parent catalog");
+        expect(std::size(parent_catalog_clones) == 31,
+               "31 clone Service Menus reuse the reviewed parent catalog");
         for (const auto& [clone, parent] : parent_catalog_clones) {
             expect_game(libretro::nvram::options_for_game(clone).empty(), clone,
                         "parent-compatible clone does not shadow the parent catalog");
             expect_game(!libretro::nvram::options_for_game(parent).empty(), clone,
                         "parent-compatible clone resolves to a reviewed parent catalog");
+            expect_game(libretro::nvram::catalog_for_game(clone, parent) == parent, clone,
+                        "the core selects the reviewed parent catalog");
         }
 
         static constexpr std::string_view clone_specific_catalogs[] = {
             "daytona93", "daytonas", "dyndeka2", "dyndeka2b", "hotdp",
-            "indy500d", "manxttdx", "motoraiddx", "srallycdx", "srallycdxa", "stcca", "stccb",
-            "stcco", "vf2a", "vf2o", "vstrikero",
+            "indy500d", "manxttdx", "motoraiddx", "sfight", "srallycdx", "srallycdxa",
+            "stcca", "stccb", "stcco", "vf2a", "vf2o", "vstrikero",
         };
-        expect(std::size(clone_specific_catalogs) == 16,
-               "16 clone Service Menus use a reviewed clone-specific catalog");
+        expect(std::size(clone_specific_catalogs) == 17,
+               "17 clone Service Menus use a reviewed clone-specific catalog");
         for (const auto clone : clone_specific_catalogs)
+        {
             expect_game(!libretro::nvram::options_for_game(clone).empty(), clone,
                         "clone-specific catalog is available");
+            expect_game(libretro::nvram::catalog_for_game(clone, "") == clone, clone,
+                        "the core selects the reviewed clone-specific catalog");
+        }
+        expect(libretro::nvram::catalog_for_game("rascot2", "").empty(),
+               "Royal Ascot II exposes no ordinary NVRAM Settings catalog");
 
         static constexpr std::pair<std::string_view, std::string_view> clone_templates[] = {
             {"daytonase", "daytona"}, {"indy500to", "indy500"},
-            {"manxttc", "manxtt"}, {"sfight", "schamp"},
+            {"manxttc", "manxtt"}, {"sfight", "sfight"},
             {"srallycdx", "srallycdx"},
             {"doaa", "doa"}, {"doaab", "doa"}, {"doaae", "doa"}, {"doab", "doa"},
             {"dynamcopb", "dynamcop"}, {"dynamcopc", "dynamcop"},

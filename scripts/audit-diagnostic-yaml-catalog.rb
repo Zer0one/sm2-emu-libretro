@@ -13,7 +13,7 @@ require "yaml"
 ROOT = Pathname.new(__dir__).parent.realpath
 CATALOG_PATH = ROOT / "GAME_SETTINGS_CATALOG.md"
 YAML_ROOT = ROOT / "data/diagnostic-menus"
-EXPECTED_YAML_COUNT = 51
+EXPECTED_YAML_COUNT = 53
 
 def catalog_rows
   catalog = {}

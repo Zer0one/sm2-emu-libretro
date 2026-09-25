@@ -680,13 +680,13 @@ secondo il caso e le istruzioni correnti. Il mainstream si aggiorna separatament
 Questa sezione raccoglie soltanto attività di verifica. Le implementazioni
 mancanti restano nei rispettivi punti della roadmap.
 
-- Ripetere un controllo incrociato completo tra il documento autoritativo
-  `GAME_SETTINGS_CATALOG.md` e l'implementazione delle NVRAM Settings per ogni
-  parent e clone. Confrontare insieme delle opzioni, ordine, descrizioni, valori,
-  default e routing parent/clone; verificare esplicitamente anche che le voci
-  assenti dal Service Menu non vengano ereditate o rese visibili. Il controllo
-  deve includere la selezione del catalogo eseguita dal core, non soltanto la
-  compatibilità del layout o delle scritture NVRAM.
+Nessuna verifica è attualmente aperta. Il 25 settembre 2026 il controllo
+incrociato automatico ha confrontato tutti gli 84 set del catalogo screenshot
+con le NVRAM Settings realmente risolte dal core: selezione, ordine,
+descrizioni, valori, default e routing parent/clone. Il controllo ha aggiunto
+il riferimento diagnostico mancante per `manxttdx` e corretto `sfight`, che ora
+preserva il proprio default nativo `Automatic = Off` tramite un catalogo
+dedicato anziché ereditare il default del parent.
 
 Completate il 20 settembre 2026: la verifica strutturale di menu e opzioni cambia
 set, parent/clone e profilo senza rilevare voci per gioco residue; la regressione

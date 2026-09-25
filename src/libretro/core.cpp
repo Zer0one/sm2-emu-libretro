@@ -695,8 +695,8 @@ bool retro_load_game(const retro_game_info* game)
             libretro::audio_balance_enabled());
         next->machine->sound_board().set_music_volume_percent(
             libretro::music_volume_percent());
-        next->nvram_game = !libretro::nvram::options_for_game(next->game.name).empty()
-            ? next->game.name : next->game.parent;
+        next->nvram_game = libretro::nvram::catalog_for_game(
+            next->game.name, next->game.parent);
         libretro::set_option_game(next->nvram_game, next->game.name);
         const unsigned linked_cabinets = libretro::linked_cabinets(next->game.name);
         if (linked_cabinets > 1) {

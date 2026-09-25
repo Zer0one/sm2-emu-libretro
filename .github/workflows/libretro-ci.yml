@@ -89,6 +89,11 @@ jobs:
           ./build-ci/bin/sm2-libretro-netpacket-checks
           ./build-ci/bin/sm2-libretro-rumble-checks
           python3 scripts/check-libretro-artifact.py "build-ci/libretro/${{ matrix.binary }}"
+      - name: Audit NVRAM catalogs
+        if: runner.os == 'Linux'
+        run: |
+          ruby scripts/audit-diagnostic-yaml-catalog.rb
+          python3 scripts/audit-nvram-core-catalog.py
       - name: Package core and matching game database
         run: |
           mkdir -p dist/system/sm2-emu dist/licenses

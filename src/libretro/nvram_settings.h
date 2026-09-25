@@ -40,6 +40,8 @@ enum class ApplyResult { Unsupported, LayoutNotReady, Unchanged, Changed };
 
 [[nodiscard]] std::span<const Option> all_options();
 [[nodiscard]] std::span<const Option> options_for_game(std::string_view game);
+[[nodiscard]] std::string_view catalog_for_game(std::string_view game,
+                                                std::string_view parent);
 [[nodiscard]] std::vector<std::string> initial_values(std::string_view game);
 [[nodiscard]] ApplyResult apply(std::string_view game, std::span<u8> backup,
                                 std::span<u8> eeprom,

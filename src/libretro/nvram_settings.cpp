@@ -227,7 +227,7 @@ bool layout_ready(std::string_view game, std::span<const u8> backup,
         return named_layout_valid(backup, "VIRTUA FIGHTER 2", 29) &&
                static_cast<u16>(backup[0x3302] | (static_cast<u16>(backup[0x3303]) << 8)) ==
                    crc16_ccitt(backup.subspan(0x3340, 29));
-    if (game == "schamp")
+    if (game == "schamp" || game == "sfight")
         return nonblank(backup.subspan(0x3340, 32)) &&
                static_cast<u16>(backup[0x3302] | (static_cast<u16>(backup[0x3303]) << 8)) ==
                    crc16_ccitt(backup.subspan(0x3340, 32));
@@ -330,7 +330,7 @@ void sync_integrity(std::string_view game, std::span<u8> backup,
         const u16 crc = crc16_ccitt(backup.subspan(0x3340, 29));
         backup[0x3302] = static_cast<u8>(crc);
         backup[0x3303] = static_cast<u8>(crc >> 8);
-    } else if (game == "schamp") {
+    } else if (game == "schamp" || game == "sfight") {
         const u16 crc = crc16_ccitt(backup.subspan(0x3340, 32));
         backup[0x3302] = static_cast<u8>(crc);
         backup[0x3303] = static_cast<u8>(crc >> 8);
@@ -402,6 +402,12 @@ std::span<const Option> options_for_game(std::string_view game)
     const auto last = std::find_if(first, std::end(kOptions),
                                    [game](const Option& option) { return option.game != game; });
     return {first, static_cast<size_t>(last - first)};
+}
+
+std::string_view catalog_for_game(std::string_view game, std::string_view parent)
+{
+    if (!options_for_game(game).empty()) return game;
+    return options_for_game(parent).empty() ? std::string_view{} : parent;
 }
 
 std::vector<std::string> initial_values(std::string_view game)

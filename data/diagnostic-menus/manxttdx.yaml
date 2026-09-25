@@ -1,0 +1,35 @@
+schema_version: 1
+
+game: {set: manxttdx, parent: manxtt, title: Manx TT Superbike - DX, board: model2a}
+
+verification:
+  status: verified
+  date: "2026-09-15"
+  method: archived_menu_comparison_and_dedicated_native_clone_baseline
+  evidence: build-libretro-gpu/validation/clone-service-menu-archive-20260915/manxttdx
+
+nvram_layout:
+  storage: eeprom_93c46
+  coding_reference: manxtt.yaml
+  initial_template: dedicated_native_clone_baseline
+
+menus:
+  game_assignments:
+    visible_setting_row_count: 9
+    absent_parent_options: [cabinet_type, link_type, laxey_revise_mode, tt_revise_mode]
+    note: The acquired Service Menu omits Cabinet Type, Link Type and both Revise Mode rows.
+    options:
+      - {key: advertise_sound, label: ADVERTISE SOUND, position: 1, native_default: "ON", coding_reference: manxtt.yaml}
+      - {key: country, label: COUNTRY, position: 2, native_default: JAPAN, core_default: USA, coding_reference: manxtt.yaml}
+      - {key: bike_color, label: BIKE COLOR (No.), position: 3, native_default: RED (No.1), coding_reference: manxtt.yaml}
+      - {key: race_mode, label: RACE MODE, position: 4, native_default: RACE, coding_reference: manxtt.yaml}
+      - {key: laxey_number_of_lap, label: LAXEY NUMBER OF LAP, position: 5, native_default: 2, selected_for_core: false}
+      - {key: laxey_game_difficulty, label: LAXEY GAME DIFFICULTY, position: 6, native_default: NORMAL, coding_reference: manxtt.yaml}
+      - {key: tt_number_of_lap, label: TT NUMBER OF LAP, position: 7, native_default: 2, selected_for_core: false}
+      - {key: tt_game_difficulty, label: TT GAME DIFFICULTY, position: 8, native_default: NORMAL, coding_reference: manxtt.yaml}
+      - {key: start_switch_op, label: START SWITCH OP., position: 9, native_default: "OFF", selected_for_core: false}
+    commands: [{label: EXIT, position: 0}]
+
+core_options:
+  selected: [advertise_sound, country, bike_color, race_mode, laxey_game_difficulty, tt_game_difficulty]
+  selected_count: 6
