@@ -1,0 +1,178 @@
+# DESCRIPTION: GitLab CI/CD for libRetro (NOT FOR GitLab-proper)
+#
+# This recipe is consumed by the Libretro buildbot so the SM2-Emu core can be
+# distributed through RetroArch's Online Updater > Core Downloader.
+#
+# Linux x86_64/aarch64, Windows x86_64 and Android arm64-v8a/x86_64, with the
+# software, Vulkan and OpenGL renderers, as the project's own CI builds them.
+# The core is C++20 and needs CMake 3.24 and glslc (the Vulkan shaders are
+# compiled to SPIR-V at build time, and the GL ones are checked with it), none
+# of which the buildbot's xenial/focal images have, so the Linux jobs run on
+# ubuntu:24.04 and pull them in, the way other C++20 cores do. Android takes
+# glslc and the Vulkan headers from the NDK. macOS builds the software
+# renderer only, which needs no glslc: the buildbot's Mac runners are not
+# known to have it, and they cannot be given packages from here.
+
+# Core definitions
+.core-defs:
+  variables:
+    CORENAME: sm2
+    # The libretro core alone; CMake writes it to <build>/libretro. The
+    # vendored miniz, pugixml and LZMA SDK are used even where the image has
+    # system copies, as in the project's own CI.
+    CORE_ARGS: >-
+      -G Ninja
+      -DSM2_BUILD_STANDALONE=OFF -DSM2_BUILD_TESTS=OFF
+      -DSM2_BUILD_LIBRETRO=ON -DSM2_LIBRETRO_VULKAN=ON -DSM2_LIBRETRO_OPENGL=ON
+      -DSM2_BUILD_OPENGL_DESKTOP=OFF
+      -DCMAKE_DISABLE_FIND_PACKAGE_miniz=TRUE
+      -DCMAKE_DISABLE_FIND_PACKAGE_pugixml=TRUE
+      -DCMAKE_DISABLE_FIND_PACKAGE_lzmasdk=TRUE
+    EXTRA_PATH: libretro
+    GIT_SUBMODULE_STRATEGY: recursive
+
+# The buildbot's images predate C++20, CMake 3.24 and glslc, so the Linux jobs
+# bring their own. Overriding before_script drops the template's NUMPROC,
+# hence the re-export.
+.core-deps-linux:
+  image: ubuntu:24.04
+  before_script:
+    - export NUMPROC=$(($(nproc)/5))
+    - export NUMPROC=$((NUMPROC > 0 ? NUMPROC : 1))
+    - apt-get update -qq
+    - DEBIAN_FRONTEND=noninteractive apt-get install -yqq
+        build-essential cmake ninja-build git ca-certificates python3
+        glslc libvulkan-dev libegl1-mesa-dev libgles2-mesa-dev
+
+include:
+  ################################## DESKTOP ##################################
+  # Linux
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/linux-cmake.yml'
+
+  # Windows
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/windows-cmake-mingw.yml'
+
+  # macOS
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/osx-cmake-arm64.yml'
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/osx-cmake-x86.yml'
+
+  ################################## CELLULAR #################################
+  # Android
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/android-cmake.yml'
+
+# Stages for building
+stages:
+  - build-prepare
+  - build-shared
+  - build-static
+
+##############################################################################
+#################################### STAGES ##################################
+##############################################################################
+#
+################################### DESKTOP ##################################
+# Linux: the GCC runtime is linked in, so the core needs only libc and libm.
+# x86_64 is built with LTO: the project measured the emulation 31 % faster
+# with it (CI.md).
+
+# Linux 64-bit
+libretro-build-linux-x64:
+  extends:
+    - .libretro-linux-cmake-x86_64
+    - .core-deps-linux
+    - .core-defs
+  script:
+    - cmake -DCMAKE_BUILD_TYPE=Release $CORE_ARGS -DSM2_LTO=ON -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++" . -B$BUILD_DIR
+    - cmake --build $BUILD_DIR --target ${CORENAME}_libretro --config Release -- -j $NUMPROC
+    - mv $BUILD_DIR/$EXTRA_PATH/$LIBNAME $LIBNAME
+    - strip --strip-unneeded $LIBNAME
+
+# Linux aarch64
+libretro-build-linux-aarch64:
+  extends:
+    - .libretro-linux-cmake-aarch64
+    - .core-deps-linux
+    - .core-defs
+  script:
+    - cmake -DCMAKE_BUILD_TYPE=Release $CORE_ARGS -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++" . -B$BUILD_DIR
+    - cmake --build $BUILD_DIR --target ${CORENAME}_libretro --config Release -- -j $NUMPROC
+    - mv $BUILD_DIR/$EXTRA_PATH/$LIBNAME $LIBNAME
+    - strip --strip-unneeded $LIBNAME
+
+# Windows 64-bit, cross-built with MXE. glslc runs on the build machine; the
+# Vulkan headers are plain C and the same on every platform, so the build
+# machine's are copied into a directory of their own (adding /usr/include
+# itself to a MinGW build would bring in the Linux C library's headers).
+libretro-build-windows-x64:
+  extends:
+    - .libretro-windows-cmake-x86_64
+    - .core-defs
+  before_script:
+    - export NUMPROC=$(($(nproc)/5))
+    - export NUMPROC=$((NUMPROC > 0 ? NUMPROC : 1))
+    - apt-get update -qq
+    - DEBIAN_FRONTEND=noninteractive apt-get install -yqq glslc libvulkan-dev ninja-build
+    - mkdir -p vulkan-headers && cp -r /usr/include/vulkan /usr/include/vk_video vulkan-headers/
+  script:
+    - ${CMAKE} -DCMAKE_BUILD_TYPE=Release $CORE_ARGS -DSM2_VULKAN_INCLUDE_DIR=$PWD/vulkan-headers -DSM2_GLSLC=$(command -v glslc) . -B$BUILD_DIR
+    - ${CMAKE} --build $BUILD_DIR --target ${CORENAME}_libretro --config Release -- -j $NUMPROC
+    - mv $BUILD_DIR/$EXTRA_PATH/$LIBNAME $LIBNAME
+    - strip --strip-unneeded $LIBNAME || x86_64-w64-mingw32.static-strip --strip-unneeded $LIBNAME
+
+# macOS: the software renderer only (see the top), with the system's make
+# (no Ninja on those runners) and the deployment target the project's own CI
+# uses, which the C++20 library needs.
+.core-defs-osx:
+  extends: .core-defs
+  variables:
+    CORE_ARGS: >-
+      -DSM2_BUILD_STANDALONE=OFF -DSM2_BUILD_TESTS=OFF
+      -DSM2_BUILD_LIBRETRO=ON -DSM2_LIBRETRO_VULKAN=OFF -DSM2_LIBRETRO_OPENGL=OFF
+      -DSM2_BUILD_OPENGL_DESKTOP=OFF
+      -DCMAKE_DISABLE_FIND_PACKAGE_miniz=TRUE
+      -DCMAKE_DISABLE_FIND_PACKAGE_pugixml=TRUE
+      -DCMAKE_DISABLE_FIND_PACKAGE_lzmasdk=TRUE
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+
+# macOS 64-bit (ARM)
+libretro-build-osx-arm64:
+  extends:
+    - .libretro-osx-cmake-arm64
+    - .core-defs-osx
+
+# macOS 64-bit (Intel)
+libretro-build-osx-x64:
+  extends:
+    - .libretro-osx-cmake-x86_64
+    - .core-defs-osx
+
+################################### CELLULAR #################################
+# Android: Vulkan needs API level 24, and the NDK carries glslc and the Vulkan
+# headers. The OpenGL renderer asks the frontend for a GLES 3 context there;
+# Dear ImGui's OpenGL backend calls GLES 3 directly on Android (it has no
+# loader of its own there), so the core links the system's libGLESv3.
+.core-defs-android:
+  extends: .core-defs
+  variables:
+    API_LEVEL: 24
+  script:
+    - cmake -DCMAKE_BUILD_TYPE=Release $CORE_ARGS -DSM2_GLSLC=$NDK_ROOT/shader-tools/linux-x86_64/glslc -DCMAKE_SHARED_LINKER_FLAGS=-lGLESv3 -DANDROID_PLATFORM=android-$API_LEVEL -DCMAKE_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=$ANDROID_ABI . -B$BUILD_DIR
+    - cmake --build $BUILD_DIR --target ${CORENAME}_libretro --config Release -- -j $NUMPROC
+
+# Android 64-bit (ARM)
+android-arm64-v8a:
+  extends:
+    - .libretro-android-cmake-arm64-v8a
+    - .core-defs-android
+
+# Android 64-bit (x86)
+android-x86_64:
+  extends:
+    - .libretro-android-cmake-x86_64
+    - .core-defs-android
