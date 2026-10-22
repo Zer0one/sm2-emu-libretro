@@ -644,6 +644,16 @@ inline void build_option_definitions()
     gun_input.default_value = "hybrid";
     registered_definitions.push_back(gun_input);
 
+    retro_core_option_v2_definition analog_aim{};
+    analog_aim.key = "sm2_analog_aim";
+    analog_aim.desc = "Analog Stick Aim";
+    analog_aim.info = "Cursor: the analog stick moves the aiming cursor, which stays where it is when the stick is released. Absolute: the stick's position is the aiming position, as a light gun points, and the cursor returns to the centre when the stick is released.";
+    analog_aim.category_key = "input";
+    analog_aim.values[0] = {"cursor", "Cursor"};
+    analog_aim.values[1] = {"absolute", "Absolute"};
+    analog_aim.default_value = "cursor";
+    registered_definitions.push_back(analog_aim);
+
     retro_core_option_v2_definition offscreen_reload{};
     offscreen_reload.key = "sm2_offscreen_reload_shortcut";
     offscreen_reload.desc = "Off-Screen Reload Shortcut";
@@ -826,11 +836,11 @@ inline void build_option_definitions()
         "sm2_multipcm1_gain", "sm2_multipcm2_gain", "sm2_ym3438_gain",
         "sm2_scsp_output_low_pass_filter",
         "sm2_manxtt_cabinet_audio", "sm2_power_sled_relay_audio_gain"}};
-    constexpr std::array<std::string_view, 23> input_order{{
+    constexpr std::array<std::string_view, 24> input_order{{
         "sm2_controller_profile_type", "sm2_gamepad_rumble",
         "sm2_hide_shot_flash",
         "sm2_crosshairs", "sm2_crosshair_style", "sm2_crosshair_timeout", "sm2_gun_input",
-        "sm2_offscreen_reload_shortcut", "sm2_mouse_edge_offscreen_reload",
+        "sm2_analog_aim", "sm2_offscreen_reload_shortcut", "sm2_mouse_edge_offscreen_reload",
         "sm2_four_speed_shifter", "sm2_gear_shift_neutral_time",
         "sm2_automatic_start_gear", "sm2_steering_response",
         "sm2_steering_output_range", "sm2_accelerator_output_range",
@@ -1210,6 +1220,13 @@ inline GunInputMode gun_input_mode()
     if (std::strcmp(option.value, "mouse_analog") == 0) return GunInputMode::MouseAnalog;
     if (std::strcmp(option.value, "analog") == 0) return GunInputMode::AnalogSticks;
     return GunInputMode::Hybrid;
+}
+
+inline bool analog_aim_absolute()
+{
+    retro_variable option{"sm2_analog_aim", nullptr};
+    return option_environment && option_variable(option)
+        && option.value && std::strcmp(option.value, "absolute") == 0;
 }
 
 inline bool offscreen_reload_shortcut_enabled()

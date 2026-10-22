@@ -894,7 +894,7 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 DesertElevationOptions desert_elevation_options,
                 bool automatic_start_gear,
                 bool mouse_edge_offscreen_reload, SpecialAnalogOptions special_options,
-                unsigned shift_neutral_ms)
+                unsigned shift_neutral_ms, bool analog_aim_absolute)
 {
     inputs.in0 = inputs.in1 = inputs.in2 = inputs.in3 = inputs.in4 = 0xff;
     inputs.player_starts = 0xff;
@@ -996,6 +996,25 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 const int speed = 1 + static_cast<int>(normalized * 11.0f + 0.5f);
                 return value < 0 ? -speed : speed;
             };
+            // Absolute: the stick's deflection is the position on screen, as a
+            // light gun would point, and its rest position is the centre.
+            const auto stick_absolute = [=](s16 value, int size) {
+                const int magnitude = std::abs(static_cast<int>(value));
+                const float normalized = magnitude <= deadzone ? 0.0f
+                    : static_cast<float>(magnitude - deadzone) / static_cast<float>(32767 - deadzone);
+                const float position = 0.5f + (value < 0 ? -normalized : normalized) * 0.5f;
+                return static_cast<int>(position * static_cast<float>(size - 1) + 0.5f);
+            };
+            const bool stick_held = allow_analog && analog_aim_absolute
+                && (std::abs(static_cast<int>(stick_x)) > deadzone
+                    || std::abs(static_cast<int>(stick_y)) > deadzone);
+            // A stick that is the only source always sets the position; with
+            // a mouse alongside, only while it is held, and once more when it
+            // is let go, to centre the cursor - the mouse moves it otherwise.
+            const bool use_stick_absolute = allow_analog && analog_aim_absolute
+                && (gun_mode == GunInputMode::AnalogSticks || stick_held
+                    || runtime.gun_stick_held[p]);
+            runtime.gun_stick_held[p] = stick_held;
             const bool use_lightgun = gun_mode == GunInputMode::Lightgun
                 || (gun_mode == GunInputMode::Hybrid && (lg_moved || lg_action));
             if (use_lightgun) {
@@ -1003,6 +1022,12 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                     (static_cast<unsigned>(static_cast<int>(lg_x) + 32768) * (width - 1)) / 65535u);
                 runtime.gun_cursor_y[p] = static_cast<int>(
                     (static_cast<unsigned>(static_cast<int>(lg_y) + 32768) * (height - 1)) / 65535u);
+            } else if (use_stick_absolute) {
+                runtime.gun_cursor_x[p] = stick_absolute(stick_x, width);
+                runtime.gun_cursor_y[p] = stick_absolute(stick_y, height);
+            } else if (analog_aim_absolute) {
+                runtime.gun_cursor_x[p] += mouse_x;
+                runtime.gun_cursor_y[p] += mouse_y;
             } else {
                 runtime.gun_cursor_x[p] += mouse_x + stick_step(stick_x);
                 runtime.gun_cursor_y[p] += mouse_y + stick_step(stick_y);
@@ -1029,7 +1054,7 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                                             || pressed(RETRO_DEVICE_ID_JOYPAD_L)))
                         || lg_reload);
             runtime.gun_activity[p] = (allow_lightgun && (lg_moved || lg_action)) || mouse_x || mouse_y
-                || stick_step(stick_x) || stick_step(stick_y) || shot || secondary;
+                || stick_step(stick_x) || stick_step(stick_y) || stick_held || shot || secondary;
             const bool offscreen_shot = game.lightgun.present && lg_offscreen && lg_trigger;
             constexpr float mouse_edge = 0.05f;
             const bool mouse_edge_shot = game.lightgun.present

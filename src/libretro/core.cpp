@@ -1246,7 +1246,8 @@ void retro_run()
                              libretro::desert_elevation_options(),
                              libretro::automatic_start_gear_enabled(),
                              libretro::mouse_edge_offscreen_reload_enabled(),
-                             analog_options, libretro::gear_shift_neutral_ms());
+                             analog_options, libretro::gear_shift_neutral_ms(),
+                             libretro::analog_aim_absolute());
         const auto machine_start = std::chrono::steady_clock::now();
         content->machine->run_frame();
         if (content->external_link_active) {

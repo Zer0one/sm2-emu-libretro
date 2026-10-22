@@ -320,7 +320,7 @@ La Core Option `Gun Input Mode`, derivata da Supermodel, seleziona `Standard`,
 `Lightgun Only`, `Mouse + Analog Stick`, `Mouse Only` o `Analog Stick Only`.
 Standard unifica le tre sorgenti in un cursore virtuale. Le modalità dedicate
 e i descrittori vengono aggiornati immediatamente. South e RB sul RetroPad,
-grilletto e clic sinistro sono `Shot`. BEL assegna `Missile` a East/LB, clic destro,
+grilletto e clic sinistro sono `Shot`. La Core Option `Analog Stick Aim` sceglie come agisce la levetta analogica: `Cursor` (predefinito) sposta il cursore, che resta fermo al rilascio; `Absolute` usa la posizione della levetta come punto di mira, come una pistola ottica, e riporta il cursore al centro al rilascio. In Standard e Mouse + Analog Stick il mouse muove il cursore mentre la levetta è a riposo. BEL assegna `Missile` a East/LB, clic destro,
 Lightgun Aux A e Reload; per BEL Reload è soltanto un secondo binding della stessa azione.
 
 Il core conserva le due interfacce arcade. Virtua Cop 1/2 e House of the Dead

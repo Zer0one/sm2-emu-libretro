@@ -2085,6 +2085,37 @@ int main()
     mouse_axes = {};
     mouse_buttons = {};
 
+    // Analog Stick Aim = Absolute: the stick's position is the aim, the centre
+    // when released; with a mouse alongside, the mouse moves it once released.
+    runtime = {};
+    lightgun_axes = {};
+    lightgun_buttons = {};
+    const auto poll_absolute = [&](libretro::GunInputMode mode) {
+        libretro::poll_input(inputs, *vcop, devices, runtime, true, state, mode, false,
+                             {}, {}, true, false, {}, 0, true);
+    };
+    axes[0][0][0] = 32767;
+    axes[0][0][1] = -32768;
+    poll_absolute(libretro::GunInputMode::AnalogSticks);
+    check(runtime.gun_cursor_x[0] == 495 && runtime.gun_cursor_y[0] == 0,
+          "Absolute Analog Stick Aim puts the cursor where the stick points");
+    axes = {};
+    poll_absolute(libretro::GunInputMode::AnalogSticks);
+    check(runtime.gun_cursor_x[0] == 248 && runtime.gun_cursor_y[0] == 192,
+          "Absolute Analog Stick Aim centres the cursor when the stick is released");
+    axes[0][0][0] = -32768;
+    poll_absolute(libretro::GunInputMode::Hybrid);
+    check(runtime.gun_cursor_x[0] == 0, "Absolute Analog Stick Aim applies in Standard");
+    axes = {};
+    poll_absolute(libretro::GunInputMode::Hybrid);
+    check(runtime.gun_cursor_x[0] == 248,
+          "Absolute Analog Stick Aim centres the cursor in Standard once released");
+    mouse_axes[0][0] = 10;
+    poll_absolute(libretro::GunInputMode::Hybrid);
+    check(runtime.gun_cursor_x[0] == 258,
+          "The mouse moves the cursor in Standard while the stick is at rest");
+    mouse_axes = {};
+
     runtime = {};
     lightgun_axes = {{{-32768, 32767}, {32767, -32768}}};
     lightgun_buttons = {1u << RETRO_DEVICE_ID_LIGHTGUN_TRIGGER,

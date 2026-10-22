@@ -97,6 +97,9 @@ struct InputRuntime {
     std::array<bool, 2> gun_aim_active{};
     std::array<bool, 2> gun_activity{}; // Presentation activity, not serialized game state.
     std::array<bool, 2> gun_aim_offscreen{};
+    // Analog Stick Aim = Absolute: the stick was out of its deadzone last frame,
+    // so the cursor goes back to the centre once it is released.
+    std::array<bool, 2> gun_stick_held{};
 };
 
 struct ControllerConfiguration {
@@ -128,5 +131,6 @@ void poll_input(hw::Inputs& inputs, const rom::GameSpec& game,
                 bool automatic_start_gear = true,
                 bool mouse_edge_offscreen_reload = false,
                 SpecialAnalogOptions special_options = {},
-                unsigned shift_neutral_ms = 0);
+                unsigned shift_neutral_ms = 0,
+                bool analog_aim_absolute = false);
 }

@@ -206,7 +206,8 @@ int main()
                && adjacent("sm2_crosshairs", "sm2_crosshair_style")
                && adjacent("sm2_crosshair_style", "sm2_crosshair_timeout")
                && adjacent("sm2_crosshair_timeout", "sm2_gun_input")
-               && adjacent("sm2_gun_input", "sm2_offscreen_reload_shortcut")
+               && adjacent("sm2_gun_input", "sm2_analog_aim")
+               && adjacent("sm2_analog_aim", "sm2_offscreen_reload_shortcut")
                && adjacent("sm2_offscreen_reload_shortcut", "sm2_mouse_edge_offscreen_reload"),
            "lightgun controls retain their approved order");
     expect(adjacent("sm2_desert_elevation_control", "sm2_desert_elevation_speed")
